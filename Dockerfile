@@ -7,7 +7,7 @@ COPY app/package*.json ./
 COPY app/ .
 RUN npm install
 RUN npm run build
-CMD ["npm","run","start:dev"]
+CMD ["npm","run","start"]
 #ENTRYPOINT npm run start
 
 #FROM node:12.13-alpine as production
