@@ -4,9 +4,9 @@ RUN apk update && apk upgrade && \
 
 WORKDIR /usr/src/app
 COPY app/package*.json ./
+COPY app/ .
 RUN npm install
 RUN npm run build
-COPY app/ .
 CMD ["npm","run","start:dev"]
 #ENTRYPOINT npm run start
 
