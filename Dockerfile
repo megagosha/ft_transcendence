@@ -4,8 +4,10 @@ RUN apk update && apk upgrade && \
 
 WORKDIR /usr/src/app
 COPY app/package*.json ./
+RUN npm install
+RUN npm run build
 COPY app/ .
-CMD ["npm","run","start"]
+CMD ["npm","run","start:dev"]
 #ENTRYPOINT npm run start
 
 #FROM node:12.13-alpine as production
