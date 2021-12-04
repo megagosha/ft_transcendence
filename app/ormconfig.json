@@ -1,0 +1,14 @@
+{
+  "type": "postgres",
+  "host": "localhost",
+  "username": "postgres",
+  "password": "12345",
+  "database": "ft_transcendence",
+  "logging": "all",
+  "migrationsRun": true,
+  "dropSchema": false,
+  "synchronize": false,
+  "entities": ["dist/model/**/*{.ts,.js}"],
+  "migrations": ["dist/db/*{.ts,.js}"],
+  "cli": {"migrationsDir": "src/db"}
+}
