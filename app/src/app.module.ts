@@ -11,6 +11,10 @@ import { User } from './users/user.entity';
 @Module({
   controllers: [CatsController, AppController],
   providers: [CatsService, AppService],
-  imports: [AuthModule, UsersModule, TypeOrmModule.forRoot()],
+  imports: [
+    AuthModule,
+    UsersModule,
+    TypeOrmModule.forRoot({ entities: [User] }),
+  ],
 })
 export class AppModule {}

@@ -9,7 +9,7 @@
   "migrationsRun": true,
   "dropSchema": false,
   "synchronize": false,
-  "entities": ["dist/model/**/*{.ts,.js}"],
+  "entities": ["dist/**/*{.ts,.js}"],
   "migrations": ["dist/db/*{.ts,.js}"],
   "cli": {"migrationsDir": "src/db"}
 }
