@@ -1,9 +1,10 @@
 {
   "type": "postgres",
-  "host": "localhost",
-  "username": "postgres",
-  "password": "12345",
+  "host": "postgres",
+  "port": 5432,
   "database": "ft_transcendence",
+  "username": "securename",
+  "password": "securepswrd",
   "logging": "all",
   "migrationsRun": true,
   "dropSchema": false,

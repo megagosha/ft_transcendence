@@ -4,3 +4,7 @@ export const OAuthConstants = {
     '646c443f0039887cd1fa055dcbf55a0321d3e21c392baa5e7dce08115458f701',
   callbackURL: 'http://localhost:3000/login/accept',
 };
+
+export const jwtConstants = {
+  secret: 'secretKey',
+};

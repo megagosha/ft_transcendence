@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
+import { use } from 'passport';
 // This should be a real class/interface representing a user entity
 // export type User = any;
 
@@ -14,23 +15,42 @@ export class UsersService {
 
   private readonly users = [
     {
-      userId: 1,
+      id: 1,
+      forty_two_id: 23,
       username: 'john',
       password: 'changeme',
     },
     {
-      userId: 78275,
+      id: 2,
+      forty_two_id: 78275,
       username: 'edebi',
     },
     {},
   ];
 
-  async findOne(id: number): Promise<User | undefined> {
-    return this.usersRepository.findOne(id);
-    // return this.users.find((user) => user.username === username);
+  async findOneByFortyTwoId(fortyTwoId: number): Promise<any> {
+    return this.users.find((user) => user.forty_two_id === fortyTwoId);
   }
 
-  async find42User(user_id: number): Promise<User[]> {
-    return this.usersRepository.find({ where: { fortytwo_id: user_id } });
+  async findOneByAppId(appId: number, username: string): Promise<any> {
+    return this.users.find(
+      ((user) => user.username === username) && ((user) => user.id === appId),
+    );
   }
+
+  // async tmpfindOne(fortyTwoId: number, username: string): Promise<any> {
+  //   return this.users.find(
+  //     ((user) => user.username === username) && ((user) => user.userId === id),
+  //   );
+  // }
+  //
+  // async findOne(id: number): Promise<User | undefined> {
+  //   // return this.usersRepository.findOne(id);
+  // }
+  // //@todo if user does not exist in db, create new one. Else get old user.
+  // async find42User(user_id: number): Promise<User> {
+  //   const user = this.usersRepository.find({ where: { fortytwo_id: user_id } });
+  //   if (user) return user[0];
+  //   return null;
+  // }
 }

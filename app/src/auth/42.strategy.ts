@@ -10,7 +10,7 @@ const clientID =
   '4d8bdbfc4b56647b57eee634436634f91c17a5cee631f06d1f4c4d3cd83bc9fa';
 const clientSecret =
   '646c443f0039887cd1fa055dcbf55a0321d3e21c392baa5e7dce08115458f701';
-const callbackURL = 'http://localhost:3000/auth/fortytwo';
+const callbackURL = 'http://localhost:3000/user/login';
 
 @Injectable()
 export class FortyTwoStrategy extends PassportStrategy(Strategy, 'fortytwo') {
@@ -36,6 +36,7 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, 'fortytwo') {
       })
       .toPromise();
     new Logger().log(data);
-    return this.authService.findUserFrom42Id(data.id);
+    if (!data || !data.id) return false;
+    return this.authService.findUserFrom42Id(data.id, data.email);
   }
 }
