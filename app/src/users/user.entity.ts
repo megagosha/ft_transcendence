@@ -41,20 +41,34 @@ export class User {
   @Column({ unique: true, nullable: false })
   fortytwo_id: number;
 
+  @Column({ unique: true, nullable: false })
+  email: string;
+
   /** Пароль */
-  @Column({ length: User.PASSWORD_LENGTH, nullable: false })
+  @Column({ length: User.PASSWORD_LENGTH, nullable: true })
   password: string;
 
   /** Дата регистрации */
-  @CreateDateColumn({ nullable: false, update: false, insert: false })
+  @CreateDateColumn({
+    nullable: false,
+    update: false,
+    insert: false,
+    precision: 3,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   registerDate: Date;
 
   /** Дата послднего логина */
-  @Column({ nullable: false })
+  @Column({
+    nullable: false,
+    precision: 3,
+    default: () => 'CURRENT_TIMESTAMP(3)',
+    onUpdate: 'CURRENT_TIMESTAMP(3)',
+  })
   lastLoginDate: Date;
 
   /** Статус */
-  @Column({ length: User.USER_STATUS_LENGTH, nullable: false })
+  @Column({ length: User.USER_STATUS_LENGTH, nullable: false, default: 0 })
   status: UserStatus;
 
   /** Наименование изоброжения аватарки */

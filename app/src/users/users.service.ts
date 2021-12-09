@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { use } from 'passport';
+import { CreateUserDto } from './dto/create-user.dto';
+import { stringify } from 'querystring';
 // This should be a real class/interface representing a user entity
 // export type User = any;
 
@@ -38,6 +40,17 @@ export class UsersService {
     );
   }
 
+  async createNewUser(createUser: CreateUserDto): Promise<any> {
+    const user = new User();
+    user.username = createUser.username;
+    user.fortytwo_id = createUser.fortytwo_id;
+    user.email = createUser.email;
+    user.avatarImgName = createUser.avatarImgName;
+    Logger.log(
+      'New user created ' + createUser.username + ' id ' + user.fortytwo_id,
+    );
+    return this.usersRepository.save(user);
+  }
   // async tmpfindOne(fortyTwoId: number, username: string): Promise<any> {
   //   return this.users.find(
   //     ((user) => user.username === username) && ((user) => user.userId === id),

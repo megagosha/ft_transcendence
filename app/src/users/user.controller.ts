@@ -1,8 +1,11 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Logger, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthService } from '../auth/auth.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
+  constructor(private authService: AuthService) {}
   @Get('login')
   @UseGuards(AuthGuard('fortytwo'))
   async getUserFromDiscordLogin(@Req() req): Promise<any> {
@@ -10,8 +13,9 @@ export class UserController {
   }
 
   @Get('profile')
-  @UseGuards(AuthGuard('jwc'))
+  @UseGuards(JwtAuthGuard)
   async profile(@Req() req): Promise<any> {
-    return 'Yo';
+    Logger.log('here');
+    return req.user;
   }
 }

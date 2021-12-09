@@ -7,6 +7,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/user.entity';
+import { Friendship } from './users/friendlist.entity';
+import { GameStatistic } from './game/gamestats.entity';
 
 @Module({
   controllers: [CatsController, AppController],
@@ -14,7 +16,14 @@ import { User } from './users/user.entity';
   imports: [
     AuthModule,
     UsersModule,
-    TypeOrmModule.forRoot({ entities: [User] }),
+    TypeOrmModule.forRoot({
+      host: process.env.DB_HOST,
+      port: Number.parseInt(process.env.DB_PORT),
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE_NAME,
+      entities: [User, Friendship, GameStatistic],
+    }),
   ],
 })
 export class AppModule {}
