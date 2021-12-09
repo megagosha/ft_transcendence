@@ -1,0 +1,15 @@
+{
+  "type": "postgres",
+  "host": "postgres",
+  "port": 5432,
+  "database": "ft_transcendence",
+  "username": "securename",
+  "password": "securepswrd",
+  "logging": "all",
+  "migrationsRun": true,
+  "dropSchema": false,
+  "synchronize": true,
+  "entities": ["dist/**/*.entity.js"],
+  "migrations": ["dist/db/*{.ts,.js}"],
+  "cli": {"migrationsDir": "src/db"}
+}

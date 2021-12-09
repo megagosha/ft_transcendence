@@ -1,7 +1,6 @@
 FROM node:17.1-alpine3.12 As development
 RUN apk update && apk upgrade && \
-    apk add --no-cache bash git openssh
-
+    apk add --no-cache bash postgresql-client git openssh
 WORKDIR /usr/src/app
 COPY app/package*.json ./
 COPY app/ .
