@@ -76,7 +76,7 @@ export class User {
   avatarImgName: string;
 
   /** Статисктика и достижения пользователя в играх */
-  @OneToOne(() => GameStatistic, { nullable: false })
+  @OneToOne(() => GameStatistic, { nullable: true })
   @JoinColumn({ name: 'game_statistic_id', referencedColumnName: 'id' })
   statistic: GameStatistic = new GameStatistic();
 
