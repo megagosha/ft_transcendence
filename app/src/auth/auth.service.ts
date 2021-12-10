@@ -1,5 +1,5 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../users/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { stringify } from 'ts-jest/dist/utils/json';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,37 +12,20 @@ import { FindUserDto } from '../users/dto/find-user.dto';
 export class AuthService {
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
-    private usersService: UsersService,
+    private usersService: UserService,
     private jwtService: JwtService,
   ) {}
 
-  async jwtLogin(id: number, ftId: number, login: string) {
-    const payload = { id: id, ftId: ftId, login: login };
+  async jwtLogin(id: number, username: string) {
+    const payload = { id: id, username: username };
     Logger.log(
-      'Issuing jwt token with payload: ' +
-        id +
-        ' ftid ' +
-        ftId +
-        ' login ' +
-        login,
+      'Issuing jwt token with payload: ' + id + ' username:  ' + username,
     );
     const res = this.jwtService.sign(payload);
     Logger.debug(`Generated JWT token with payload ` + res);
     return {
       access_token: res,
     };
-  }
-
-  async findUser(ftId: number, email: string): Promise<any> {
-    const user = await this.userRepo.findOne({
-      fortytwo_id: ftId,
-      email: email,
-    });
-    if (!user) {
-      Logger.log('User with id ' + ftId + ' email ' + email + ' not found');
-      return null;
-    }
-    return user;
   }
 
   //@todo if user not found create new user.

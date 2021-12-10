@@ -1,5 +1,11 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { HttpService, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpService,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Strategy } from 'passport-oauth2';
 import { AuthService } from './auth.service';
 import { stringify } from 'querystring';
@@ -32,8 +38,9 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, 'fortytwo') {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
       .toPromise();
-    // new Logger().log('User va');
-    if (!data || !data.id) throw new UnauthorizedException();
+    if (!data || !data.id) {
+      throw new UnauthorizedException();
+    }
     return {
       id: data.id,
       email: data.email,
@@ -41,7 +48,5 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, 'fortytwo') {
       username: data.displayname,
       image_url: data.image_url,
     };
-    // return this.authService.findUserInRepo42Id(data.id, data.email);
-    // return this.authService.findUserFrom42Id(data.id, data.email);
   }
 }

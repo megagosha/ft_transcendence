@@ -10,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { stringify } from 'ts-jest/dist/utils/json';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../users/user.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { User } from '../users/user.entity';
 
@@ -25,7 +25,7 @@ import { User } from '../users/user.entity';
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private userService: UsersService,
+    private userService: UserService,
   ) {}
   @Get()
   @UseGuards(AuthGuard('fortytwo'))
@@ -36,29 +36,16 @@ export class AuthController {
   @Get('redirect')
   @UseGuards(AuthGuard('fortytwo'))
   async getUserFromFtLogin(@Req() req): Promise<any> {
-    // const payload = {
-    //   id: req.user.id,
-    //   email: req.user.email,
-    //   login: req.user.login,
-    //   displayname: req.user.displayname,
-    //   image_url: req.user.image_url,
-    // };
-    const res = await this.authService.findUser(req.user.id, req.user.email);
-    if (res == null) {
-      Logger.log('User not found in database! Create new user');
+    let user = await this.userService.findFtUser(req.user.id, req.user.email);
+    if (user == null) {
+      Logger.log('User not found in database! Creating new user...');
       const newUser = new CreateUserDto();
       newUser.email = req.user.email;
       newUser.username = req.user.username;
       newUser.fortytwo_id = req.user.id;
       newUser.avatarImgName = req.user.image_url;
-      await this.userService.createNewUser(newUser);
+      user = await this.userService.createNewUser(newUser);
     }
-    Logger.log('sdfsdf');
-    Logger.log(stringify(res));
-    return this.authService.jwtLogin(
-      req.user.id,
-      req.user.email,
-      req.user.username,
-    );
+    return this.authService.jwtLogin(user.id, user.username);
   }
 }

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { CatsController } from './cats/cats.controller';
 import { CatsService } from './cats/cats.service';
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
+import { UserModule } from './users/user.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -15,7 +15,7 @@ import { GameStatistic } from './game/gamestats.entity';
   providers: [CatsService, AppService],
   imports: [
     AuthModule,
-    UsersModule,
+    UserModule,
     TypeOrmModule.forRoot({
       host: process.env.DB_HOST,
       port: Number.parseInt(process.env.DB_PORT),
