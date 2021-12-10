@@ -11,6 +11,7 @@ import {
 
 import { GameStatistic } from '../game/gamestats.entity';
 import { Friendship } from './friendlist.entity';
+import { Exclude } from 'class-transformer';
 
 enum UserStatus {
   ONLINE = 'ONLINE',
@@ -30,6 +31,7 @@ export class User {
   id: number;
 
   /** Версия */
+  @Exclude()
   @VersionColumn()
   version: number;
 
@@ -38,6 +40,7 @@ export class User {
   username: string;
 
   /** 42 id */
+  @Exclude()
   @Column({ unique: true, nullable: false })
   fortytwo_id: number;
 
@@ -45,6 +48,7 @@ export class User {
   email: string;
 
   /** Пароль */
+  @Exclude()
   @Column({ length: User.PASSWORD_LENGTH, nullable: true })
   password: string;
 
@@ -76,15 +80,18 @@ export class User {
   avatarImgName: string;
 
   /** Статисктика и достижения пользователя в играх */
+  @Exclude()
   @OneToOne(() => GameStatistic, { nullable: true })
   @JoinColumn({ name: 'game_statistic_id', referencedColumnName: 'id' })
   statistic: GameStatistic = new GameStatistic();
 
   /** Дружбы, в которых пользователь является инициатором */
+  @Exclude()
   @OneToMany(() => Friendship, (friendship) => friendship.invitorUser)
   invitorFriendships: Friendship[];
 
   /** Дружбы, в которые пользователь был приглашен */
+  @Exclude()
   @OneToMany(() => Friendship, (friendship) => friendship.invitedUser)
   invitedFriendships: Friendship[];
 }

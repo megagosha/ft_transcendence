@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { use } from 'passport';
 import { CreateUserDto } from './dto/create-user.dto';
 import { stringify } from 'querystring';
 import { ChangeUsernameDto } from './dto/change-username.dto';
+import { SearchUsersDto } from './dto/search-users.dto';
 // This should be a real class/interface representing a user entity
 // export type User = any;
 
@@ -57,6 +58,19 @@ export class UserService {
   ): Promise<any> {
     return await this.userRepo.update(id, {
       username: changeUserName.username,
+    });
+  }
+
+  async searchUsersByUsername(searchUsersDto: SearchUsersDto): Promise<User[]> {
+    return await this.userRepo.find({
+      where: {
+        username: Like(searchUsersDto.username + '%'),
+      },
+      order: {
+        username: 'ASC',
+      },
+      skip: searchUsersDto.skip,
+      take: searchUsersDto.take,
     });
   }
 }
