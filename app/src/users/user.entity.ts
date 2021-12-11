@@ -11,6 +11,7 @@ import {
 
 import { GameStatistic } from '../game/gamestats.entity';
 import { Friendship } from './friendlist.entity';
+import { Exclude } from 'class-transformer';
 
 enum UserStatus {
   ONLINE = 'ONLINE',
@@ -30,6 +31,7 @@ export class User {
   id: number;
 
   /** Версия */
+  @Exclude()
   @VersionColumn()
   version: number;
 
@@ -38,6 +40,7 @@ export class User {
   username: string;
 
   /** 42 id */
+  @Exclude()
   @Column({ unique: true, nullable: false })
   fortytwo_id: number;
 
@@ -45,6 +48,7 @@ export class User {
   email: string;
 
   /** Пароль */
+  @Exclude()
   @Column({ length: User.PASSWORD_LENGTH, nullable: true })
   password: string;
 
