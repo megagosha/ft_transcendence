@@ -1,11 +1,12 @@
 FROM node:17.1-alpine3.12 As development
-RUN apk update && apk upgrade && \
-    apk add --no-cache bash postgresql-client git openssh
+#RUN apk update && apk upgrade && \
+#    apk add --no-cache bash postgresql-client git openssh
 WORKDIR /usr/src/app
 COPY app/package*.json ./
-COPY app/ .
+COPY --chown=755 static /var/www/app/
 RUN npm install
 RUN npm run build
+COPY app/ .
 CMD ["npm","run","start"]
 #ENTRYPOINT npm run start
 

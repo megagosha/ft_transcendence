@@ -9,6 +9,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/user.entity';
 import { Friendship } from './users/friendlist.entity';
 import { GameStatistic } from './game/gamestats.entity';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   controllers: [CatsController, AppController],
@@ -16,6 +18,9 @@ import { GameStatistic } from './game/gamestats.entity';
   imports: [
     AuthModule,
     UserModule,
+    ServeStaticModule.forRoot({
+      rootPath: '/var/www/app/',
+    }),
     TypeOrmModule.forRoot({
       host: process.env.DB_HOST,
       port: Number.parseInt(process.env.DB_PORT),

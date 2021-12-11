@@ -80,18 +80,15 @@ export class User {
   avatarImgName: string;
 
   /** Статисктика и достижения пользователя в играх */
-  @Exclude()
   @OneToOne(() => GameStatistic, { nullable: true })
   @JoinColumn({ name: 'game_statistic_id', referencedColumnName: 'id' })
   statistic: GameStatistic = new GameStatistic();
 
   /** Дружбы, в которых пользователь является инициатором */
-  @Exclude()
   @OneToMany(() => Friendship, (friendship) => friendship.invitorUser)
   invitorFriendships: Friendship[];
 
   /** Дружбы, в которые пользователь был приглашен */
-  @Exclude()
   @OneToMany(() => Friendship, (friendship) => friendship.invitedUser)
   invitedFriendships: Friendship[];
 }
