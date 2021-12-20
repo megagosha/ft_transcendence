@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   VersionColumn,
 } from "typeorm";
-import { User } from "../users/user.entity";
+import { User } from "../../users/user.entity";
 import { Chat } from "./chat.entity";
 
 @Entity("ft_message", { orderBy: { dateTimeSend: "DESC" } })
@@ -35,13 +35,17 @@ export class Message {
   dateTimeSend: Date;
 
   /** Время редактирования */
-  @CreateDateColumn({ name: "datetime_edit", nullable: true })
+  @Column({ name: "datetime_edit", nullable: true })
   dateTimeEdit: Date;
 
   /** Автор */
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: "author_user_id", referencedColumnName: "id" })
   authorUser: User;
+
+  /** Показывать сообщение в чате */
+  @Column({ name: "visible", nullable: false, default: true })
+  visible: boolean;
 
   /** Чат, в который было отправлено соообщение */
   @ManyToOne(() => Chat, { nullable: false })

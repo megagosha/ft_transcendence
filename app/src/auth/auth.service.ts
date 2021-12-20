@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger} from '@nestjs/common';
 import { UserService } from '../users/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { stringify } from 'ts-jest/dist/utils/json';
@@ -26,6 +26,10 @@ export class AuthService {
     return {
       access_token: res,
     };
+  }
+
+  decodeJwtToken(token: string): User {
+    return this.jwtService.verify(token);
   }
 
   //@todo if user not found create new user.
