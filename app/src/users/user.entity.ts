@@ -13,11 +13,11 @@ import { GameStatistic } from '../game/gamestats.entity';
 import { Friendship } from './friendlist.entity';
 import { Exclude } from 'class-transformer';
 
-enum UserStatus {
-  ONLINE = 'ONLINE',
-  OFFLINE = 'OFFLINE',
+export enum UserStatus {
+  ACTIVE = 'ACTIVE',
   DISABLED = 'DISABLED',
 }
+
 /** Пользователь */
 @Entity({ name: 'ft_user' })
 export class User {
@@ -72,7 +72,11 @@ export class User {
   lastLoginDate: Date;
 
   /** Статус */
-  @Column({ length: User.USER_STATUS_LENGTH, nullable: false, default: 0 })
+  @Column({
+    length: User.USER_STATUS_LENGTH,
+    nullable: false,
+    default: UserStatus.ACTIVE,
+  })
   status: UserStatus;
 
   /** Наименование изоброжения аватарки */
@@ -80,7 +84,7 @@ export class User {
   avatarImgName: string;
 
   /** Статисктика и достижения пользователя в играх */
-  @OneToOne(() => GameStatistic, { nullable: true })
+  @OneToOne(() => GameStatistic, { nullable: true, cascade: true })
   @JoinColumn({ name: 'game_statistic_id', referencedColumnName: 'id' })
   statistic: GameStatistic = new GameStatistic();
 
