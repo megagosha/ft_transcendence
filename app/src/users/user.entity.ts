@@ -16,8 +16,10 @@ import { Exclude } from 'class-transformer';
 export enum UserStatus {
   ONLINE = 'ONLINE',
   OFFLINE = 'OFFLINE',
+  ACTIVE = 'ACTIVE',
   DISABLED = 'DISABLED',
 }
+
 /** Пользователь */
 @Entity({ name: 'ft_user' })
 export class User {
@@ -72,7 +74,11 @@ export class User {
   lastLoginDate: Date;
 
   /** Статус */
-  @Column({ length: User.USER_STATUS_LENGTH, nullable: false, default: 0 })
+  @Column({
+    length: User.USER_STATUS_LENGTH,
+    nullable: false,
+    default: UserStatus.ACTIVE,
+  })
   status: UserStatus;
 
   /** Наименование изоброжения аватарки */
@@ -80,7 +86,7 @@ export class User {
   avatarImgName: string;
 
   /** Статисктика и достижения пользователя в играх */
-  @OneToOne(() => GameStatistic, { nullable: true })
+  @OneToOne(() => GameStatistic, { nullable: true, cascade: true })
   @JoinColumn({ name: 'game_statistic_id', referencedColumnName: 'id' })
   statistic: GameStatistic = new GameStatistic();
 

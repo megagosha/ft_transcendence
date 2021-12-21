@@ -10,14 +10,24 @@ import { GameStatistic } from './game/gamestats.entity';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { rootPath, renderPath } from './constants';
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { Chat } from "./chat/model/chat.entity";
+import { UserChatLink } from "./chat/model/user-chat-link.entity";
+import { Message } from "./chat/model/message.entity";
+import "reflect-metadata";
+import "es6-shim";
+import { ChatModule } from "./chat/chat.module";
+
 @Module({
   controllers: [AppController],
   providers: [AppService],
   imports: [
     AuthModule,
     UserModule,
+    ChatModule,
     ServeStaticModule.forRoot({
       rootPath: rootPath,
+      rootPath: "/var/www/app/",
     }),
     TypeOrmModule.forRoot({
       host: process.env.DB_HOST,
@@ -25,7 +35,6 @@ import { rootPath, renderPath } from './constants';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE_NAME,
-      entities: [User, Friendship, GameStatistic],
     }),
   ],
 })
