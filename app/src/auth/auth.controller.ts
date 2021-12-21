@@ -3,6 +3,7 @@ import {
   Get,
   Logger,
   Req,
+  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -35,7 +36,8 @@ export class AuthController {
 
   @Get('redirect')
   @UseGuards(AuthGuard('fortytwo'))
-  async getUserFromFtLogin(@Req() req): Promise<any> {
+  async getUserFromFtLogin(@Req() req, @Res() res): Promise<any> {
+    Logger.log(stringify(req.user));
     let user = await this.userService.findFtUser(req.user.id, req.user.email);
     if (user == null) {
       Logger.log('User not found in database! Creating new user...');
@@ -46,6 +48,7 @@ export class AuthController {
       newUser.avatarImgName = req.user.image_url;
       user = await this.userService.createNewUser(newUser);
     }
-    return this.authService.jwtLogin(user.id, user.username);
+    const jwt = await this.authService.jwtLogin(user.id, user.username);
+    return res.redirect('http://localhost:4200/login/success/?token=' + jwt);
   }
 }

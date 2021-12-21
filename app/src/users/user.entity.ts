@@ -14,6 +14,8 @@ import { Friendship } from './friendlist.entity';
 import { Exclude } from 'class-transformer';
 
 export enum UserStatus {
+  ONLINE = 'ONLINE',
+  OFFLINE = 'OFFLINE',
   ACTIVE = 'ACTIVE',
   DISABLED = 'DISABLED',
 }

@@ -1,18 +1,21 @@
-import { Module } from "@nestjs/common";
+import { Module } from '@nestjs/common';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './users/user.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './users/user.entity';
+import { Friendship } from './users/friendlist.entity';
+import { GameStatistic } from './game/gamestats.entity';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { rootPath, renderPath } from './constants';
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { User } from "./users/user.entity";
-import { Friendship } from "./users/friendlist.entity";
-import { GameStatistic } from "./game/gamestats.entity";
-import { ServeStaticModule } from "@nestjs/serve-static";
 import { Chat } from "./chat/model/chat.entity";
 import { UserChatLink } from "./chat/model/user-chat-link.entity";
 import { Message } from "./chat/model/message.entity";
-import { AppService } from "./app.service";
-import { AppController } from "./app.controller";
 import "reflect-metadata";
 import "es6-shim";
-import { AuthModule } from "./auth/auth.module";
-import { UserModule } from "./users/user.module";
 import { ChatModule } from "./chat/chat.module";
 
 @Module({
@@ -23,6 +26,7 @@ import { ChatModule } from "./chat/chat.module";
     UserModule,
     ChatModule,
     ServeStaticModule.forRoot({
+      rootPath: rootPath,
       rootPath: "/var/www/app/",
     }),
     TypeOrmModule.forRoot({

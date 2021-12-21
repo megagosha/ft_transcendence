@@ -8,3 +8,11 @@ export const OAuthConstants = {
 export const jwtConstants = {
   secret: 'secretKey',
 };
+
+// export const rootPath = '/var/www/app/';
+
+export const renderPath = '/static/';
+
+export const rootPath = '/Users/megagosha/42/transcendence/static/';
+
+// export const renderPath = '/static/';
