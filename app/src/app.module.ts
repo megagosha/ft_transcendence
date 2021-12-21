@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { CatsController } from './cats/cats.controller';
-import { CatsService } from './cats/cats.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './users/user.module';
 import { AppController } from './app.controller';
@@ -11,15 +9,15 @@ import { Friendship } from './users/friendlist.entity';
 import { GameStatistic } from './game/gamestats.entity';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-
+import { rootPath, renderPath } from './constants';
 @Module({
-  controllers: [CatsController, AppController],
-  providers: [CatsService, AppService],
+  controllers: [AppController],
+  providers: [AppService],
   imports: [
     AuthModule,
     UserModule,
     ServeStaticModule.forRoot({
-      rootPath: '/var/www/app/',
+      rootPath: rootPath,
     }),
     TypeOrmModule.forRoot({
       host: process.env.DB_HOST,

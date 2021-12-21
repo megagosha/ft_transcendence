@@ -9,9 +9,6 @@
               {{friend}}
             </mat-list-option>
           </mat-selection-list>
-          <!--      <p>-->
-          <!--        Option selected: {{friends.selectedOptions.selected[0]?.value}}-->
-          <!--      </p>-->
         </mat-tab>
         <mat-tab label="CHATS">
           <mat-selection-list #chats [multiple]="false" [color]="'primary'">
@@ -21,6 +18,9 @@
           </mat-selection-list>
         </mat-tab>
       </mat-tab-group>
+      <button class="fub-button" mat-fab color="primary" aria-label="Add new friend">
+        <mat-icon>add</mat-icon>
+      </button>
     </div>
     <mat-divider [vertical]="true"></mat-divider>
     <div class="messages-block">
@@ -41,7 +41,7 @@
       <!--      </mat-list>-->
       <form class="message-form">
         <mat-form-field class="message-full-width" appearance="fill">
-          <input matInput #message type="text" maxlength="1000" placeholder="Write message.">
+          <input class="message-input-form" matInput #message type="text" maxlength="1000" placeholder="Write message.">
           <mat-hint align="end">{{message.value.length}} / 1000</mat-hint>
           <button matSuffix mat-icon-button aria-label="Send">
             <mat-icon>send</mat-icon>
