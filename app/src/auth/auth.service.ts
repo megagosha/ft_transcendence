@@ -23,9 +23,7 @@ export class AuthService {
     );
     const res = this.jwtService.sign(payload);
     Logger.debug(`Generated JWT token with payload ` + res);
-    return {
-      access_token: res,
-    };
+    return res;
   }
 
   //@todo if user not found create new user.

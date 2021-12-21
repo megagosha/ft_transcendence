@@ -45,7 +45,7 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, 'fortytwo') {
       id: data.id,
       email: data.email,
       login: data.login,
-      username: data.displayname,
+      username: data.login,
       image_url: data.image_url,
     };
   }

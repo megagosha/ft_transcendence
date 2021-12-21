@@ -13,7 +13,7 @@ import { GameStatistic } from '../game/gamestats.entity';
 import { Friendship } from './friendlist.entity';
 import { Exclude } from 'class-transformer';
 
-enum UserStatus {
+export enum UserStatus {
   ONLINE = 'ONLINE',
   OFFLINE = 'OFFLINE',
   DISABLED = 'DISABLED',

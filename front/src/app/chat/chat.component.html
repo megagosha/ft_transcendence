@@ -1,0 +1,54 @@
+<app-top-bar></app-top-bar>
+<mat-grid-list cols="1" rowHeight="1:1">
+  <div class="chat">
+    <div class="chat-selector">
+      <mat-tab-group mat-align-tabs="chat-picker">
+        <mat-tab label="FRIENDLIST">
+          <mat-selection-list #friends [multiple]="false" [color]="'primary'">
+            <mat-list-option *ngFor="let friend of typesOfFriends" [value]="friend">
+              {{friend}}
+            </mat-list-option>
+          </mat-selection-list>
+          <!--      <p>-->
+          <!--        Option selected: {{friends.selectedOptions.selected[0]?.value}}-->
+          <!--      </p>-->
+        </mat-tab>
+        <mat-tab label="CHATS">
+          <mat-selection-list #chats [multiple]="false" [color]="'primary'">
+            <mat-list-option *ngFor="let chat of typesOfChats" [value]="chat">
+              {{chat}}
+            </mat-list-option>
+          </mat-selection-list>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+    <mat-divider [vertical]="true"></mat-divider>
+    <div class="messages-block">
+      <mat-list class="messages">
+        <mat-list-item class="message-row" *ngFor="let message of messages">
+          <img class="profile-avatar" src="{{message.avatar}}" alt="profile avatar">
+          <div class="msg-right-wrap">
+            <div class="username">{{message.name}}</div>
+            <div class="message" [ngStyle]="{'background-color': message.type? '#6AECC5' : '#ECBEFD'}">
+              {{message.message}}</div>
+          </div>
+        </mat-list-item>
+      </mat-list>
+      <!--      <mat-list #messages>-->
+      <!--        <mat-list-option *ngFor="let chat of typesOfChats" [value]="chat">-->
+      <!--          {{chat}}-->
+      <!--        </mat-list-option>-->
+      <!--      </mat-list>-->
+      <form class="message-form">
+        <mat-form-field class="message-full-width" appearance="fill">
+          <input matInput #message type="text" maxlength="1000" placeholder="Write message.">
+          <mat-hint align="end">{{message.value.length}} / 1000</mat-hint>
+          <button matSuffix mat-icon-button aria-label="Send">
+            <mat-icon>send</mat-icon>
+          </button>
+        </mat-form-field>
+      </form>
+    </div>
+  </div>
+</mat-grid-list>
+<p>chat works!</p>

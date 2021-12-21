@@ -1,4 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -62,6 +70,7 @@ export class UserService {
   }
 
   async searchUsersByUsername(searchUsersDto: SearchUsersDto): Promise<User[]> {
+    Logger.log(`Search ${searchUsersDto.username}`);
     return await this.userRepo.find({
       where: {
         username: Like(searchUsersDto.username + '%'),
