@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Injectable,
   Logger,
+  UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
@@ -15,6 +16,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { stringify } from 'querystring';
 import { ChangeUsernameDto } from './dto/change-username.dto';
 import { SearchUsersDto } from './dto/search-users.dto';
+import { extname } from 'path';
 // This should be a real class/interface representing a user entity
 // export type User = any;
 
@@ -82,4 +84,21 @@ export class UserService {
       take: searchUsersDto.take,
     });
   }
+  static editFileName = (req, file, callback) => {
+    const name = file.originalname.split('.')[0];
+    const fileExtName = extname(file.originalname);
+    callback(null, `${req.user.id}${fileExtName}`);
+  };
+
+  static imageFileFilter = (req, file, callback) => {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return callback(
+        new UnsupportedMediaTypeException(
+          'Only jpg and png files are allowed!',
+        ),
+        false,
+      );
+    }
+    callback(null, true);
+  };
 }

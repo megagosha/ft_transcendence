@@ -23,8 +23,8 @@
   <button mat-icon-button class="profile-icon" aria-label="Profile icon">
     <mat-icon>person</mat-icon>
   </button>
-  <button mat-button class="mat-button profile">
-  {{ profile }}
+  <button *ngIf="profile !== undefined" mat-button class="mat-button profile" (click)="openProfile()">
+  {{ profile.username }}
   </button>
 <!--  <button mat-button class="mat-button">-->
 <!--  </button>-->
