@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger} from '@nestjs/common';
 import { UserService } from '../users/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { stringify } from 'ts-jest/dist/utils/json';
@@ -24,6 +24,10 @@ export class AuthService {
     const res = this.jwtService.sign(payload);
     Logger.debug(`Generated JWT token with payload ` + res);
     return res;
+  }
+
+  decodeJwtToken(token: string): User {
+    return this.jwtService.verify(token);
   }
 
   //@todo if user not found create new user.
