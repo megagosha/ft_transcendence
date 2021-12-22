@@ -22,7 +22,17 @@ import { MatDividerModule } from "@angular/material/divider";
 import { MatGridListModule } from "@angular/material/grid-list";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { FormsModule } from "@angular/forms";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import {
+  ChangeUserAvatarDialog,
+  ChangeUsernameDialog,
+  UserProfileComponent
+} from "./user-profile/user-profile.component";
+import { MatCardModule } from "@angular/material/card";
+import { MatDialog, MatDialogClose, MatDialogModule } from "@angular/material/dialog";
+import { UserService } from "./services/user.service";
+import { NgxMatFileInputModule } from '@angular-material-components/file-input';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -30,8 +40,13 @@ import { FormsModule } from "@angular/forms";
     TopBarComponent,
     ChatComponent,
     GameComponent,
+    UserProfileComponent,
+    ChangeUsernameDialog,
+    ChangeUserAvatarDialog
   ],
   imports: [
+    NgxMatFileInputModule,
+    MatDialogModule,
     MatSliderModule,
     MatButtonModule,
     MatToolbarModule,
@@ -45,11 +60,15 @@ import { FormsModule } from "@angular/forms";
     MatDividerModule,
     MatGridListModule,
     MatInputModule,
-    FormsModule
+    FormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    ReactiveFormsModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor,
       multi: true},
-  AuthGuard],
+  AuthGuard, UserService],
   bootstrap: [AppComponent]})
 export class AppModule { }

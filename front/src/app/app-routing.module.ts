@@ -12,7 +12,7 @@ const routes: Routes = [
   {path: 'login', component: LoginComponent},
   {path: 'login/success', component: LoginComponent},
   {path: 'chat', component: ChatComponent, canActivate: [AuthGuard]},
-  {path: 'profile/:id', component: UserProfileComponent, canActivate: [AuthGuard]}
+  {path: 'profile', component: UserProfileComponent, canActivate: [AuthGuard]}
   //{path: '**', component: LoginComponent}
 ];
 

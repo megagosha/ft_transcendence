@@ -4,24 +4,22 @@ import { stringify } from "@angular/compiler/src/util";
 import { ActivatedRoute } from "@angular/router";
 import { defaultLogger } from "@angular/cdk/schematics/update-tool/logger";
 import { AppComponent } from "../app.component";
-import { LoginService } from "../services/login.service";
+import { UserService } from "../services/user.service";
 import { Profile } from "./profile.interface";
 import { RouterModule, Router} from "@angular/router";
 
 @Component({
   selector: "app-login",
   templateUrl: "./login.component.html",
-  styleUrls: ["./login.component.css"]
+  styleUrls: ["./login.component.css"],
 })
 export class LoginComponent implements OnInit {
   private _authService: AuthService;
 
 
   constructor(authService: AuthService,
-
               private router: Router,
               private route: ActivatedRoute) {
-
     this._authService = authService;
   }
 

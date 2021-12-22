@@ -1,6 +1,7 @@
 import {
   ArgumentsHost,
   Catch,
+  ConflictException,
   ExceptionFilter,
   HttpException,
   HttpStatus,
@@ -17,6 +18,7 @@ import { stringify } from 'querystring';
 import { ChangeUsernameDto } from './dto/change-username.dto';
 import { SearchUsersDto } from './dto/search-users.dto';
 import { extname } from 'path';
+import { HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
 // This should be a real class/interface representing a user entity
 // export type User = any;
 
@@ -66,9 +68,16 @@ export class UserService {
     changeUserName: ChangeUsernameDto,
     id: number,
   ): Promise<any> {
-    return await this.userRepo.update(id, {
-      username: changeUserName.username,
-    });
+    const user = await this.searchUserByExactUserName(changeUserName.username);
+    if (!user)
+      return await this.userRepo.update(id, {
+        username: changeUserName.username,
+      });
+    else throw new ConflictException();
+  }
+
+  async searchUserByExactUserName(username: string): Promise<User> {
+    return await this.userRepo.findOne({ where: { username: username } });
   }
 
   async searchUsersByUsername(searchUsersDto: SearchUsersDto): Promise<User[]> {
