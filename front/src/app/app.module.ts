@@ -11,7 +11,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSliderModule } from "@angular/material/slider";
 import { RouterModule } from '@angular/router';
 import {MatButtonModule} from '@angular/material/button';
-import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
+import {HTTP_INTERCEPTORS, HttpClientModule} from "@angular/common/http";
 import { AuthInterceptor } from "./services/auth/auth.interceptor";
 import { AuthGuard } from "./services/auth/auth.guard";
 import { MatToolbarModule } from "@angular/material/toolbar";
@@ -26,12 +26,10 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import {
   PersonalProfileComponent, QrDialog
 } from './personal-profile/personal-profile.component';
-import { ChangeUsernameDialog } from "./personal-profile/change-username-dialog.component";
-import {ChangeUserAvatarDialog} from "./personal-profile/change-useravatar-dialog.component"
+import { UserProfileComponent } from "./user-profile/user-profile.component";
 import { MatCardModule } from "@angular/material/card";
-import { MatDialog, MatDialogClose, MatDialogModule } from "@angular/material/dialog";
+import { MatDialogModule } from "@angular/material/dialog";
 import { UserService } from "./services/user.service";
-import { GameService } from './services/game.service';
 import { NgxMatFileInputModule } from '@angular-material-components/file-input';
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { FriendlistComponent } from './friendlist/friendlist.component';
@@ -43,15 +41,41 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { GameEndComponent } from './game-end/game-end.component';
 import { GameCardComponent } from './game-card-component/game-card.component';
 import { OneOnOneComponent } from './one-on-one/one-on-one.component';
-import { UserProfileComponent } from './user-profile/user-profile.component';
-import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { QrCodeModule } from 'ng-qrcode';
 import { OtpComponent } from './otp/otp.component';
 import { NgOtpInputModule } from 'ng-otp-input';
 import { MatTableModule } from '@angular/material/table';
+import {ChatService} from "./services/chat.service";
+import {ChatSocket} from "./chat/chat-socket";
+import {ScrollingModule} from "@angular/cdk/scrolling";
+import {FlexLayoutModule} from "@angular/flex-layout";
+import {InfiniteScrollModule} from "ngx-infinite-scroll";
+import { ChatListComponent } from './chat/chat-list/chat-list.component';
+import {MatChipsModule} from "@angular/material/chips";
+import { ChatRoomComponent } from './chat/chat-room/chat-room.component';
+import {ChatRoomDirective} from "./chat/chat-room/chat-room.directive";
+import { ChatInfoComponent } from './chat/chat-info/chat-info.component';
+import { ChatHeaderEditComponent } from './chat/chat-info/chat-header-edit/chat-header-edit.component';
+import { ChatAccessEditComponent } from './chat/chat-info/chat-access-edit/chat-access-edit.component';
+import {MatSelectModule} from "@angular/material/select";
+import {MatRadioModule} from "@angular/material/radio";
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import { ChatParticipantsEditComponent } from './chat/chat-info/chat-participants-edit/chat-participants-edit.component';
+import { ChatParticipantsAddComponent } from './chat/chat-info/chat-participants-add/chat-participants-add.component';
+import { ConfirmFormComponent } from './confirm-form/confirm-form.component';
+import { ParticipantEditComponent } from './chat/chat-info/chat-participants-edit/participant-edit/participant-edit.component';
+import {MatDatepickerModule} from "@angular/material/datepicker";
+import {MAT_DATE_LOCALE, MatNativeDateModule} from "@angular/material/core";
+import { ChatCreateNewComponent } from './chat/chat-create-new/chat-create-new.component';
+import { EnterPasswordComponent } from './chat/enter-password/enter-password.component';
+
+export function token(): any {
+  return localStorage.getItem("token");
+}
 
 import { LadderComponent } from './ladder/ladder.component';
+import {ChangeUsernameDialog} from "./personal-profile/change-username-dialog.component";
+import {ChangeUserAvatarDialog} from "./personal-profile/change-useravatar-dialog.component";
 @NgModule({
   declarations: [
     AppComponent,
@@ -72,6 +96,18 @@ import { LadderComponent } from './ladder/ladder.component';
     UserProfileComponent,
     OtpComponent,
     LadderComponent,
+    ChatListComponent,
+    ChatRoomComponent,
+    ChatRoomDirective,
+    ChatInfoComponent,
+    ChatHeaderEditComponent,
+    ChatAccessEditComponent,
+    ChatParticipantsEditComponent,
+    ChatParticipantsAddComponent,
+    ConfirmFormComponent,
+    ParticipantEditComponent,
+    ChatCreateNewComponent,
+    EnterPasswordComponent,
   ],
   imports: [
     NgxMatFileInputModule,
@@ -102,13 +138,29 @@ import { LadderComponent } from './ladder/ladder.component';
     RouterModule,
     ScrollingModule,
     MatSlideToggleModule,
-    MatTableModule
+    MatTableModule,
+    ScrollingModule,
+    FlexLayoutModule,
+    InfiniteScrollModule,
+    MatChipsModule,
+    MatAutocompleteModule,
+    MatSnackBarModule,
+    MatSelectModule,
+    MatRadioModule,
+    MatCheckboxModule,
+    MatDatepickerModule,
+    MatNativeDateModule
   ],
 
   exports: [SnackbarActionsComponent],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor,
-      multi: true},
-  AuthGuard, UserService, GameService],
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
+    { provide: MAT_DATE_LOCALE, useValue: 'ru-RU'},
+  AuthGuard,
+  UserService,
+  AuthGuard,
+  ChatService,
+  ChatSocket],
   bootstrap: [AppComponent]})
 export class AppModule { }

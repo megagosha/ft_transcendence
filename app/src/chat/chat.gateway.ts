@@ -73,13 +73,21 @@ export class ChatGateway
     const userId: number = this.getCurrentUserId(client);
     const user: User = await this.usersServiceSupport.getCurrentUser(userId);
     const chat: Chat = await this.chatServiceSupport.findChatById(chatId);
-    const userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, chat);
+    let userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, chat, false);
+
+    if (userChatLink == null) {
+      userChatLink = new UserChatLink();
+      userChatLink.chat = chat;
+    }
 
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.ENTER_CHAT);
 
     const socket: UserSocket = await this.userSocketServiceSupport.findSocket(client.id);
     socket.activeChat = chat;
     await this.socketRepository.save(socket);
+
+    const messagePage: MessagePageOutDto = await this.getMessagePage(chat, 20, 0);
+    client.emit("/message/page-receive", messagePage);
   }
 
   @SubscribeMessage("/message/send")
@@ -100,7 +108,7 @@ export class ChatGateway
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.SEND_MESSAGE);
 
     let visible: boolean;
-    if (activeChat.type == ChatType.PRIVATE) {
+    if (activeChat.type == ChatType.DIRECT) {
       const secondUserChatLink: UserChatLink = await this.chatServiceSupport.findSecondChatLink(user, activeChat);
       if (secondUserChatLink.userStatus == UserChatStatus.MUTED) {
         visible = false;
@@ -115,10 +123,12 @@ export class ChatGateway
 
     const messageDto: MessageOutDto = plainToClass(MessageOutDto, message, { excludeExtraneousValues: true });
     const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(activeChat);
-    sockets.forEach((socket) => this.server.to(socket.id).emit("/message/receive", messageDto));
+    sockets.forEach((socket) => {
+      this.server.to(socket.id).emit("/message/receive", messageDto)
+    });
   }
 
-  @SubscribeMessage("/message/page-receive")
+  @SubscribeMessage("/message/page")
   async onReceiveMessages(
     @MessageBody(new SocketValidationPipe()) page: PageDto,
     @ConnectedSocket() client: Socket
@@ -132,15 +142,16 @@ export class ChatGateway
       throw new WsException("Необходимо присоединиться к чату");
     }
 
-    const userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, activeChat);
+    let userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, activeChat, false);
+    if (userChatLink == null) {
+      userChatLink = new UserChatLink();
+      userChatLink.chat = activeChat;
+    }
+
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.RECEIVE_MESSAGE);
 
-    const messages: Message[] = await this.messageServiceSupport.findMessages(activeChat, page.take, page.skip);
-    const messageDtos: MessageOutDto[] = messages.map((message) => {
-      return plainToClass(MessageOutDto, message, { excludeExtraneousValues: true });
-    });
-
-    client.emit("/message/page-receive", new MessagePageOutDto(messageDtos, page.take, page.skip));
+    const messagePage: MessagePageOutDto = await this.getMessagePage(activeChat, page.take, page.skip);
+    client.emit("/message/page-receive", messagePage);
   }
 
   private getCurrentUserId(client: Socket): number {
@@ -151,7 +162,15 @@ export class ChatGateway
     return user.id;
   }
 
-  private disconnect(client: Socket) {
+  private disconnect(client: Socket): void {
     throw new WsException("Неавтиризованный пользователь");
+  }
+
+  private async getMessagePage(chat: Chat, take: number, skip: number): Promise<MessagePageOutDto> {
+    const messages: Message[] = await this.messageServiceSupport.findMessages(chat, take, skip);
+    const messageDtos: MessageOutDto[] = messages.map((message) => {
+      return plainToClass(MessageOutDto, message, {excludeExtraneousValues: true});
+    });
+    return new MessagePageOutDto(messageDtos, take, skip);
   }
 }

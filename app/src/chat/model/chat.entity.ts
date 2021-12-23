@@ -10,13 +10,14 @@ import {
   VersionColumn,
 } from "typeorm";
 import { User } from "../../users/user.entity";
-import { Message } from "./message.entity";
-import { Type } from "class-transformer";
+import { Uuid } from "node-ts-uuid";
+import { File } from "../../file/model/file.entity";
 
 export enum ChatType {
   PROTECTED = "PROTECTED",
   PUBLIC = "PUBLIC",
   PRIVATE = "PRIVATE",
+  DIRECT = "DIRECT",
 }
 
 @Entity("ft_chat")
@@ -25,7 +26,7 @@ export class Chat {
   public static readonly NAME_LENGTH: number = 50;
   public static readonly TYPE_LENGTH: number = 10;
   public static readonly PASSWORD_LENGTH: number = 60;
-  public static readonly DESCRIPTION_LENGTH: number = 1000;
+  public static readonly DESCRIPTION_LENGTH: number = 500;
 
   /** Id */
   @PrimaryGeneratedColumn()
@@ -67,9 +68,16 @@ export class Chat {
   })
   password: string;
 
-  /** Аватарка. Id файла в хранилище */
-  @Column({ name: "avatar_file_id", nullable: true })
-  avatarFileId: number;
+  @Column({
+    name: "datetime_password_change",
+    nullable: true,
+  })
+  dateTimePasswordChange: Date;
+
+  /** Аватар */
+  @OneToOne(() => File, {nullable: true, cascade: true})
+  @JoinColumn({name: "avatar_file_id"})
+  avatar: File;
 
   /** Владелец чата */
   @ManyToOne(() => User, { nullable: false })

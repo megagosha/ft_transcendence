@@ -2,15 +2,16 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
-  InternalServerErrorException, Logger,
+  InternalServerErrorException,
+  Logger,
   NotFoundException
 } from "@nestjs/common";
 import {InjectRepository} from "@nestjs/typeorm";
 import {UserChatLink, UserChatRole, UserChatStatus} from "./model/user-chat-link.entity";
-import {Repository, SelectQueryBuilder} from "typeorm";
+import {ILike, In, Not, Repository, SelectQueryBuilder} from "typeorm";
 import {Chat, ChatType} from "./model/chat.entity";
 import {User} from "../users/user.entity";
-import {use} from "passport";
+import {File} from "../file/model/file.entity";
 
 export enum ChatAction {
   CHAT_INFO,
@@ -18,7 +19,7 @@ export enum ChatAction {
   UPDATE_CHAT_INFO,
   UPDATE_STATUS,
   UPDATE_ROLE,
-  UPDATE_PASS,
+  UPDATE_ACCESS,
   RECEIVE_MESSAGE,
   SEND_MESSAGE,
   ENTER_CHAT,
@@ -29,37 +30,48 @@ export class ChatServiceSupport {
   private static readonly ROLES: Map<ChatAction, UserChatRole[]> = new Map<ChatAction, UserChatRole[]>();
   private static readonly STATUSES: Map<ChatAction, UserChatStatus[]> = new Map<ChatAction, UserChatStatus[]>();
   private static readonly TYPES: Map<ChatAction, ChatType[]> = new Map<ChatAction, ChatType[]>();
+  private static readonly VERIFICATIONS: Map<ChatAction, boolean[]> = new Map<ChatAction, boolean[]>();
 
   static {
-    ChatServiceSupport.ROLES.set(ChatAction.CHAT_INFO, [UserChatRole.OWNER, UserChatRole.ADMIN, UserChatRole.PARTICIPANT]);
+    ChatServiceSupport.ROLES.set(ChatAction.CHAT_INFO, [UserChatRole.OWNER, UserChatRole.ADMIN, UserChatRole.PARTICIPANT, null, undefined]);
     ChatServiceSupport.ROLES.set(ChatAction.ADD_PARTICIPANT, [UserChatRole.OWNER, UserChatRole.ADMIN]);
     ChatServiceSupport.ROLES.set(ChatAction.UPDATE_CHAT_INFO, [UserChatRole.OWNER, UserChatRole.ADMIN]);
     ChatServiceSupport.ROLES.set(ChatAction.UPDATE_STATUS, [UserChatRole.OWNER, UserChatRole.ADMIN]);
     ChatServiceSupport.ROLES.set(ChatAction.UPDATE_ROLE, [UserChatRole.OWNER]);
-    ChatServiceSupport.ROLES.set(ChatAction.UPDATE_PASS, [UserChatRole.OWNER]);
-    ChatServiceSupport.ROLES.set(ChatAction.RECEIVE_MESSAGE, [UserChatRole.OWNER, UserChatRole.ADMIN, UserChatRole.PARTICIPANT]);
+    ChatServiceSupport.ROLES.set(ChatAction.UPDATE_ACCESS, [UserChatRole.OWNER]);
+    ChatServiceSupport.ROLES.set(ChatAction.RECEIVE_MESSAGE, [UserChatRole.OWNER, UserChatRole.ADMIN, UserChatRole.PARTICIPANT, null, undefined]);
     ChatServiceSupport.ROLES.set(ChatAction.SEND_MESSAGE, [UserChatRole.OWNER, UserChatRole.ADMIN, UserChatRole.PARTICIPANT]);
-    ChatServiceSupport.ROLES.set(ChatAction.ENTER_CHAT, [UserChatRole.OWNER, UserChatRole.ADMIN, UserChatRole.PARTICIPANT]);
+    ChatServiceSupport.ROLES.set(ChatAction.ENTER_CHAT, [UserChatRole.OWNER, UserChatRole.ADMIN, UserChatRole.PARTICIPANT, null, undefined]);
 
-    ChatServiceSupport.STATUSES.set(ChatAction.CHAT_INFO, [UserChatStatus.ACTIVE, UserChatStatus.MUTED]);
+    ChatServiceSupport.STATUSES.set(ChatAction.CHAT_INFO, [UserChatStatus.ACTIVE, UserChatStatus.MUTED, null, undefined]);
     ChatServiceSupport.STATUSES.set(ChatAction.ADD_PARTICIPANT, [UserChatStatus.ACTIVE]);
     ChatServiceSupport.STATUSES.set(ChatAction.UPDATE_CHAT_INFO, [UserChatStatus.ACTIVE]);
     ChatServiceSupport.STATUSES.set(ChatAction.UPDATE_STATUS, [UserChatStatus.ACTIVE]);
     ChatServiceSupport.STATUSES.set(ChatAction.UPDATE_ROLE, [UserChatStatus.ACTIVE]);
-    ChatServiceSupport.STATUSES.set(ChatAction.UPDATE_PASS, [UserChatStatus.ACTIVE]);
-    ChatServiceSupport.STATUSES.set(ChatAction.RECEIVE_MESSAGE, [UserChatStatus.ACTIVE, UserChatStatus.MUTED]);
+    ChatServiceSupport.STATUSES.set(ChatAction.UPDATE_ACCESS, [UserChatStatus.ACTIVE]);
+    ChatServiceSupport.STATUSES.set(ChatAction.RECEIVE_MESSAGE, [UserChatStatus.ACTIVE, UserChatStatus.MUTED, null, undefined]);
     ChatServiceSupport.STATUSES.set(ChatAction.SEND_MESSAGE, [UserChatStatus.ACTIVE]);
-    ChatServiceSupport.STATUSES.set(ChatAction.ENTER_CHAT, [UserChatStatus.ACTIVE, UserChatStatus.MUTED]);
+    ChatServiceSupport.STATUSES.set(ChatAction.ENTER_CHAT, [UserChatStatus.ACTIVE, UserChatStatus.MUTED, null, undefined]);
 
-    ChatServiceSupport.TYPES.set(ChatAction.CHAT_INFO, [ChatType.PUBLIC, ChatType.PROTECTED]);
-    ChatServiceSupport.TYPES.set(ChatAction.ADD_PARTICIPANT, [ChatType.PUBLIC, ChatType.PROTECTED]);
-    ChatServiceSupport.TYPES.set(ChatAction.UPDATE_CHAT_INFO, [ChatType.PUBLIC, ChatType.PROTECTED]);
-    ChatServiceSupport.TYPES.set(ChatAction.UPDATE_STATUS, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
-    ChatServiceSupport.TYPES.set(ChatAction.UPDATE_ROLE, [ChatType.PUBLIC, ChatType.PROTECTED]);
-    ChatServiceSupport.TYPES.set(ChatAction.UPDATE_PASS, [ChatType.PUBLIC, ChatType.PROTECTED]);
-    ChatServiceSupport.TYPES.set(ChatAction.RECEIVE_MESSAGE, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
-    ChatServiceSupport.TYPES.set(ChatAction.SEND_MESSAGE, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
-    ChatServiceSupport.TYPES.set(ChatAction.ENTER_CHAT, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
+    ChatServiceSupport.TYPES.set(ChatAction.CHAT_INFO, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
+    ChatServiceSupport.TYPES.set(ChatAction.ADD_PARTICIPANT, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
+    ChatServiceSupport.TYPES.set(ChatAction.UPDATE_CHAT_INFO, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
+    ChatServiceSupport.TYPES.set(ChatAction.UPDATE_STATUS, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE, ChatType.DIRECT]);
+    ChatServiceSupport.TYPES.set(ChatAction.UPDATE_ROLE, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
+    ChatServiceSupport.TYPES.set(ChatAction.UPDATE_ACCESS, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
+    ChatServiceSupport.TYPES.set(ChatAction.RECEIVE_MESSAGE, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE, ChatType.DIRECT]);
+    ChatServiceSupport.TYPES.set(ChatAction.SEND_MESSAGE, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE, ChatType.DIRECT]);
+    ChatServiceSupport.TYPES.set(ChatAction.ENTER_CHAT, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE, ChatType.DIRECT]);
+
+    ChatServiceSupport.VERIFICATIONS.set(ChatAction.CHAT_INFO, [true, false, null, undefined]);
+    ChatServiceSupport.VERIFICATIONS.set(ChatAction.ADD_PARTICIPANT, [true]);
+    ChatServiceSupport.VERIFICATIONS.set(ChatAction.UPDATE_CHAT_INFO, [true]);
+    ChatServiceSupport.VERIFICATIONS.set(ChatAction.UPDATE_STATUS, [true]);
+    ChatServiceSupport.VERIFICATIONS.set(ChatAction.UPDATE_ROLE, [true]);
+    ChatServiceSupport.VERIFICATIONS.set(ChatAction.UPDATE_ACCESS, [true]);
+    ChatServiceSupport.VERIFICATIONS.set(ChatAction.RECEIVE_MESSAGE, [true, false, null, undefined]);
+    ChatServiceSupport.VERIFICATIONS.set(ChatAction.SEND_MESSAGE, [true]);
+    ChatServiceSupport.VERIFICATIONS.set(ChatAction.ENTER_CHAT, [true, false, null, undefined]);
   }
 
   constructor(
@@ -70,7 +82,7 @@ export class ChatServiceSupport {
 
   async findChatById(id: number): Promise<Chat> {
     const chat: Chat = await this.chatRepository.findOne(id, {
-      relations: ["ownerUser"],
+      relations: ["ownerUser", "avatar"],
     });
     if (!chat) {
       throw new NotFoundException("Чат не найден");
@@ -78,7 +90,7 @@ export class ChatServiceSupport {
     return chat;
   }
 
-  async findUserChatLink(user: User, chat: Chat): Promise<UserChatLink> {
+  async findUserChatLink(user: User, chat: Chat, throwExc: boolean = true): Promise<UserChatLink> {
     const userChatLink: UserChatLink =
       await this.userChatLinkRepository.findOne({
         where: {
@@ -88,23 +100,40 @@ export class ChatServiceSupport {
         relations: ["chat", "user"],
       });
 
-    if (!userChatLink) {
+    if (!userChatLink && throwExc) {
       throw new NotFoundException("Подписка на чат не найдена");
     }
     return userChatLink;
   }
 
-  async filterUserChatLinks(user: User, chat: Chat, take: number, skip: number): Promise<UserChatLink[]> {
+  async filterUserChatLinks(
+    user: User | null,
+    chat: Chat | null,
+    chatname: string | null,
+    username: string | null,
+    verified: boolean | null,
+    take: number | null,
+    skip: number | null
+  ): Promise<UserChatLink[]> {
     const qb: SelectQueryBuilder<UserChatLink> = this.userChatLinkRepository
       .createQueryBuilder("link")
       .leftJoinAndSelect("link.user", "user")
       .leftJoinAndSelect("link.chat", "chat");
 
+    if (chatname != null && chatname.length > 0) {
+      qb.andWhere("chat.name ilike :name", { name: chatname + "%" });
+    }
+    if (username != null && username.length > 0) {
+      qb.andWhere("user.username ilike :name", { name: username + "%" });
+    }
     if (user != null) {
       qb.andWhere("link.user = :user", { user: user.id });
     }
     if (chat != null) {
       qb.andWhere("link.chat = :chat", { chat: chat.id });
+    }
+    if (verified != null) {
+      qb.andWhere(`link.verified = ${verified}`);
     }
     if (take != null) {
       qb.take(take);
@@ -113,7 +142,7 @@ export class ChatServiceSupport {
       qb.skip(skip);
     }
 
-    qb.orderBy("link.chat.dateTimeLastAction", "DESC");
+    qb.orderBy("chat.dateTimeLastAction", "DESC");
 
     return qb.getMany();
   }
@@ -138,22 +167,61 @@ export class ChatServiceSupport {
     Logger.log(`Chat[id=${chat.id}] was updated`);
   }
 
+  async existsChatName(chatName: string, chat: Chat | null): Promise<boolean> {
+    let found: Chat = await this.chatRepository.findOne({
+      where: {
+        name: ILike(chatName),
+      },
+    });
+
+    if (chat != null && found != null && found.id == chat.id) {
+      found = null;
+    }
+
+    return found != null;
+  }
+
+  async findChats(name: string, take: number, skip: number): Promise<Chat[]> {
+    return await this.chatRepository.find({
+      where: {
+        name: ILike(name + "%"),
+        type: Not(ChatType.PRIVATE),
+      },
+    });
+  }
+
   public static verifyAction(userChatLink: UserChatLink, action: ChatAction): void {
     const roles: UserChatRole[] = ChatServiceSupport.ROLES.get(action);
     const statuses: UserChatStatus[] = ChatServiceSupport.STATUSES.get(action);
     const types: ChatType[] = ChatServiceSupport.TYPES.get(action);
+    const verifications: boolean[] = ChatServiceSupport.VERIFICATIONS.get(action);
+
     const chat: Chat = userChatLink.chat;
 
+    if (!verifications.includes(userChatLink.verified)) {
+      throw new BadRequestException("Подписка на чат неактивна");
+    }
+
     if (!roles.includes(userChatLink.userRole) || !statuses.includes(userChatLink.userStatus)) {
-      throw new ForbiddenException("Недостаточно прав");
+      throw new BadRequestException("Недостаточно прав");
     }
 
     if (!types.includes(chat.type)) {
       throw new BadRequestException("Невозможное действие для чата");
     }
+  }
 
-    if (chat.type == ChatType.PROTECTED && !userChatLink.verified) {
-      throw new ForbiddenException("Пароль от чата устарел");
-    }
+  async findUserChatLinksByChats(user: User, chats: Chat[]): Promise<UserChatLink[]> {
+    return await this.userChatLinkRepository.find({
+      where: {
+        user: user,
+        chat: In(chats.map(chat => chat.id)),
+      },
+      relations: ["chat"],
+    });
+  }
+
+  getChatAvatarPath(chat: Chat) {
+    return `/api/file/chat/${chat.id}/avatar`;
   }
 }

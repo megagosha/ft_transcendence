@@ -1,0 +1,11 @@
+.mat-icon {
+    font-size: 12pt;
+    height: auto;
+    width: auto;
+    margin-right: 2px;
+}
+
+.role-description {
+    display: flex;
+    align-items: center;
+}

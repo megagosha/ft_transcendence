@@ -23,3 +23,23 @@ body, input[type="text"], button {
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.text {
+  -ms-hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  -webkit-hyphenate-limit-before: 3;
+  -webkit-hyphenate-limit-after: 2;
+  -moz-hyphenate-limit-chars: 6 3 2;
+  -webkit-hyphenate-limit-chars: 6 3 2;
+  -ms-hyphenate-limit-chars: 6 3 2;
+  hyphenate-limit-chars: 6 3 2;
+}
+
+.backdrop-dialog {
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+.backdrop-dialog-next {
+  background-color: rgba(0, 0, 0, 0);
+}

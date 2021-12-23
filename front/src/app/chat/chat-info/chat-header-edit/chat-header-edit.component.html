@@ -1,0 +1,19 @@
+<p style="text-align: center; margin: 0 0 10px; font-size: 12pt; font-weight: 500;">
+	Main info edit
+</p>
+<div style="height: calc(100% - 20px - 70px); overflow-y: auto; scrollbar-width: thin;">
+	<mat-form-field style="width: 100%" appearance="fill">
+		<mat-label>Enter name</mat-label>
+		<input matInput [formControl]="name" autocomplete="off" required>
+		<mat-error *ngIf="name.hasError('validation')">{{getNameError()}}</mat-error>
+	</mat-form-field>
+	<mat-form-field style="width: 100%; margin-top: 10px;" appearance="fill">
+		<mat-label>Enter description</mat-label>
+		<textarea style="height: auto" matInput cdkAutosizeMinRows="1" [formControl]="description"></textarea>
+		<mat-error *ngIf="description.hasError('validation')">{{getDescriptionError()}}</mat-error>
+	</mat-form-field>
+</div>
+<div style="width: 100%; display: flex; justify-content: space-around; bottom: 0" mat-dialog-actions>
+	<button mat-button (click)="closeDialog()">Back</button>
+	<button mat-button type="submit" value="submit" (click)="onSubmit()" cdkFocusInitial>Apply</button>
+</div>
