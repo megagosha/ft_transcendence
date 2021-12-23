@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Injectable,
   Logger,
+  PayloadTooLargeException,
   UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -99,7 +100,14 @@ export class UserService {
     callback(null, `${req.user.id}${fileExtName}`);
   };
 
-  static imageFileFilter = (req, file, callback) => {
+  static imageFileFilter = (
+    req: any,
+    file: { originalname: string; size: number },
+    callback: (
+      arg0: UnsupportedMediaTypeException | PayloadTooLargeException,
+      arg1: boolean,
+    ) => void,
+  ) => {
     if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
       return callback(
         new UnsupportedMediaTypeException(

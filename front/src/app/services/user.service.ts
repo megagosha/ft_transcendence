@@ -5,6 +5,8 @@ import { HttpClient, HttpResponse, HttpErrorResponse } from "@angular/common/htt
 import { Observable, throwError } from "rxjs";
 import { catchError, retry } from "rxjs/operators";
 import { error } from "@angular/compiler/src/util";
+import { FormControl } from "@angular/forms";
+import { FileOrArrayFile } from "@angular-material-components/file-input";
 
 
 @Injectable()
@@ -22,11 +24,28 @@ export class UserService {
     this.http.get<Profile>(this.apiUrl + "user/me").pipe(
       retry(3),
       catchError(this.handleError)
-    ).subscribe( data => {this.user = data;  console.log(this.user)});
+    ).subscribe( data => {this.user = data;});
+  }
+
+  updatePicTimestamp() {
+    const d = new Date();
+    this.user.avatarImgName +=  '?' + d.getTime().toString();
   }
 
   setUserName(username: string): Observable<HttpResponse<any>> {
     return (this.http.post<HttpResponse<any>>(this.apiUrl + "user/set_username", { username: username }, { observe: "response" }));
+  }
+
+  changeAvatar(avatar: File): Observable<any>
+  {
+    console.log('Avatar:');
+    console.log({avatar: avatar});
+    const formData = new FormData();
+    formData.append('avatar', avatar);
+    return this.http.post(this.apiUrl + 'user/set_avatar',  formData, {
+      reportProgress: true,
+      observe: "events"
+    });
   }
 
   private handleError(error: HttpErrorResponse) {

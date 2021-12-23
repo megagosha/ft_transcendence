@@ -24,14 +24,15 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import {
-  ChangeUserAvatarDialog,
-  ChangeUsernameDialog,
   UserProfileComponent
 } from "./user-profile/user-profile.component";
+import { ChangeUsernameDialog } from "./user-profile/change-username-dialog.component";
+import {ChangeUserAvatarDialog} from "./user-profile/change-useravatar-dialog.component"
 import { MatCardModule } from "@angular/material/card";
 import { MatDialog, MatDialogClose, MatDialogModule } from "@angular/material/dialog";
 import { UserService } from "./services/user.service";
 import { NgxMatFileInputModule } from '@angular-material-components/file-input';
+import { MatProgressBarModule } from "@angular/material/progress-bar";
 
 @NgModule({
   declarations: [
@@ -64,7 +65,8 @@ import { NgxMatFileInputModule } from '@angular-material-components/file-input';
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatProgressBarModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor,

@@ -1,21 +1,23 @@
 <div class="chat-user-avatar-dialog">
   <h1 mat-dialog-title>Upload new avatar</h1>
-  <form class="change-avatar-form" id="username-form">
+  <form class="change-avatar-form" id="avatar-form">
     <mat-form-field class="full-width" appearance="fill">
       <mat-label>NEW AVATAR</mat-label>
-      <ngx-mat-file-input accept="image/png,image/jpeg" [formControl]="avatar" #new_avatar ><!--[formControl]="fileControl" [multiple]="multiple" [accept]="accept" [color]="color" -->
+      <ngx-mat-file-input accept="image/png,image/jpeg" [formControl]="avatar" [multiple]="false" #new_avatar>
       </ngx-mat-file-input>
-<!--      <mat-error *ngIf="(new_avatar.hasError('maxlength') || new_avatar.hasError('minlength')) && !new_avatar.hasError('required')">-->
-<!--        Username length should be from 2 to 50 symbols.-->
-<!--      </mat-error>-->
-<!--      <mat-error *ngIf="new_avatar.hasError('conflict')">-->
-<!--        Username already taken-->
-<!--      </mat-error>-->
-      <mat-hint align="end"> </mat-hint>
+      <mat-error *ngIf="avatar.hasError('upload_error')">
+        {{avatar.getError("upload_error")}}
+      </mat-error>
+      <mat-hint align="end"></mat-hint>
     </mat-form-field>
   </form>
+  <div class="progress">
+    <mat-progress-bar class="progress-bar" mode="determinate"
+                      [value]="uploadProgress" *ngIf="uploadProgress">
+    </mat-progress-bar>
+  </div>
   <div mat-dialog-actions>
-    <button mat-button type="submit" form="username-form" value="submit">Apply</button>
-<!--    <button mat-button (click)="closeAvatarDialog()">Close</button>-->
+    <button mat-button type="submit" form="avatar-form" value="submit" (click)="onSubmit()">Apply</button>
+    <!--    <button mat-button (click)="closeAvatarDialog()">Close</button>-->
   </div>
 </div>

@@ -60,6 +60,7 @@ export class UserController {
         destination: './upload',
         filename: UserService.editFileName,
       }),
+      limits: { fileSize: 4000000 },
       fileFilter: UserService.imageFileFilter,
     }),
   )
@@ -73,7 +74,6 @@ export class UserController {
         recursive: true,
       });
     }
-    Logger.log(dir);
     fs.rename(file['path'], `${dir}/${req.user.id}.png`, function (err) {
       if (err) {
         throw new InternalServerErrorException();
