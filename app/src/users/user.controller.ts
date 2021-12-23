@@ -5,6 +5,7 @@ import {
   Get,
   InternalServerErrorException,
   Logger,
+  Param,
   Post,
   Query,
   Req,
@@ -51,33 +52,16 @@ export class UserController {
     return;
   }
 
-  static editFileName = (req, file, callback) => {
-    const name = file.originalname.split('.')[0];
-    const fileExtName = extname(file.originalname);
-    callback(null, `${req.user.id}${fileExtName}`);
-  };
-
-  static imageFileFilter = (req, file, callback) => {
-    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-      return callback(
-        new UnsupportedMediaTypeException(
-          'Only jpg and png files are allowed!',
-        ),
-        false,
-      );
-    }
-    callback(null, true);
-  };
-
   @Post('set_avatar')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('avatar', {
       storage: diskStorage({
         destination: './upload',
-        filename: UserController.editFileName,
+        filename: UserService.editFileName,
       }),
-      fileFilter: UserController.imageFileFilter,
+      limits: { fileSize: 4000000 },
+      fileFilter: UserService.imageFileFilter,
     }),
   )
   async setAvatar(
@@ -90,7 +74,6 @@ export class UserController {
         recursive: true,
       });
     }
-    Logger.log(dir);
     fs.rename(file['path'], `${dir}/${req.user.id}.png`, function (err) {
       if (err) {
         throw new InternalServerErrorException();
@@ -100,11 +83,17 @@ export class UserController {
     });
   }
 
-  @Get('profile')
+  @Get('me')
   @UseGuards(JwtAuthGuard)
   async profile(@Req() req): Promise<UserProfileDto> {
     return new UserProfileDto(await this.userService.findUser(req.user.id));
   }
+
+  // @Get(':id')
+  // @UseGuards(JwtAuthGuard)
+  // async getUserProfile(@Param('id') id: number): Promise<User | undefined> {
+  //   return;
+  // }
 
   @Get('search')
   @UseGuards(JwtAuthGuard)

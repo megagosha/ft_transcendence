@@ -20,11 +20,9 @@
   <button mat-icon-button class="search-icon" aria-label="Search icon">
     <mat-icon>search</mat-icon>
   </button>
-  <button mat-icon-button class="profile-icon" aria-label="Profile icon">
-    <mat-icon>person</mat-icon>
-  </button>
-  <button mat-button class="mat-button profile">
-  {{ profile }}
+  <button *ngIf="profile !== undefined" mat-button class="mat-button profile" (click)="openProfile()">
+    <img height="45" src="{{ 'http://localhost:3000' + userService.user.avatarImgName }}">
+    {{ userService.user.username }}
   </button>
 <!--  <button mat-button class="mat-button">-->
 <!--  </button>-->

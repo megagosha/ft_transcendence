@@ -1,11 +1,14 @@
 import {
   ArgumentsHost,
   Catch,
+  ConflictException,
   ExceptionFilter,
   HttpException,
   HttpStatus,
   Injectable,
   Logger,
+  PayloadTooLargeException,
+  UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
@@ -15,6 +18,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { stringify } from 'querystring';
 import { ChangeUsernameDto } from './dto/change-username.dto';
 import { SearchUsersDto } from './dto/search-users.dto';
+import { extname } from 'path';
+import { HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
 // This should be a real class/interface representing a user entity
 // export type User = any;
 
@@ -64,9 +69,16 @@ export class UserService {
     changeUserName: ChangeUsernameDto,
     id: number,
   ): Promise<any> {
-    return await this.userRepo.update(id, {
-      username: changeUserName.username,
-    });
+    const user = await this.searchUserByExactUserName(changeUserName.username);
+    if (!user)
+      return await this.userRepo.update(id, {
+        username: changeUserName.username,
+      });
+    else throw new ConflictException();
+  }
+
+  async searchUserByExactUserName(username: string): Promise<User> {
+    return await this.userRepo.findOne({ where: { username: username } });
   }
 
   async searchUsersByUsername(searchUsersDto: SearchUsersDto): Promise<User[]> {
@@ -82,4 +94,28 @@ export class UserService {
       take: searchUsersDto.take,
     });
   }
+  static editFileName = (req, file, callback) => {
+    const name = file.originalname.split('.')[0];
+    const fileExtName = extname(file.originalname);
+    callback(null, `${req.user.id}${fileExtName}`);
+  };
+
+  static imageFileFilter = (
+    req: any,
+    file: { originalname: string; size: number },
+    callback: (
+      arg0: UnsupportedMediaTypeException | PayloadTooLargeException,
+      arg1: boolean,
+    ) => void,
+  ) => {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return callback(
+        new UnsupportedMediaTypeException(
+          'Only jpg and png files are allowed!',
+        ),
+        false,
+      );
+    }
+    callback(null, true);
+  };
 }

@@ -1,0 +1,27 @@
+<app-top-bar></app-top-bar>
+<mat-card class="profile">
+  <!--<div class="profile">-->
+  <h1>Profile info</h1>
+  <mat-list role="list" class="profile-list">
+    <mat-list-item class="profile-item" role="listitem"><h2>NAME</h2> <span
+      class="profile-spacer"></span>{{userService.user.username}}
+      <button mat-icon-button (click)="openUsernameDialog()">
+        <mat-icon>edit</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-list-item class="profile-item" role="listitem"><h2>PROFILE PICTURE</h2><span class="profile-spacer"></span>
+      <img
+        height="45" src="{{ 'http://localhost:3000' + userService.user.avatarImgName}}">
+      <button mat-icon-button>
+        <mat-icon (click)="openAvatarDialog()">edit</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-list-item class="profile-item" role="listitem"><h2>DATE REGISTERED</h2>  <span
+      class="profile-spacer"></span>{{userService.user.registerDate}}
+    </mat-list-item>
+    <mat-list-item class="profile-item" role="listitem">
+      <button mat-stroked-button color="warn" (click)="logout()">LOGOUT</button>
+    </mat-list-item>
+  </mat-list>
+  <!--</div>-->
+</mat-card>

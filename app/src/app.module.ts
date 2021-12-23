@@ -25,7 +25,7 @@ import { ChatModule } from './chat/chat.module';
     UserModule,
     ChatModule,
     ServeStaticModule.forRoot({
-      rootPath: '/var/www/app/',
+      rootPath: '/Users/megagosha/42/transcendence/static',
     }),
     TypeOrmModule.forRoot({
       host: process.env.DB_HOST,

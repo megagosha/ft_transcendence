@@ -5,12 +5,14 @@ import { AppComponent } from "./app.component";
 import { GameComponent } from "./game/game.component";
 import { AuthGuard } from "./services/auth/auth.guard";
 import { ChatComponent } from "./chat/chat.component";
+import { UserProfileComponent } from "./user-profile/user-profile.component";
 
 const routes: Routes = [
   {path: '',  component: GameComponent, canActivate: [AuthGuard]},
   {path: 'login', component: LoginComponent},
   {path: 'login/success', component: LoginComponent},
-  {path: 'chat', component: ChatComponent, canActivate: [AuthGuard]}
+  {path: 'chat', component: ChatComponent, canActivate: [AuthGuard]},
+  {path: 'profile', component: UserProfileComponent, canActivate: [AuthGuard]}
   //{path: '**', component: LoginComponent}
 ];
 
