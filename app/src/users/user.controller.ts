@@ -1,7 +1,10 @@
 import {
+  BadRequestException,
   Body,
   ClassSerializerInterceptor,
+  ConflictException,
   Controller,
+  Delete,
   Get,
   InternalServerErrorException,
   Logger,
@@ -28,6 +31,9 @@ import { diskStorage } from 'multer';
 import * as fs from 'fs';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { rootPath } from '../constants';
+import { SearchUsersResultsDto } from './dto/search-users-results.dto';
+import { Friendship } from './friendlist.entity';
+import { AddFriendDto } from './dto/add-friend.dto';
 // import { fileTypeFromFile } from 'file-type';
 
 @Controller('user')
@@ -36,11 +42,6 @@ export class UserController {
     private authService: AuthService,
     private userService: UserService,
   ) {}
-  @Get('login')
-  @UseGuards(AuthGuard('fortytwo'))
-  async getUserFromDiscordLogin(@Req() req): Promise<any> {
-    return req.user;
-  }
 
   @Post('set_username')
   @UseGuards(JwtAuthGuard)
@@ -89,18 +90,58 @@ export class UserController {
     return new UserProfileDto(await this.userService.findUser(req.user.id));
   }
 
-  // @Get(':id')
-  // @UseGuards(JwtAuthGuard)
-  // async getUserProfile(@Param('id') id: number): Promise<User | undefined> {
-  //   return;
-  // }
-
   @Get('search')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
-  async searchUser(@Query() params: SearchUsersDto): Promise<UserProfileDto[]> {
+  async searchUser(
+    @Req() req,
+    @Query() params: SearchUsersDto,
+  ): Promise<SearchUsersResultsDto[]> {
+    if (params.filter_friends && params.filter_friends == 1) {
+      const check = await this.userService.getFriendlist(req.user.id);
+      return (await this.userService.searchUsersByUsername(params))
+        .filter((res) => {
+          return check.findIndex((x) => x.invitedUser.id === res.id) == -1;
+        })
+        .map((user) => new SearchUsersResultsDto(user));
+    }
     return (await this.userService.searchUsersByUsername(params)).map(
-      (user) => new UserProfileDto(user),
+      (user) => new SearchUsersResultsDto(user),
+    );
+  }
+
+  @Post('add_friend')
+  @UseGuards(JwtAuthGuard)
+  async addUser(
+    @Req() req,
+    @Body() friend_id: AddFriendDto,
+  ): Promise<SearchUsersResultsDto> {
+    Logger.log(friend_id);
+    if (!friend_id) throw new BadRequestException('Friend should be specified');
+    if (friend_id.friend_id == req.user.id)
+      throw new ConflictException('You can`t befriend yourself');
+    return new SearchUsersResultsDto(
+      await this.userService.addFriend(req.user.id, friend_id.friend_id),
+    );
+  }
+
+  @Get('friends')
+  @UseGuards(JwtAuthGuard)
+  async getFriends(@Req() req): Promise<SearchUsersResultsDto[]> {
+    return (await this.userService.getFriendlist(req.user.id)).map(
+      (friendlist) => new SearchUsersResultsDto(friendlist.invitedUser),
+    );
+  }
+
+  @Delete('delete_friend')
+  @UseGuards(JwtAuthGuard)
+  async removeFriend(
+    @Req() req,
+    @Body() friend_id: AddFriendDto,
+  ): Promise<boolean> {
+    return await this.userService.removeFriend(
+      req.user.id,
+      friend_id.friend_id,
     );
   }
 }

@@ -4,6 +4,7 @@ import { User, UserStatus } from '../user.entity';
 import { renderPath, rootPath } from '../../constants';
 import * as fs from 'fs';
 import { Logger } from '@nestjs/common';
+import { UserService } from '../user.service';
 
 export class UserProfileDto {
   constructor(user: User) {
@@ -17,15 +18,8 @@ export class UserProfileDto {
     this.statistic = user.statistic;
     this.invitedFriendships = user.invitedFriendships;
     this.invitorFriendships = user.invitorFriendships;
-    try {
-      Logger.log('res ' + `/${user.id}/${user.id}.png`);
-      if (fs.existsSync(`${rootPath}${user.id}/${user.id}.png`)) {
-        this.avatarImgName = `/${user.id}/${user.id}.png`;
-      } else this.avatarImgName = `/default.png`;
-    } catch (err) {
-      this.avatarImgName = `/default.png`;
-    }
-    Logger.log(`${user.id}/${user.id}.png`);
+    this.avatarImgName = UserService.getAvatarUrlById(user.id);
+    Logger.log('Avatar is set to ' + this.avatarImgName);
   }
   id: number;
   username: string;

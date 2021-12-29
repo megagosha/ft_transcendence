@@ -1,0 +1,26 @@
+.add-friend-dialog {
+  height: 300px;
+}
+.find-friend-form {
+  width: 100%;
+}
+.mat-dialog-title {
+  color: black;
+}
+.friend-full-width {
+  width: 100%;
+}
+
+.autocomplete-avatar-img {
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+[dir='rtl'] .example-option-img {
+  margin-right: 0;
+  margin-left: 8px;
+}
+
+.addfriend-button{
+ float: right;
+}

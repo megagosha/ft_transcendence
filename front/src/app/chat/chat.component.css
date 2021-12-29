@@ -2,12 +2,13 @@
 }
 .chat {
   width: 100%;
-  height: 100%;
+  height: 80%;
   display: flex;
 }
 
 .chat-selector {
   width: 30%;
+  height: 100%;
   padding: 40px;
   position: relative;
 }
@@ -21,6 +22,10 @@
 }
 .mat-divider {
   margin-top: 40px;
+}
+
+.chat-selector {
+  height: 100%;
 }
 
 .profile-avatar {
@@ -62,6 +67,10 @@
 .username {
   padding-left: 15px;
   margin-bottom: -5px;
+}
+.friendlist {
+  position: relative;
+  height: 300px;
 }
 .message {
   background-color: #6AECC5;

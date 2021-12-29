@@ -1,25 +1,25 @@
 import {
-  ArgumentsHost,
-  Catch,
   ConflictException,
-  ExceptionFilter,
-  HttpException,
-  HttpStatus,
   Injectable,
+  InternalServerErrorException,
   Logger,
   PayloadTooLargeException,
   UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { User } from './user.entity';
-import { use } from 'passport';
 import { CreateUserDto } from './dto/create-user.dto';
-import { stringify } from 'querystring';
 import { ChangeUsernameDto } from './dto/change-username.dto';
 import { SearchUsersDto } from './dto/search-users.dto';
 import { extname } from 'path';
-import { HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
+import { rootPath } from '../constants';
+import fs = require('fs');
+import { Friendship } from './friendlist.entity';
+import { use } from 'passport';
+import { stringify } from 'querystring';
+import { json } from 'express';
+
 // This should be a real class/interface representing a user entity
 // export type User = any;
 
@@ -28,6 +28,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    @InjectRepository(Friendship)
+    private friendlistRepo: Repository<Friendship>,
   ) {}
 
   async findFtUser(ftId: number, email: string): Promise<User> {
@@ -85,7 +87,7 @@ export class UserService {
     Logger.log(`Search ${searchUsersDto.username}`);
     return await this.userRepo.find({
       where: {
-        username: Like(searchUsersDto.username + '%'),
+        username: ILike(searchUsersDto.username + '%'),
       },
       order: {
         username: 'ASC',
@@ -94,6 +96,58 @@ export class UserService {
       take: searchUsersDto.take,
     });
   }
+
+  async getFriendlist(user_id: number): Promise<Friendship[]> {
+    return await this.friendlistRepo.find({
+      where: {
+        invitorUser: user_id,
+      },
+      order: {
+        id: 'ASC',
+      },
+      relations: ['invitedUser'],
+    });
+  }
+
+  async findFriend(user_id: number, friend_id: number): Promise<Friendship> {
+    return await this.friendlistRepo
+      .findOne({
+        where: {
+          invitorUser: user_id,
+          invitedUser: friend_id,
+        },
+        relations: ['invitedUser'],
+      })
+      .catch((err) => {
+        Logger.log(err);
+        throw new InternalServerErrorException(
+          'Error occured while searching for your friend',
+        );
+      });
+  }
+
+  async isCommonFriend(user_id: number, friend_id: number): Promise<boolean> {
+    return !!(
+      (await this.findFriend(user_id, friend_id)) &&
+      (await this.findFriend(friend_id, user_id))
+    );
+  }
+
+  async addFriend(user_id: number, friend_id: number): Promise<User> {
+    const check = await this.findFriend(user_id, friend_id);
+    if (check && check.invitedUser) return check.invitedUser;
+    const friend = new Friendship();
+    friend.invitorUser = await this.findUser(user_id);
+    friend.invitedUser = await this.findUser(friend_id);
+    if (!friend.invitedUser || !friend.invitorUser)
+      throw new ConflictException('Friend can not be added');
+    return (
+      await this.friendlistRepo.save(friend).catch((err: any) => {
+        throw new ConflictException('Friend can not be added');
+      })
+    ).invitedUser;
+  }
+
   static editFileName = (req, file, callback) => {
     const name = file.originalname.split('.')[0];
     const fileExtName = extname(file.originalname);
@@ -118,4 +172,48 @@ export class UserService {
     }
     callback(null, true);
   };
+
+  static getAvatarUrlById(userId: number) {
+    let avatarImgName;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+
+    try {
+      Logger.log('res ' + `${rootPath}${userId}/${userId}.png`);
+      if (fs.existsSync(`${rootPath}${userId}/${userId}.png`)) {
+        avatarImgName = `/${userId}/${userId}.png`;
+      } else {
+        avatarImgName = `/default.png`;
+      }
+    } catch (err) {
+      avatarImgName = `/default.png`;
+    }
+    return avatarImgName;
+  }
+
+  async removeFriend(user_id: number, friend_id: number): Promise<boolean> {
+    const res = await this.friendlistRepo
+      .findOne({
+        where: {
+          invitorUser: user_id,
+          invitedUser: friend_id,
+        },
+      })
+      .catch((err) => {
+        Logger.log(err);
+        throw new InternalServerErrorException(
+          'Error occured while searching for your friend',
+        );
+      });
+    if (res) {
+      await this.friendlistRepo.delete(res).catch((err) => {
+        Logger.log(err);
+        throw new InternalServerErrorException(
+          'Error occured while searching for your friend',
+        );
+      });
+      return true;
+    }
+    return false;
+  }
 }

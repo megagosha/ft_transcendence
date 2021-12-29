@@ -67,8 +67,6 @@ export class ChangeUserAvatarDialog {
         this.userService.updatePicTimestamp();
       });
     }
-
-
   }
 
   reset() {

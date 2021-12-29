@@ -2,21 +2,23 @@ import { Injectable } from "@angular/core";
 import * as global from "../globals";
 import { Profile } from "../login/profile.interface";
 import { HttpClient, HttpResponse, HttpErrorResponse } from "@angular/common/http";
-import { Observable, throwError } from "rxjs";
+import { EMPTY, map, Observable, tap, throwError } from "rxjs";
 import { catchError, retry } from "rxjs/operators";
 import { error } from "@angular/compiler/src/util";
 import { FormControl } from "@angular/forms";
 import { FileOrArrayFile } from "@angular-material-components/file-input";
-
+import { Users, User } from "./search-users.interface";
 
 @Injectable()
 export class UserService {
-  private apiUrl: string = global.apiUrl;
+  public apiUrl: string = global.apiUrl;
   public user: Profile = new Profile();
+  // public friends: Observable<User[]> | undefined;
 
   constructor(private http: HttpClient) {
     console.log("user service constructor");
     this.getUserProfile();
+    // this.friends = this.getFriends();
     // this.getUserProfile().subscribe((data: Profile) => this.user = { ...data });
   }
 
@@ -24,28 +26,48 @@ export class UserService {
     this.http.get<Profile>(this.apiUrl + "user/me").pipe(
       retry(3),
       catchError(this.handleError)
-    ).subscribe( data => {this.user = data;});
+    ).subscribe(data => {
+      this.user = data;
+    });
   }
 
   updatePicTimestamp() {
     const d = new Date();
-    this.user.avatarImgName +=  '?' + d.getTime().toString();
+    this.user.avatarImgName += "?" + d.getTime().toString();
   }
 
   setUserName(username: string): Observable<HttpResponse<any>> {
     return (this.http.post<HttpResponse<any>>(this.apiUrl + "user/set_username", { username: username }, { observe: "response" }));
   }
 
-  changeAvatar(avatar: File): Observable<any>
-  {
-    console.log('Avatar:');
-    console.log({avatar: avatar});
+  changeAvatar(avatar: File): Observable<any> {
+    console.log("Avatar:");
+    console.log({ avatar: avatar });
     const formData = new FormData();
-    formData.append('avatar', avatar);
-    return this.http.post(this.apiUrl + 'user/set_avatar',  formData, {
+    formData.append("avatar", avatar);
+    return this.http.post(this.apiUrl + "user/set_avatar", formData, {
       reportProgress: true,
       observe: "events"
     });
+  }
+
+  searchUserByUsername(username: string, filter: number = 0): Observable<User[]> {
+    return this.http.get<User[]>(this.apiUrl + "user/search", {
+      params: {
+        username: username,
+        take: 10,
+        skip: 0,
+        filter_friends: filter,
+      }
+    });
+  }
+
+  getFriends(): Observable<User[]> {
+    return this.http.get<User[]>(this.apiUrl + "user/friends");
+  }
+
+  addFriend(user_id: number): Observable<HttpResponse<User>> {
+    return this.http.post<User>(this.apiUrl + "user/add_friend", { friend_id: user_id }, { observe: "response" });
   }
 
   private handleError(error: HttpErrorResponse) {
@@ -61,5 +83,17 @@ export class UserService {
     // Return an observable with a user-facing error message.
     return throwError(
       "Something bad happened; please try again later.");
+  }
+
+  // appendFriend(body: User) {
+  //   if (this.friends == undefined)
+  //     this.friends = EMPTY;
+  //   this.friends.pipe(tap(list => {
+  //     list.push(body);
+  //   }));
+  //   console.log("New user aded " + body.username);
+  // }
+  removeFriend(selectedUser: User) {
+    return this.http.delete<boolean>(this.apiUrl + "user/delete_friend", { body: { friend_id: selectedUser.id } });
   }
 }

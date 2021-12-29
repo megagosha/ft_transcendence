@@ -33,6 +33,10 @@ import { MatDialog, MatDialogClose, MatDialogModule } from "@angular/material/di
 import { UserService } from "./services/user.service";
 import { NgxMatFileInputModule } from '@angular-material-components/file-input';
 import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { FriendlistComponent } from './friendlist/friendlist.component';
+import { FindFriendComponent } from './friendlist/find-friend/find-friend.component';
+import { MatAutocompleteModule } from "@angular/material/autocomplete";
+import { MatMenuModule } from "@angular/material/menu";
 
 @NgModule({
   declarations: [
@@ -43,7 +47,9 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
     GameComponent,
     UserProfileComponent,
     ChangeUsernameDialog,
-    ChangeUserAvatarDialog
+    ChangeUserAvatarDialog,
+    FriendlistComponent,
+    FindFriendComponent
   ],
   imports: [
     NgxMatFileInputModule,
@@ -66,7 +72,9 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
     MatFormFieldModule,
     MatInputModule,
     ReactiveFormsModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatAutocompleteModule,
+    MatMenuModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor,

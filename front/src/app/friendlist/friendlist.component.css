@@ -1,0 +1,37 @@
+.friend-list {
+  position: relative;
+  width: auto;
+  height: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-bottom: 100px;
+  /*position: absolute;*/
+}
+.friend-list-subheader {
+  margin-top: 10px;
+  height: 40px;
+}
+
+.list {
+  overflow: scroll;
+  height: 90%;
+}
+.friend-list-options {
+  float: right;
+}
+.spacer {
+  flex: 1 1 auto;
+}
+
+.fub-button {
+  position: absolute;
+  top: 300px;
+  left: 300px;
+  /*transform: translate(-50%, -50%);*/
+
+}
+
+/*.friend-list {*/
+/*  position: relative;*/
+/*  height: 100%;*/
+/*}*/
