@@ -1,2 +1,18 @@
 <app-top-bar></app-top-bar>
-<p>game works!</p>
+<meta name="viewport" #gameCanvas content="width=device-width, initial-scale=1">
+<div class="game-row">
+<div class="score-block">
+  <h3>{{this.game.players[this.pInfo.l].username}}</h3>
+  <h1>{{this.game.players[this.pInfo.l].score}}</h1>
+  <h1>{{this.game.players[this.pInfo.r].score}}</h1>
+  <h3>{{this.game.players[this.pInfo.r].username}}</h3>
+</div>
+<button class="back-btn" mat-mini-fab  color="warn" aria-label="Stop game" (click)="stopGame()">
+  <mat-icon>stop</mat-icon>
+</button>
+</div>
+<!--<button mat-button (click)="onClick()">new game</button>-->
+<div >
+  <canvas class="game-canvas" width="{{width}}" height="{{height}}" #canvasPoint>
+  </canvas>
+</div>

@@ -9,9 +9,9 @@ import {
   VersionColumn,
 } from 'typeorm';
 
-import { GameStatistic } from '../game/gamestats.entity';
+import { UserStatistics } from '../game/gamestats.entity';
 import { Friendship } from './friendlist.entity';
-import { Exclude } from 'class-transformer';
+import { Exclude, Type } from 'class-transformer';
 
 export enum UserStatus {
   ONLINE = 'ONLINE',
@@ -43,8 +43,16 @@ export class User {
 
   /** 42 id */
   @Exclude()
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true, nullable: true })
   fortytwo_id: number;
+
+  @Exclude()
+  @Column('varchar', { unique: true, nullable: true })
+  google_id: string;
+
+  @Exclude()
+  @Column({ nullable: true })
+  twoAuth: string;
 
   @Column({ unique: true, nullable: false })
   email: string;
@@ -86,9 +94,9 @@ export class User {
   avatarImgName: string;
 
   /** Статисктика и достижения пользователя в играх */
-  @OneToOne(() => GameStatistic, { nullable: true, cascade: true })
+  @OneToOne(() => UserStatistics, { nullable: true, cascade: true })
   @JoinColumn({ name: 'game_statistic_id', referencedColumnName: 'id' })
-  statistic: GameStatistic = new GameStatistic();
+  statistic: UserStatistics = new UserStatistics();
 
   /** Дружбы, в которых пользователь является инициатором */
   @OneToMany(() => Friendship, (friendship) => friendship.invitorUser)

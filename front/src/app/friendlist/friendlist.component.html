@@ -6,8 +6,10 @@
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="showProfile(selectedUser)">Profile</button>
       <button mat-menu-item (click)="removeFriend()">Remove friend</button>
-      <button mat-menu-item>Item 2</button>
+      <button mat-menu-item (click)="inviteToPlay(selectedUser)">Invite to play</button>
+      <button mat-menu-item (click)="watchGame(selectedUser)">Watch game</button>
     </mat-menu>
   </div>
   <mat-selection-list class="list" #friends [multiple]="false" [color]="'primary'" (selectionChange)="onListClick($event.options[0].value)" >

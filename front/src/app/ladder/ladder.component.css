@@ -1,0 +1,12 @@
+table {
+  width: 100%;
+}
+
+.profile-cell {
+  display: flex;
+}
+
+.cell-username {
+  margin-left: 10px;
+  align-self: center;
+}

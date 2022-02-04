@@ -1,65 +1,51 @@
-import { Component, OnInit } from "@angular/core";
-import { Router } from "@angular/router";
-import { Profile } from "../login/profile.interface";
-import { UserService } from "../services/user.service";
-import { AuthService } from "../services/auth/auth.service";
-import { formatDate } from "@angular/common";
-import { MatDialog } from "@angular/material/dialog";
-import { FormControl, Validators } from "@angular/forms";
-import { HttpErrorResponse } from "@angular/common/http";
-import {  ChangeUsernameDialog } from "./change-username-dialog.component";
-import { ChangeUserAvatarDialog } from "./change-useravatar-dialog.component"
+import { Component, OnInit } from '@angular/core';
+import { Profile } from '../login/profile.interface';
+import { ActivatedRoute, NavigationStart, Router } from '@angular/router';
+import { UserService } from '../services/user.service';
+import { AuthService } from '../services/auth/auth.service';
+import { MatDialog } from '@angular/material/dialog';
+import { User } from '../services/search-users.interface';
+import { formatDate } from '@angular/common';
+
 @Component({
-  selector: "app-user-profile",
-  templateUrl: "./user-profile.component.html",
-  styleUrls: ["./user-profile.component.css"]
+  selector: 'app-personal-profile',
+  templateUrl: './user-profile.component.html',
+  styleUrls: ['./user-profile.component.css']
 })
 export class UserProfileComponent implements OnInit {
-  public profile: Profile = new Profile();
-  public userService: UserService;
-  private _authService: AuthService;
 
-  constructor(private route: Router,
-              userService: UserService, authService: AuthService,
+  public profile: Profile;
+  public userId: number;
+
+  constructor(private _router: Router, private _route: ActivatedRoute,
+              public userService: UserService, private _authService: AuthService,
               public dialog: MatDialog) {
-
-    this.userService = userService;
-    this._authService = authService;
+    this.userId = 0;
+    this.profile = new Profile();
   }
 
   ngOnInit(): void {
-    // this.showUserProfile();
-  }
-
-  logout(): void {
-    this._authService.logout();
-    this.route.navigate(["login"]);
-  }
-
-  openUsernameDialog(): void {
-    this.dialog.open(ChangeUsernameDialog, {
-      height: "500px",
-      width: "500px"
+    this.userId = Number(this._route.snapshot.paramMap.get('id'));
+    console.log(this.userId);
+    this.profileUpdate();
+    this._router.events.subscribe((val) => {
+      if (val instanceof NavigationStart) {
+        if (val.id && val.id != 0) {
+          this.userId = val.id;
+          this.profileUpdate();
+        }
+      }
     });
   }
 
-  openAvatarDialog(): void {
-    this.dialog.open(ChangeUserAvatarDialog, {
-      height: "auto",
-      width: "500px"
+  profileUpdate() {
+    this.userService.getUserInfo(this.userId).subscribe((data: User) => {
+      this.profile.id = data.id;
+      this.profile.username = data.username;
+      this.profile.avatarImgName = data.avatarImgName;
+      this.profile.lastLoginDate = formatDate(data.lastLoginDate, 'short', 'en-US');
+      this.profile.registerDate = formatDate(data.registerDate, 'shortDate', 'en-US');
+      this.profile.status = data.status;
     });
   }
-
-  // showUserProfile() {
-  //   this._loginService.getUserProfile()
-  //     // clone the data object, using its known Config shape
-  //     .subscribe((data: Profile) => {
-  //       this.profile = { ...data }, this.formatDate(this.profile.registerDate);
-  //     });
-  // }
-
-  formatDate(date: string) {
-    this.profile.registerDate = formatDate(this.profile.registerDate, "shortDate", "en-US");
-  }
-
 }

@@ -7,7 +7,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 @Component({
   selector: "change-username-dialog",
   templateUrl: "change-username-dialog.html",
-  styleUrls: ["user-profile.component.css"]
+  styleUrls: ["personal-profile.component.css"]
 })
 export class ChangeUsernameDialog {
   public username = new FormControl("", [Validators.maxLength(50), Validators.required, Validators.minLength(2)]);
@@ -29,7 +29,7 @@ export class ChangeUsernameDialog {
           this.username.setErrors({"conflict": "something went wrong!"})
         else {
           this.closeDialog();
-          this.userService.getUserProfile();
+          this.userService.profileUpdate();
         }
       }, error => {
         if (error instanceof HttpErrorResponse) {

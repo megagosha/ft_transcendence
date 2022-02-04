@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { Profile } from "../login/profile.interface";
 import { UserService } from "../services/user.service";
+import { GameService } from '../services/game.service';
 
 @Component({
   selector: "app-top-bar",
@@ -13,7 +14,7 @@ export class TopBarComponent implements OnInit {
   public userService: UserService;
   public profile: Profile | undefined;
 
-  constructor(private router: Router, loginService: UserService) {
+  constructor(private router: Router, loginService: UserService, gameService: GameService) {
     this.userService = loginService;
   }
 

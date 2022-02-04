@@ -55,3 +55,7 @@
 .mat-dialog-title {
   color: black;
 }
+.invite-button {
+  margin: auto;
+  align-self: center;
+}

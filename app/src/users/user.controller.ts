@@ -8,6 +8,7 @@ import {
   Get,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
   Param,
   Post,
   Query,
@@ -34,6 +35,7 @@ import { rootPath } from '../constants';
 import { SearchUsersResultsDto } from './dto/search-users-results.dto';
 import { Friendship } from './friendlist.entity';
 import { AddFriendDto } from './dto/add-friend.dto';
+import { NotFoundError } from 'rxjs';
 // import { fileTypeFromFile } from 'file-type';
 
 @Controller('user')
@@ -88,6 +90,14 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   async profile(@Req() req): Promise<UserProfileDto> {
     return new UserProfileDto(await this.userService.findUser(req.user.id));
+  }
+
+  @Get('user')
+  @UseGuards(JwtAuthGuard)
+  async userInfo(@Query() data: { userId: number }): Promise<UserProfileDto> {
+    const res = await this.userService.findUser(data.userId);
+    if (!res) throw new NotFoundException();
+    return new UserProfileDto(res);
   }
 
   @Get('search')

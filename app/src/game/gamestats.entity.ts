@@ -3,7 +3,7 @@ import { User } from '../users/user.entity';
 
 /** Статисктика и достижения пользователя */
 @Entity('ft_game_statistic')
-export class GameStatistic {
+export class UserStatistics {
   /** Id */
   @PrimaryGeneratedColumn()
   id: number;

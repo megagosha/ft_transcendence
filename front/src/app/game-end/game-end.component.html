@@ -1,0 +1,22 @@
+<app-top-bar xmlns="http://www.w3.org/1999/html"></app-top-bar>
+<div class="game-end-container">
+<!--  <div class="title-row">-->
+<!--    <div class="game-title">Game played at 21 December 2021 15:45</div>-->
+<!--  </div>-->
+  <div class="result-row">
+    <div class="game-played">
+      <div class="player-info">
+        <img class="profile-pic" height="96px" src="{{this.info.userLost.avatarImgName}}">
+        <span class="username"> {{this.info.userLost.username}} </span>
+      </div>
+      <span class="score">{{this.info.score[0]}} - {{this.info.score[1]}} </span>
+      <div class="player-info">
+        <img class="profile-pic" height="96px" src="{{this.info.userWon.avatarImgName}}">
+        <span class="username">{{this.info.userWon.username}}</span> &nbsp;
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+  <button mat-fab  aria-label="back" (click)="back()"><mat-icon>close</mat-icon></button>
+  </div>
+</div>

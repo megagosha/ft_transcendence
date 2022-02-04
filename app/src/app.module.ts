@@ -6,7 +6,6 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/user.entity';
 import { Friendship } from './users/friendlist.entity';
-import { GameStatistic } from './game/gamestats.entity';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { rootPath, renderPath } from './constants';
@@ -15,7 +14,9 @@ import { UserChatLink } from './chat/model/user-chat-link.entity';
 import { Message } from './chat/model/message.entity';
 import 'reflect-metadata';
 import 'es6-shim';
-import { ChatModule } from './chat/chat.module';
+// import { ChatModule } from './chat/chat.module';
+import { GameGateway } from './game/game.gateway';
+import { GameModule } from './game/game.module';
 
 @Module({
   controllers: [AppController],
@@ -23,7 +24,8 @@ import { ChatModule } from './chat/chat.module';
   imports: [
     AuthModule,
     UserModule,
-    ChatModule,
+    // ChatModule,
+    GameModule,
     ServeStaticModule.forRoot({
       rootPath: '/Users/megagosha/42/transcendence/static',
     }),

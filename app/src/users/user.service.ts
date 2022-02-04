@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
-import { User } from './user.entity';
+import { User, UserStatus } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ChangeUsernameDto } from './dto/change-username.dto';
 import { SearchUsersDto } from './dto/search-users.dto';
@@ -44,6 +44,14 @@ export class UserService {
     return user;
   }
 
+  async findWithEmail(email: string): Promise<User> {
+    const user = await this.userRepo.findOne({
+      email: email,
+    });
+    if (!user) return null;
+    return user;
+  }
+
   async findUser(id: number): Promise<User> {
     const user = await this.userRepo.findOne({
       id: id,
@@ -59,6 +67,7 @@ export class UserService {
     const user = new User();
     user.username = createUser.username;
     user.fortytwo_id = createUser.fortytwo_id;
+    user.google_id = createUser.google_id;
     user.email = createUser.email;
     user.avatarImgName = createUser.avatarImgName;
     Logger.log(
@@ -215,5 +224,23 @@ export class UserService {
       return true;
     }
     return false;
+  }
+
+  setStatus(userId: number, status: UserStatus) {
+    this.userRepo.update(userId, {
+      status: status,
+    });
+  }
+
+  async setTwoFactor(secret: string, userId: number) {
+    return this.userRepo.update(userId, {
+      twoAuth: secret,
+    });
+  }
+
+  async removeTwoFactor(userId: number) {
+    return this.userRepo.update(userId, {
+      twoAuth: null,
+    });
   }
 }
