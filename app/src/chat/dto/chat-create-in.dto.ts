@@ -17,7 +17,7 @@ export class ChatCreateInDto {
     example: ChatType.PRIVATE,
   })
   @IsEnum(ChatType, { message: "Тип чата не указан" })
-  @NotEquals(ChatType.PRIVATE, { message: "Нельзя создать приватный чат" })
+  @NotEquals(ChatType.DIRECT, { message: "Нельзя создать личный чат" })
   readonly type: ChatType;
 
   @ApiProperty({

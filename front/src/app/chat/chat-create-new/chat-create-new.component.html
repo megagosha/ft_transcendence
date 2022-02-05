@@ -1,0 +1,59 @@
+<p style="text-align: center; margin: 0 0 15px; font-size: 12pt; font-weight: 500;">
+	Create new chat
+</p>
+<div style="width: calc(100% - 20px); height: calc(100% - 20px - 68px); overflow-y: auto; scrollbar-width: thin; padding-right: 10px; padding-left: 10px;">
+	<p style="text-align: center; margin: 0 0 10px; font-size: 11pt; font-weight: 500;">
+		Main info
+	</p>
+	<mat-form-field style="width: 100%" appearance="fill">
+		<mat-label>Enter name</mat-label>
+		<input matInput [formControl]="name" autocomplete="off" required>
+		<mat-error *ngIf="name.hasError('validation')">{{getNameError()}}</mat-error>
+	</mat-form-field>
+	<mat-form-field style="width: 100%; margin-top: 10px;" appearance="fill">
+		<mat-label>Enter description</mat-label>
+		<textarea style="height: auto" matInput [formControl]="description"></textarea>
+		<mat-error *ngIf="description.hasError('validation')">{{getDescriptionError()}}</mat-error>
+	</mat-form-field>
+	<p style="text-align: center; margin: 10px 0 10px; font-size: 11pt; font-weight: 500;">
+		Access info
+	</p>
+	<mat-radio-group color="primary" style="display: flex; justify-content: space-between; width: 100%;"
+					 aria-label="Select chat access type"
+					 [(ngModel)]="type">
+		<mat-radio-button value="PUBLIC">PUBLIC</mat-radio-button>
+		<mat-radio-button value="PROTECTED">PROTECTED</mat-radio-button>
+		<mat-radio-button value="PRIVATE">PRIVATE</mat-radio-button>
+	</mat-radio-group>
+	<div style="width: 100%; color: #5b5b5b; margin-bottom: 15px;" [ngSwitch]="type">
+		<ul class="access-type-description" *ngSwitchCase="'PUBLIC'">
+			<li>Everyone can find</li>
+			<li>Everyone can join</li>
+			<li>Everyone can be added by OWNER or ADMIN</li>
+		</ul>
+		<ul class="access-type-description" *ngSwitchCase="'PROTECTED'">
+			<li>Everyone can find</li>
+			<li>Everyone who knows password can join</li>
+			<li>Everyone can be added by ADMIN or OWNER</li>
+		</ul>
+		<ul class="access-type-description" *ngSwitchCase="'PRIVATE'">
+			<li>Nobody can find</li>
+			<li>Nobody can join</li>
+			<li>Everyone can be added by ADMIN or OWNER</li>
+		</ul>
+	</div>
+	<div style="width: 100%" *ngIf="type == 'PROTECTED'">
+		<mat-form-field style="width: 100%;"  appearance="fill">
+			<mat-label>Enter password</mat-label>
+			<input autocomplete="off" [type]="hide ? 'password' : 'text'" matInput [formControl]="password" [required]="required">
+			<button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
+				<mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+			</button>
+			<mat-error *ngIf="password.hasError('validation')">{{getPasswordError()}}</mat-error>
+		</mat-form-field>
+	</div>
+</div>
+<div style="width: 100%; display: flex; justify-content: space-around;" mat-dialog-actions>
+	<button mat-button (click)="closeDialog()">Close</button>
+	<button mat-button type="submit" value="submit" (click)="onSubmit()" cdkFocusInitial>Create</button>
+</div>

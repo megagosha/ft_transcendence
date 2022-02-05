@@ -1,110 +1,54 @@
 .mat-list-option[aria-selected="true"] {
 }
+
 .chat {
-  width: 100%;
+  position: fixed;
+  margin: 90px auto auto;
+  width: 80%;
   height: 80%;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
   display: flex;
+  flex-direction: row;
 }
 
 .chat-selector {
-  width: 30%;
-  height: 100%;
-  padding: 40px;
-  position: relative;
+  flex-basis: 30%;
+  display: flex;
+  flex-direction: column;
 }
 
-.chat-messages {
-  height: auto;
-  background-color: #FBFBFB;
-  margin: 50px 30px;
-  width: 30%;
-  border-radius: 20px;
+.chat-list {
+  height: calc(100%);
 }
+
 .mat-divider {
-  margin-top: 40px;
-}
-
-.chat-selector {
-  height: 100%;
-}
-
-.profile-avatar {
-  width: 36px;
-  margin: 10px;
-}
-.username {
-  font-size: 12px;
-  color: gray;
-}
-
-.messages-block {
-  width: 40%;
-  background-color: #FBFBFB;
-  margin-top: 50px;
-  margin-left: 10px;
-  border-radius: 20px;
-}
-
-.message-full-width {
-  background-color: #FBFBFB;
-}
-.messages {
-  margin-top: 50px;
-  width: 100%;
-}
-.message-row {
-  display: block;
-  /*position: relative;*/
-  /*vertical-align: middle;*/
-  /*display: inline-block;*/
-  margin: auto;
-  height: auto !important;
-  /*font-size: 14px;*/
-}
-.msg-right-wrap {
-  float: right;
-}
-.username {
-  padding-left: 15px;
-  margin-bottom: -5px;
-}
-.friendlist {
-  position: relative;
-  height: 300px;
-}
-.message {
-  background-color: #6AECC5;
-  margin: 5px;
-  width: auto;
-  border-radius: 15px;
-  padding: 10px;
-  height: auto;
-}
-
-.message-full-width {
-  width: 100%;
-}
-.subheader-spacer{
-  flex: 1 1 auto;
-}
-
-.fub-button {
-  float: right;
-  position: absolute;
-  bottom: 150px;
-  right: 50px;
-}
-.message-form {
+  margin-right: 20px;
   margin-left: 20px;
 }
 
+.messages-block {
+  flex-basis: 70%;
+  background-color: #FBFBFB;
+  border-radius: 15px;
+}
 
-/*.example-form {*/
-/*  min-width: 150px;*/
-/*  max-width: 500px;*/
-/*  width: 100%;*/
-/*}*/
+.chat-not-entered {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  text-align: center;
+}
 
-/*.example-full-width {*/
-/*  width: 100%;*/
-/*}*/
+.not-entered-message {
+  margin: auto;
+  font-size: 14pt;
+  color: #9b9999;
+}
+
+.subheader-spacer{
+  flex: 1 1 auto;
+}

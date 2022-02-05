@@ -1,0 +1,58 @@
+<div class="chat-room">
+	<button (click)="openChatInfo()" class="message-block-header">
+		<p class="header-chat-name">{{chat.name}}</p>
+		<p class="header-chat-type">{{chat.type}}</p>
+	</button>
+	<div class="message-block-content">
+		<div infiniteScroll
+			 [scrollWindow]="false"
+			 [infiniteScrollDistance]="20"
+			 [infiniteScrollThrottle]="50"
+			 (scrolledUp)="nextPage()"
+			 (scroll)="onScroll()"
+			 [ngStyle]="{'height': getMessageBlockHeight()}"
+			 class="messages">
+			<div class="message-row" *ngFor="let message of messages">
+				<div class="name-avatar" *ngIf="message.authorUser.avatar == null">
+					<p class="short-name">{{message.authorUser.username.slice(0,2)}}</p>
+				</div>
+				<img class="profile-avatar" *ngIf="message.authorUser.avatar != null" src="{{message.authorUser.avatar}}" alt="AV">
+				<div class="msg-right-wrap">
+					<div class="username">{{message.authorUser.username}}</div>
+					<div class="message"
+						 [ngStyle]="{'background-color': message.authorUser.id == user.id ? '#d5cef5' : '#ffffff'}">
+						<p style="font-size: 10pt; text-align: left; margin: 0 0 2px;">
+							{{message.text}}
+						</p>
+						<p style="font-size: 8pt; text-align: right; font-style: italic; margin: 0; color: gray">
+							{{message.dateTimeSend.toLocaleString()}}
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<mat-form-field *ngIf="chat.verified && chat.userChatStatus != 'MUTED'"
+						class="message-form" appearance="fill">
+			<input class="message-input-form"
+				   matInput
+				   type="text"
+				   minlength="1"
+				   maxlength="1000"
+				   placeholder="Write message..."
+				   value="{{messageText}}"
+				   name="messageText"
+				   autocomplete="off"
+				   [(ngModel)]="messageText">
+			<mat-hint align="end">{{messageText.length}} / 1000</mat-hint>
+			<button (click)="sendMessage()" matSuffix mat-icon-button aria-label="Send">
+				<mat-icon>send</mat-icon>
+			</button>
+		</mat-form-field>
+		<button color="primary"
+				mat-stroked-button *ngIf="!chat.verified"
+				(click)="joinInChat()"
+				style="width: 100%; border: none; background-color: #e5e5e5; border-radius: 0 0 10px 10px; height: 40px; font-size: 10pt">
+			JOIN IN CHAT
+		</button>
+	</div>
+</div>

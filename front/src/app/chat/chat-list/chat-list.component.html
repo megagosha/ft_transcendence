@@ -1,0 +1,56 @@
+<div class="chat-list-block">
+	<div class="chat-list-search">
+		<mat-form-field style="flex-basis: calc(100% - 40px - 5px)" class="chat-name" appearance="outline">
+			<input class="chat-name-input"
+				   matInput
+				   type="search"
+				   minlength="1"
+				   maxlength="50"
+				   [placeholder]="getSearchPlaceHolder()"
+				   autocomplete="off"
+				   [formControl]="searchName">
+			<mat-icon style="cursor: pointer"
+					  (click)="changeSearch()"
+					  [color]="getSearchColor()"
+					  [title]="global ? 'Change to local search' : 'Change to global search'"
+					  matSuffix>
+				travel_explore
+			</mat-icon>
+		</mat-form-field>
+		<button style="margin-top: 10px; height: 40px; width: 40px"
+				mat-icon-button color="primary"
+				aria-label="Create new chat"
+				title="Create new chat"
+				(click)="addChat()">
+			<mat-icon style="font-size: 40px; width: 40px; padding: 0">add</mat-icon>
+		</button>
+	</div>
+	<div infiniteScroll
+		 [scrollWindow]="false"
+		 [infiniteScrollUpDistance]="10"
+		 [infiniteScrollThrottle]="100"
+		 (scrolled)="nextPage()"
+		 class="chat-list-content">
+			<div class="chat-row" *ngFor="let chat of chats">
+				<button [class]="selectedChat != null && chat.id == selectedChat.id ? 'select-chat-hover' : 'select-chat'"
+						(click)="onSelect(chat)">
+					<div class="chat-name-avatar" *ngIf="chat.avatar == null"><p class="chat-short-name">{{chat.name.slice(0,2)}}</p></div>
+					<img class="chat-avatar" *ngIf="chat.avatar != null" src="{{chat.avatar}}" alt="AV">
+					<div class="chat-name">{{chat.name}}</div>
+					<div class="user-status-role">
+						<mat-chip-list *ngIf="chat.verified; else nonVerified">
+							<mat-chip [title]="getTimeBlockExpire(chat)" class="chat-chip" *ngIf="chat.userChatStatus == 'BANNED'" color="warn" selected>B</mat-chip>
+							<mat-chip [title]="getTimeBlockExpire(chat)" class="chat-chip" *ngIf="chat.userChatStatus == 'MUTED'" color="accent" selected>M</mat-chip>
+							<mat-chip [title]="'Role: ' + chat.userChatRole.toLowerCase()" class="chat-chip" *ngIf="chat.userChatStatus == 'ACTIVE'">{{chat.userChatRole.slice(0,1)}}</mat-chip>
+						</mat-chip-list>
+						<ng-template #nonVerified>
+							<mat-chip title="Join to chat" [style]="selectedChat != null && chat.id == selectedChat.id ? 'background-color: white;' : 'background-color: inherit;'"
+									  style="padding: 0 0 0 2px; cursor: pointer" class="chat-chip">
+								<mat-icon id="joinInChat" color="primary" (click)="joinInChat(chat)">login</mat-icon>
+							</mat-chip>
+						</ng-template>
+					</div>
+				</button>
+			</div>
+	</div>
+</div>

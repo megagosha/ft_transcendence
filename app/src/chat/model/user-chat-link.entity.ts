@@ -27,6 +27,7 @@ export enum UserChatStatus {
 export class UserChatLink {
   public static readonly USER_CHAT_STATUS_LENGTH: number = 15;
   public static readonly USER_CHAT_ROLE_LENGTH: number = 15;
+  public static readonly SUBSCRIPTION_STATUS_LENGTH: number = 15;
 
   /** Id связи */
   @PrimaryGeneratedColumn()
@@ -66,7 +67,7 @@ export class UserChatLink {
   @Column({ name: "datetime_block_expire", nullable: true })
   dateTimeBlockExpire: Date;
 
-  /** Верификация. ChatType.PROTECTED */
-  @Column({ name: "verified", nullable: true })
+  /** Верификация */
+  @Column({ name: "verified", nullable: false })
   verified: boolean;
 }

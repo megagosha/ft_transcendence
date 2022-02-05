@@ -28,8 +28,14 @@ export class ChatOutDto {
   dateTimeCreate: Date;
 
   @Expose()
-  @ApiProperty({ name: "Аватарка. Id файла в хранилище", example: 1 })
-  avatarFileId: number;
+  @ApiProperty({ name: "Дата обновления пароля чата", example: new Date() })
+  dateTimePasswordChange: Date;
+
+  @ApiProperty({
+    description: "Путь аватарки",
+    example: "/api/chat/1/avatar",
+  })
+  avatar: string;
 
   @ApiProperty({ name: "Количество пользователей в чате", example: 1 })
   userCount: number;

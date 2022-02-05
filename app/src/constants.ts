@@ -1,3 +1,5 @@
+import {join} from "path";
+
 export const OAuthConstants = {
   clientID: '4d8bdbfc4b56647b57eee634436634f91c17a5cee631f06d1f4c4d3cd83bc9fa',
   clientSecret:
@@ -15,6 +17,6 @@ export const jwtConstants = {
 
 export const renderPath = '/static/';
 
-export const rootPath = '/Users/megagosha/42/transcendence/static/';
+export const rootPath = join(process.cwd(), "..", "static");
 
 // export const renderPath = '/static/';

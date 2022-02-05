@@ -1,6 +1,6 @@
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "./user.entity";
-import { Repository } from "typeorm";
+import {In, Like, Not, Repository} from "typeorm";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { WsException } from "@nestjs/websockets";
 
@@ -30,5 +30,16 @@ export class UsersServiceSupport {
 
   async findByIds(ids: number[]): Promise<User[]> {
     return this.userRepository.findByIds(ids);
+  }
+
+  async findUsers(ids: number[], name: string, skip: number, take: number): Promise<User[]> {
+    return this.userRepository.find({
+      where: {
+        id: Not(In(ids)),
+        username: Like(name + "%"),
+      },
+      skip: skip,
+      take: take,
+    });
   }
 }

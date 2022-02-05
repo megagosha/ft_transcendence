@@ -36,7 +36,7 @@ export class MessageServiceSupport {
       },
       take: take,
       skip: skip,
-      relations: ["authorUser"],
+      relations: ["authorUser", "targetChat"],
     });
   }
 }

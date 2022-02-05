@@ -1,0 +1,47 @@
+<p style="text-align: center; margin: 0 0 10px; font-size: 12pt; font-weight: 500;">
+	Participants edit
+</p>
+<mat-form-field style="width: 100%" appearance="outline">
+	<input class="chat-name-input"
+		   matInput
+		   type="search"
+		   minlength="1"
+		   maxlength="50"
+		   placeholder="Search by name"
+		   name="messageText"
+		   autocomplete="off"
+		   [formControl]="searchName">
+	<mat-icon matSuffix>search</mat-icon>
+</mat-form-field>
+<div infiniteScroll
+	 [scrollWindow]="false"
+	 [infiniteScrollUpDistance]="10"
+	 [infiniteScrollThrottle]="100"
+	 (scrolled)="nextPage()"
+	 class="participant-list-content">
+	<div class="participant-row" *ngFor="let user of users">
+		<button class="select-participant" (click)="onSelect(user)">
+			<div class="participant-name-avatar" *ngIf="user.avatar == null"><p class="participant-short-name">{{user.username.slice(0,2)}}</p></div>
+			<img class="participant-avatar" *ngIf="user.avatar != null" src="{{user.avatar}}" alt="AV">
+			<div class="participant-name">{{user.username}}</div>
+			<mat-chip-list>
+				<mat-chip class="participant-chip" *ngIf="user.userChatStatus == 'BANNED'" color="warn" selected>{{user.userChatStatus.slice(0,1)}}</mat-chip>
+				<mat-chip class="participant-chip" *ngIf="user.userChatStatus == 'MUTED'" color="accent" selected>{{user.userChatStatus.slice(0,1)}}</mat-chip>
+				<mat-chip class="participant-chip" *ngIf="user.userChatStatus == 'ACTIVE'">{{user.userChatRole.slice(0,1)}}</mat-chip>
+			</mat-chip-list>
+		</button>
+		<div class="row-suffix">
+			<button *ngIf="availableEdit(user); else notAvailableIcon" mat-icon-button style="color: #f44336">
+				<mat-icon style="font-size: 20px" (click)="onDelete(user)">delete</mat-icon>
+			</button>
+			<ng-template #notAvailableIcon>
+				<button mat-icon-button disabled>
+					<mat-icon style="font-size: 20px">delete</mat-icon>
+				</button>
+			</ng-template>
+		</div>
+	</div>
+</div>
+<div style="width: 100%; display: flex; justify-content: space-around" mat-dialog-actions>
+	<button mat-button (click)="closeDialog()">Back</button>
+</div>

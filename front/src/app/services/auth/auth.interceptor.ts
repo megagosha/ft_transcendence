@@ -30,7 +30,9 @@ export class AuthInterceptor implements HttpInterceptor {
     const token = localStorage.getItem('token');
     if (token) {
       const cloned = request.clone(
-        { headers: request.headers.set('Authorization', `Bearer ${token}`) })
+        { headers: request.headers
+            .set('Authorization', `Bearer ${token}`)
+            .set('Access-Control-Allow-Origin', '*') })
       return next.handle(cloned).pipe(catchError(x => this.handleAuthError(x))); //here use an arrow function, otherwise you may get "Cannot read property 'navigate' of undefined" on angular 4.4.2/net core 2/webpack 2.70;
     }
     return next.handle(request);

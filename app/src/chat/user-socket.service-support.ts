@@ -17,12 +17,12 @@ export class UserSocketServiceSupport {
     userSocket.id = socketId;
     userSocket.user = user;
     await this.userSocketRepository.save(userSocket);
-    Logger.log(`Socket[id=${socketId} for user[id=${user.id}] was created]`);
+    Logger.log(`Socket[id=${socketId} for user[id=${user.id}] was created`);
   }
 
   async removeSocket(socketId: string): Promise<void> {
     await this.userSocketRepository.delete({ id: socketId });
-    Logger.log(`Socket[id=${socketId}]`);
+    Logger.log(`Socket[id=${socketId}] was removed`);
   }
 
   async removeAllSockets() {

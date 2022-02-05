@@ -1,7 +1,7 @@
 import { Chat, ChatType } from "../model/chat.entity";
 import { Expose } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
-import {UserChatRole, UserChatStatus} from "../model/user-chat-link.entity";
+import { UserChatRole, UserChatStatus} from "../model/user-chat-link.entity";
 
 export class ChatBriefOutDto {
   @Expose()
@@ -21,14 +21,32 @@ export class ChatBriefOutDto {
   type: ChatType;
 
   @ApiProperty({
+    description: "Путь аватарки",
+    example: "/api/chat/1/avatar",
+  })
+  avatar: string;
+
+  @ApiProperty({
     description: "Статус пользователя в чате",
     example: UserChatStatus.ACTIVE,
   })
   userChatStatus: UserChatStatus;
 
   @ApiProperty({
+    description: "Дата окончания блокирование",
+    example: new Date(),
+  })
+  dateTimeBlockExpire: Date;
+
+  @ApiProperty({
     description: "Роль пользователя в чате",
     example: UserChatRole.ADMIN,
   })
   userChatRole: UserChatRole;
+
+  @ApiProperty({
+    description: "Верификация",
+    example: true,
+  })
+  verified: boolean;
 }
