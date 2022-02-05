@@ -57,7 +57,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   }
 
   findChats() {
-    if (this.name != null && this.name.length > 0) {
+    if (this.name != null && this.name.length > 0 || this.global) {
       if (this.allChats.length == 0) {
         this.allChats = this.chats;
         this.return = true;
@@ -101,9 +101,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
 
   changeSearch() {
     this.global = !this.global;
-    if (this.searchName.value != null && this.searchName.value.length > 0) {
-      this.findChats();
-    }
+    this.findChats();
   }
 
   getSearchColor() {

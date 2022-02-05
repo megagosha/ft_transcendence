@@ -118,7 +118,8 @@ export class ChatServiceSupport {
     const qb: SelectQueryBuilder<UserChatLink> = this.userChatLinkRepository
       .createQueryBuilder("link")
       .leftJoinAndSelect("link.user", "user")
-      .leftJoinAndSelect("link.chat", "chat");
+      .leftJoinAndSelect("link.chat", "chat")
+      .leftJoinAndSelect("chat.avatar", "avatar");
 
     if (chatname != null && chatname.length > 0) {
       qb.andWhere("chat.name ilike :name", { name: chatname + "%" });
@@ -222,6 +223,15 @@ export class ChatServiceSupport {
   }
 
   getChatAvatarPath(chat: Chat) {
-    return `/api/file/chat/${chat.id}/avatar`;
+    const avatar: File = chat.avatar != null ? chat.avatar : ChatServiceSupport.getDefaultChatAvatar();
+    return `/api/file/chat/${chat.id}/avatar/${avatar.name}`;
+  }
+
+  static getDefaultChatAvatar(): File {
+    const file = new File();
+    file.uuid = "default-chat-avatar.png";
+    file.name = "default-chat-avatar.png";
+    file.contentType = "image/png";
+    return file;
   }
 }

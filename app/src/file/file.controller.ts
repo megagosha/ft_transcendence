@@ -9,14 +9,15 @@ export class FileController {
   constructor(private readonly fileService: FileService) {
   }
 
-  @ApiOperation({ description: "Получить аватарку чата" })
+  @ApiOperation({ description: "Получить файл по ссылке" })
   @ApiParam({ name: "chatId", description: "Id чата", example: 1, required: true })
   @ApiResponse({ description: "Аватарка", status: HttpStatus.OK, type: [StreamableFile] })
-  @Get("/chat/:chatId/avatar")
-  async getChatAvatar(
+  @Get("/chat/:chatId/avatar/:fileName")
+  async getFile(
     @Param("chatId", ParseIntPipe) chatId: number,
-    @Res({passthrough: true}) res: Response
+    @Param("fileName") fileName: string,
+    @Res({ passthrough: true }) res: Response
   ): Promise<StreamableFile> {
-    return await this.fileService.getChatAvatar(chatId, res);
+    return await this.fileService.getChatAvatar(chatId, fileName, res);
   }
 }

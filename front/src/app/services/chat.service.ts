@@ -1,6 +1,8 @@
 import {Injectable, ViewContainerRef} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {io, Socket} from "socket.io-client";
+import {token} from "../app.module";
 
 export enum ChatType {
   PROTECTED = "PROTECTED",
@@ -145,9 +147,12 @@ export class ChatService {
 
   private currentChat: Chat | null = null;
   private currentChatView: ViewContainerRef | null = null;
+  private readonly socket: Socket;
 
   constructor(private readonly http: HttpClient,
               private readonly snackBar: MatSnackBar) {
+    this.socket = io("http://localhost:3000/chat", {transports: ['websocket'], auth: {token : token()}});
+    console.log(this.socket);
   }
 
   getChat() {
@@ -162,6 +167,10 @@ export class ChatService {
     } else {
       this.currentChatView = chatView;
     }
+  }
+
+  getSocket() {
+    return this.socket;
   }
 
   updateChat(chatId: number, chat: ChatUpdate) {

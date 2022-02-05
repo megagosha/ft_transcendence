@@ -12,10 +12,10 @@ import {
 import {Profile} from "../../login/profile.interface";
 import {UserService} from "../../services/user.service";
 import {ScrollService} from "../../services/scroll.service";
-import {ChatSocket} from "../chat-socket";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatDialog} from "@angular/material/dialog";
 import {ChatInfoComponent} from "../chat-info/chat-info.component";
+import {Socket} from "socket.io-client";
 
 @Component({
   selector: 'app-chat-room',
@@ -31,13 +31,14 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
   user: Profile = this.userService.user;
   messageText: string = '';
   scrollService: ScrollService = new ScrollService();
+  socket: Socket;
 
   constructor(private readonly userService: UserService,
               private readonly chatService: ChatService,
-              private socket: ChatSocket,
               private snackBar: MatSnackBar,
               private dialog: MatDialog) {
     this.chat = <Chat>chatService.getChat();
+    this.socket = chatService.getSocket();
   }
 
   ngOnInit(): void {
@@ -73,7 +74,7 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
   }
 
   private listenMessageReceive(): void {
-    this.socket.on<Message>('/message/receive').subscribe(message => {
+    this.socket.on('/message/receive', (message: Message) => {
       if (message && message.targetChat.id == this.chat.id && !this.messages.some(m => m.id == message.id)) {
         message.dateTimeSend = new Date(message.dateTimeSend);
         this.messages.push(message);
@@ -82,7 +83,7 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
   }
 
   private listenMessagePageReceive(): void {
-    this.socket.on<MessagePage>('/message/page-receive').subscribe(messagePage => {
+    this.socket.on('/message/page-receive', (messagePage: MessagePage) => {
       messagePage.messages.forEach(message => {
         if (message.targetChat.id == this.chat.id && !this.messages.some(m => m.id == message.id)) {
           message.dateTimeSend = new Date(message.dateTimeSend);
@@ -93,7 +94,7 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
   }
 
   private listenError(): void {
-    this.socket.on<Error>('/error').subscribe(error => {
+    this.socket.on('/error', (error: Error) => {
       this.snackBar.open(error.error, "OK", {duration: 5000});
     });
   }
