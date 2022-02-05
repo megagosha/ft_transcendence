@@ -155,7 +155,7 @@ export class ChatGateway
   }
 
   private getCurrentUserId(client: Socket): number {
-    const user: User = this.authService.decodeJwtToken(client.handshake.headers.authorization);
+    const user: User = this.authService.decodeJwtToken(client.handshake.auth.token);
     if (!user) {
       this.disconnect(client);
     }

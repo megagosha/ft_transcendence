@@ -310,13 +310,13 @@ export class ChatService {
 
       chatDtos = chats.map((chat) => {
         const dto = plainToClass(ChatBriefOutDto, chat, { excludeExtraneousValues: true });
+        dto.avatar = this.chatServiceSupport.getChatAvatarPath(chat);
         const link = linkByChatId.get(chat.id);
         if (link != null) {
           dto.userChatRole = link.userRole;
           dto.userChatStatus = link.userStatus;
           dto.dateTimeBlockExpire = link.dateTimeBlockExpire;
           dto.verified = link.verified;
-          dto.avatar = this.chatServiceSupport.getChatAvatarPath(chat);
         }
         return dto;
       });

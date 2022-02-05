@@ -93,7 +93,11 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
 
   uploadAvatar(event: any) {
     const file: File = event.target.files[0];
-    this.chatService.uploadAvatar(this.chatBrief.id, file).subscribe(() => {},
+    this.chatService.uploadAvatar(this.chatBrief.id, file).subscribe(() => {
+        const path: string = `/api/file/chat/${this.chatDetails.id}/avatar/${file.name}`;
+        this.chatDetails.avatar = path;
+        this.chatBrief.avatar = path;
+      },
       error => {
         this.snackBar.open(error.error.message, "OK", {duration: 5000});
       });

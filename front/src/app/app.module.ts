@@ -46,7 +46,6 @@ import { OtpComponent } from './otp/otp.component';
 import { NgOtpInputModule } from 'ng-otp-input';
 import { MatTableModule } from '@angular/material/table';
 import {ChatService} from "./services/chat.service";
-import {ChatSocket} from "./chat/chat-socket";
 import {ScrollingModule} from "@angular/cdk/scrolling";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {InfiniteScrollModule} from "ngx-infinite-scroll";
@@ -68,14 +67,14 @@ import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MAT_DATE_LOCALE, MatNativeDateModule} from "@angular/material/core";
 import { ChatCreateNewComponent } from './chat/chat-create-new/chat-create-new.component';
 import { EnterPasswordComponent } from './chat/enter-password/enter-password.component';
+import { LadderComponent } from './ladder/ladder.component';
+import {ChangeUsernameDialog} from "./personal-profile/change-username-dialog.component";
+import {ChangeUserAvatarDialog} from "./personal-profile/change-useravatar-dialog.component";
 
 export function token(): any {
   return localStorage.getItem("token");
 }
 
-import { LadderComponent } from './ladder/ladder.component';
-import {ChangeUsernameDialog} from "./personal-profile/change-username-dialog.component";
-import {ChangeUserAvatarDialog} from "./personal-profile/change-useravatar-dialog.component";
 @NgModule({
   declarations: [
     AppComponent,
@@ -155,12 +154,9 @@ import {ChangeUserAvatarDialog} from "./personal-profile/change-useravatar-dialo
   exports: [SnackbarActionsComponent],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
     { provide: MAT_DATE_LOCALE, useValue: 'ru-RU'},
   AuthGuard,
   UserService,
-  AuthGuard,
-  ChatService,
-  ChatSocket],
+  ChatService],
   bootstrap: [AppComponent]})
 export class AppModule { }

@@ -31,7 +31,7 @@
 
 .messages-block {
   flex-basis: 70%;
-  background-color: #FBFBFB;
+  background-color: #ececec;
   border-radius: 15px;
 }
 
@@ -47,8 +47,4 @@
   margin: auto;
   font-size: 14pt;
   color: #9b9999;
-}
-
-.subheader-spacer{
-  flex: 1 1 auto;
 }

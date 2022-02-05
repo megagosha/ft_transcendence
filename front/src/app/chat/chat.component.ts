@@ -1,7 +1,6 @@
 import {AfterViewInit, Component, OnInit, ViewChild, ViewContainerRef} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
 import {Chat, ChatService, ChatType, Message, UserChatStatus} from "../services/chat.service";
-import {ChatSocket} from "./chat-socket";
 import {Profile} from "../login/profile.interface";
 import {UserService} from "../services/user.service";
 import {ChatRoomDirective} from "./chat-room/chat-room.directive";
@@ -26,7 +25,6 @@ export class ChatComponent implements OnInit, AfterViewInit {
   constructor(
     public chatService: ChatService,
     private http: HttpClient,
-    private socket: ChatSocket,
     private userService: UserService,
     private snackBar: MatSnackBar,
   ) {}
@@ -46,7 +44,6 @@ export class ChatComponent implements OnInit, AfterViewInit {
 
   enterChatRoom(chat: Chat) {
     console.log(chat);
-
     this.chatRoom.containerRef.clear();
 
     if (chat.type != ChatType.PUBLIC && !chat.verified) {
