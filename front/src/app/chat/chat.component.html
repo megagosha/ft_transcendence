@@ -1,14 +1,10 @@
 <app-top-bar></app-top-bar>
 <mat-grid-list cols="1" rowHeight="1:1">
   <div class="chat">
-    <div class="chat-selector">
-      <mat-tab-group mat-align-tabs="chat-picker">
+<!--    <div class="chat-selector">-->
+      <mat-tab-group mat-align-tabs="chat-picker" dynamicHeight cdk-scrollable class="chat-selector">
         <mat-tab label="FRIENDLIST">
-          <mat-selection-list #friends [multiple]="false" [color]="'primary'">
-            <mat-list-option *ngFor="let friend of typesOfFriends" [value]="friend">
-              {{friend}}
-            </mat-list-option>
-          </mat-selection-list>
+          <app-friendlist class="friendlist"></app-friendlist>
         </mat-tab>
         <mat-tab label="CHATS">
           <mat-selection-list #chats [multiple]="false" [color]="'primary'">
@@ -21,7 +17,7 @@
       <button class="fub-button" mat-fab color="primary" aria-label="Add new friend">
         <mat-icon>add</mat-icon>
       </button>
-    </div>
+<!--    </div>-->
     <mat-divider [vertical]="true"></mat-divider>
     <div class="messages-block">
       <mat-list class="messages">

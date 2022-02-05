@@ -7,6 +7,8 @@ export const OAuthConstants = {
 
 export const jwtConstants = {
   secret: 'secretKey',
+  // tmpSecret: 'newSecret',
+  twoAuthAppName: 'ft_transcendence',
 };
 
 // export const rootPath = '/var/www/app/';

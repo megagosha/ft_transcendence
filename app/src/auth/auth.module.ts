@@ -9,6 +9,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from '../constants';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
+import { SocketStrategy } from './socket.strategy';
+import { GoogleStrategy } from './google.strategy';
+import { TmpStrategy } from './tmp.strategy';
 
 @Module({
   imports: [
@@ -17,11 +20,18 @@ import { User } from '../users/user.entity';
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '1000s' },
+      signOptions: { expiresIn: '10000s' },
     }),
     TypeOrmModule.forFeature([User]),
   ],
-  providers: [AuthService, FortyTwoStrategy, JwtStrategy],
+  providers: [
+    AuthService,
+    FortyTwoStrategy,
+    GoogleStrategy,
+    TmpStrategy,
+    JwtStrategy,
+    SocketStrategy,
+  ],
   controllers: [AuthController],
   exports: [AuthService],
 })

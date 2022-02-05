@@ -1,0 +1,27 @@
+<div class="add-friend-dialog">
+  <h1 mat-dialog-title>Find friend</h1>
+  <form class="find-friend-form" id="friend-form">
+    <mat-form-field class="friend-full-width" appearance="fill">
+      <mat-label>Username</mat-label>
+      <input matInput
+             aria-label="Username"
+             [matAutocomplete]="auto"
+             [formControl]="autoCompleteControl">
+
+      <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="selectOption($event)">
+<!--        <div *ngIf="filteredUsers != null">-->
+        <mat-option *ngFor="let user of apiCtrl | async" [value]="user">
+          <img class="autocomplete-avatar-img" aria-hidden src="http://localhost:3000/{{user.avatarImgName}}" height="25">
+          <span>{{user.username}}</span> |
+          <small>Status: {{user.status}}</small>
+        </mat-option>
+<!--        </div>-->
+      </mat-autocomplete>
+    </mat-form-field>
+    <mat-error *ngIf="autoCompleteControl.hasError('add_friend')">
+      Something went wrong. Try again.
+    </mat-error>
+  </form>
+
+
+</div>

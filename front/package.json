@@ -21,7 +21,12 @@
     "@angular/platform-browser": "~13.1.0",
     "@angular/platform-browser-dynamic": "~13.1.0",
     "@angular/router": "~13.1.0",
+    "ng-otp-input": "^1.8.1",
+    "ng-qrcode": "^6.0.0",
+    "qrcode": "^1.5.0",
     "rxjs": "~7.4.0",
+    "socket.io-client": "^4.4.1",
+    "stream": "^0.0.2",
     "stringify": "^5.2.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"

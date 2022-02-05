@@ -4,24 +4,29 @@
   <h1>Profile info</h1>
   <mat-list role="list" class="profile-list">
     <mat-list-item class="profile-item" role="listitem"><h2>NAME</h2> <span
-      class="profile-spacer"></span>{{userService.user.username}}
-      <button mat-icon-button (click)="openUsernameDialog()">
-        <mat-icon>edit</mat-icon>
-      </button>
+      class="profile-spacer"></span>{{profile.username}}
     </mat-list-item>
     <mat-list-item class="profile-item" role="listitem"><h2>PROFILE PICTURE</h2><span class="profile-spacer"></span>
       <img
-        height="45" src="{{ 'http://localhost:3000' + userService.user.avatarImgName}}">
-      <button mat-icon-button>
-        <mat-icon (click)="openAvatarDialog()">edit</mat-icon>
-      </button>
-    </mat-list-item>
-    <mat-list-item class="profile-item" role="listitem"><h2>DATE REGISTERED</h2>  <span
-      class="profile-spacer"></span>{{userService.user.registerDate}}
+        height="45" src="{{ 'http://localhost:3000' + profile.avatarImgName}}">
+
     </mat-list-item>
     <mat-list-item class="profile-item" role="listitem">
-      <button mat-stroked-button color="warn" (click)="logout()">LOGOUT</button>
+      <h2>DATE REGISTERED</h2>
+      <span class="profile-spacer"></span>{{profile.registerDate}}
+    </mat-list-item>
+    <mat-list-item class="profile-item" role="listitem">
+      <h2>LAST SEEN</h2>
+      <span class="profile-spacer"></span>{{profile.lastLoginDate}}
+    </mat-list-item>
+    <mat-list-item class="profile-item" role="listitem">
+      <h2>STATUS</h2>
+      <span class="profile-spacer"></span>{{profile.status}}
     </mat-list-item>
   </mat-list>
+  <button class="invite-button" mat-button color="primary" *ngIf="profile.status == 'ONLINE'" >Invite to play</button>
   <!--</div>-->
 </mat-card>
+
+<app-one-on-one [value]="this.userId"></app-one-on-one>
+

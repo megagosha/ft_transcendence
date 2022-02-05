@@ -1,0 +1,29 @@
+
+.card-container {
+  margin-top: 10px;
+  display: flex;
+}
+.player-info {
+  width: 25%;
+  margin-left: auto;
+}
+
+
+img {
+
+  display: block;
+  margin: 0 auto;
+}
+
+.username {
+  color: black;
+  font-size: 15px;
+  margin: 15px auto;
+}
+
+.score {
+  color: #673ab7;
+  margin: auto;
+  font-size: 30px;
+  font-weight: bolder;
+}

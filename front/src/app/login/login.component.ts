@@ -25,6 +25,7 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     let token = null;
+    let twoAuth: boolean = false;
     this.route.queryParams
       .subscribe(params => {
           token = params["token"];
@@ -47,6 +48,11 @@ export class LoginComponent implements OnInit {
     window.open("http://localhost:3000/auth/ft", "_self");
     // console.log('onLogin executed');
     // console.log(this._authService.login());
+    return;
+  }
+
+  googleLogin() {
+    window.open("http://localhost:3000/auth/google", "_self");
     return;
   }
 }

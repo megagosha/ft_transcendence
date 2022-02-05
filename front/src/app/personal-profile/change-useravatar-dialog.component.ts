@@ -14,7 +14,7 @@ interface HTMLInputEvent extends Event {
 @Component({
   selector: "change-useravatar-dialog",
   templateUrl: "change-useravatar-dialog.html",
-  styleUrls: ["user-profile.component.css"]
+  styleUrls: ["personal-profile.component.css"]
 })
 export class ChangeUserAvatarDialog {
   public avatar = new FormControl("");
@@ -67,8 +67,6 @@ export class ChangeUserAvatarDialog {
         this.userService.updatePicTimestamp();
       });
     }
-
-
   }
 
   reset() {

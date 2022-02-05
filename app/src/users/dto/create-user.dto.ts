@@ -3,5 +3,6 @@ export class CreateUserDto {
   email: string;
   username: string;
   fortytwo_id: number;
+  google_id: string;
   avatarImgName: string;
 }
