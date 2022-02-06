@@ -45,7 +45,7 @@ export class UsersServiceSupport {
 
   static getUserAvatarPath(user: User) {
     if (user.avatarImgName != null) {
-      if (user.avatarImgName.includes("intra")) {
+      if (user.avatarImgName.includes("http")) {
         return user.avatarImgName;
       }
       return `http://localhost:3000/files/user/${user.avatarImgName}`;
