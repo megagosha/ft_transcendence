@@ -75,7 +75,7 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
               this.chatService.setChat(null, null);
             }
             this.chatBrief.verified = false;
-            this.currentDialog.close();
+            this.currentDialog.close({reload: false});
           }, error => {
             this.snackBar.open(error.error.message, "OK", {duration: 5000});
           }, () => {
@@ -97,6 +97,7 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
         const path: string = `/api/file/chat/${this.chatDetails.id}/avatar/${file.name}`;
         this.chatDetails.avatar = path;
         this.chatBrief.avatar = path;
+        this.currentDialog.close({reload: true});
       },
       error => {
         this.snackBar.open(error.error.message, "OK", {duration: 5000});
@@ -125,6 +126,6 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
 
   joinInChat() {
     document.getElementById("joinInChat")?.click();
-    this.currentDialog.close();
+    this.currentDialog.close({reload: false});
   }
 }

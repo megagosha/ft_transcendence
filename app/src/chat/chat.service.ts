@@ -28,12 +28,11 @@ import {UuidUtil} from "../util/uuid.util";
 import {UserBriefOutDto} from "./dto/user-brief-out-dto";
 import {UserBriefPageOutDto} from "./dto/user-brief-page-out-dto";
 import {ChatUserPageOutDto} from "./dto/chat-user-page-out-dto";
-import {File} from "../file/model/file.entity";
 import {Uuid} from "node-ts-uuid";
-import {FilesServiceSupport} from "../file/files.service-support";
 import { v4 as uuidv4 } from 'uuid';
 import {open, rm, writeFile} from "fs";
 import {join} from "path";
+import {chatAvatarsPath} from "../constants";
 
 @Injectable()
 export class ChatService {
@@ -43,7 +42,6 @@ export class ChatService {
     @InjectRepository(UserChatLink) private readonly userChatLinkRepository: Repository<UserChatLink>,
     private readonly userServiceSupport: UsersServiceSupport,
     private readonly chatServiceSupport: ChatServiceSupport,
-    private readonly fileServiceSupport: FilesServiceSupport,
   ) {}
 
   async createChat(dto: ChatCreateInDto, userId: number) : Promise<ChatCreateOutDto> {
@@ -321,7 +319,7 @@ export class ChatService {
         return dto;
       });
     } else {
-      const userChatLinks: UserChatLink[] = await this.chatServiceSupport.filterUserChatLinks(user, null, name, null, null, take, skip);
+      const userChatLinks: UserChatLink[] = await this.chatServiceSupport.filterUserChatLinks(user, null, name, null, true, take, skip);
       chatDtos = userChatLinks.map((link) => {
         const dto = plainToClass(ChatBriefOutDto, link.chat, { excludeExtraneousValues: true });
         dto.userChatRole = link.userRole;
@@ -424,47 +422,28 @@ export class ChatService {
 
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.UPDATE_CHAT_INFO);
 
-    const fileName: string = avatar.originalname;
     const contentType: string = avatar.mimetype;
 
-    if (fileName.length > File.NAME_LENGTH) {
-      throw new BadRequestException("Слишком длинное название файла");
-    }
-
-    if (fileName.length > File.NAME_LENGTH) {
-      throw new BadRequestException("Слишком длинный тип файла");
-    }
-
-    if (!contentType.includes("jpg")
-      && !contentType.includes("jpeg")
-      && !contentType.includes("png")) {
+    let extension: string;
+    if (contentType.includes("jpg")) {
+      extension = "jpg";
+    } else if (contentType.includes("jpeg")) {
+      extension = "jpeg"
+    } else if (contentType.includes("png")) {
+      extension = "png";
+    } else {
       throw new BadRequestException("Недопустимый тип файла. Допустимые: png, jpg, jpeg");
     }
 
-    const file: File = new File();
-    file.uuid = uuidv4();
-    file.name = fileName;
-    file.contentType = contentType;
+    const fileName: string = `${chatId}.${extension}`;
 
-    await writeFile(join(process.cwd(), "upload", file.uuid), avatar.buffer,  "binary", function(err) {
+    await writeFile(join(chatAvatarsPath, fileName), avatar.buffer,  "binary", function(err) {
       if(err) {
         throw new InternalServerErrorException(err, "Ошибка при загрузке файла");
       }
     });
 
-    if (chat.avatar != null) {
-      await rm(join(process.cwd(), "upload", chat.avatar.uuid), function (err) {
-        if(err) {
-          throw new InternalServerErrorException(err, "Ошибка при загрузке файла");
-        }
-      })
-
-      chat.avatar.uuid = file.uuid;
-      chat.avatar.name = file.name;
-      chat.avatar.contentType = file.contentType;
-    } else {
-      chat.avatar = file;
-    }
+    chat.avatar = fileName;
     this.chatServiceSupport.updateChat(chat);
   }
 

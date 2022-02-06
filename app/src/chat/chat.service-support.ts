@@ -1,17 +1,11 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException
-} from "@nestjs/common";
+import {BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException} from "@nestjs/common";
 import {InjectRepository} from "@nestjs/typeorm";
 import {UserChatLink, UserChatRole, UserChatStatus} from "./model/user-chat-link.entity";
 import {ILike, In, Not, Repository, SelectQueryBuilder} from "typeorm";
 import {Chat, ChatType} from "./model/chat.entity";
 import {User} from "../users/user.entity";
-import {File} from "../file/model/file.entity";
+import {join} from "path";
+import {chatAvatarsPath} from "../constants";
 
 export enum ChatAction {
   CHAT_INFO,
@@ -82,7 +76,7 @@ export class ChatServiceSupport {
 
   async findChatById(id: number): Promise<Chat> {
     const chat: Chat = await this.chatRepository.findOne(id, {
-      relations: ["ownerUser", "avatar"],
+      relations: ["ownerUser"],
     });
     if (!chat) {
       throw new NotFoundException("Чат не найден");
@@ -118,8 +112,7 @@ export class ChatServiceSupport {
     const qb: SelectQueryBuilder<UserChatLink> = this.userChatLinkRepository
       .createQueryBuilder("link")
       .leftJoinAndSelect("link.user", "user")
-      .leftJoinAndSelect("link.chat", "chat")
-      .leftJoinAndSelect("chat.avatar", "avatar");
+      .leftJoinAndSelect("link.chat", "chat");
 
     if (chatname != null && chatname.length > 0) {
       qb.andWhere("chat.name ilike :name", { name: chatname + "%" });
@@ -188,7 +181,19 @@ export class ChatServiceSupport {
         name: ILike(name + "%"),
         type: Not(ChatType.PRIVATE),
       },
+      take: take,
+      skip: skip,
     });
+  }
+
+  async unblockUserChatLinks(dateExpire: Date) {
+    await this.userChatLinkRepository.createQueryBuilder()
+      .update()
+      .set({ userStatus: UserChatStatus.ACTIVE, dateTimeBlockExpire: null })
+      .andWhere("userStatus IN (:...statuses)", {statuses: [UserChatStatus.MUTED, UserChatStatus.BANNED]})
+      .andWhere("dateTimeBlockExpire IS NOT null")
+      .andWhere("dateTimeBlockExpire < :date", {date: dateExpire})
+      .execute();
   }
 
   public static verifyAction(userChatLink: UserChatLink, action: ChatAction): void {
@@ -223,15 +228,9 @@ export class ChatServiceSupport {
   }
 
   getChatAvatarPath(chat: Chat) {
-    const avatar: File = chat.avatar != null ? chat.avatar : ChatServiceSupport.getDefaultChatAvatar();
-    return `/api/file/chat/${chat.id}/avatar/${avatar.name}`;
-  }
-
-  static getDefaultChatAvatar(): File {
-    const file = new File();
-    file.uuid = "default-chat-avatar.png";
-    file.name = "default-chat-avatar.png";
-    file.contentType = "image/png";
-    return file;
+    if (chat.avatar != null) {
+      return `http://localhost:3000/files/chat/${chat.avatar}`;
+    }
+    return `http://localhost:3000/files/chat/default.png`;
   }
 }
