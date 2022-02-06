@@ -1,6 +1,7 @@
 import { User } from '../user.entity';
 import { UserService } from '../user.service';
 import { Logger } from '@nestjs/common';
+import {UsersServiceSupport} from "../users.service-support";
 
 export class SearchUsersResultsDto {
   id: number;
@@ -12,6 +13,6 @@ export class SearchUsersResultsDto {
     this.id = user.id;
     this.username = user.username;
     this.status = user.status;
-    this.avatarImgName = UserService.getAvatarUrlById(this.id);
+    this.avatarImgName = UsersServiceSupport.getUserAvatarPath(user);
   }
 }

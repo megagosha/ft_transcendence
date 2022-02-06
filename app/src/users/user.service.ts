@@ -32,6 +32,10 @@ export class UserService {
     private friendlistRepo: Repository<Friendship>,
   ) {}
 
+  async saveUser(user: User) {
+    await this.userRepo.save(user);
+  }
+
   async findFtUser(ftId: number, email: string): Promise<User> {
     const user = await this.userRepo.findOne({
       fortytwo_id: ftId,

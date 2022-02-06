@@ -10,8 +10,7 @@ import { join } from "path";
 import "reflect-metadata";
 import "es6-shim";
 import { ChatModule } from "./chat/chat.module";
-import { FileModule } from "./file/file.module";
-import {ScheduleModule} from "@nestjs/schedule";
+import { ScheduleModule } from "@nestjs/schedule";
 
 @Module({
   controllers: [AppController],
@@ -21,9 +20,9 @@ import {ScheduleModule} from "@nestjs/schedule";
     UserModule,
     GameModule,
     ChatModule,
-    FileModule,
     ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), "..", "front", "src"),
+      rootPath: join(process.cwd(), "..", "static"),
+      exclude: ["/api*"],
     }),
     TypeOrmModule.forRoot({
       host: process.env.DB_HOST,

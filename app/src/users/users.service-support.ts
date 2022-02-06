@@ -42,4 +42,14 @@ export class UsersServiceSupport {
       take: take,
     });
   }
+
+  static getUserAvatarPath(user: User) {
+    if (user.avatarImgName != null) {
+      if (user.avatarImgName.includes("intra")) {
+        return user.avatarImgName;
+      }
+      return `http://localhost:3000/files/user/${user.avatarImgName}`;
+    }
+    return `http://localhost:3000/files/user/default.png`;
+  }
 }
