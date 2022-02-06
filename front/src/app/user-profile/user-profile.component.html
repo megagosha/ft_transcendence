@@ -7,9 +7,7 @@
       class="profile-spacer"></span>{{profile.username}}
     </mat-list-item>
     <mat-list-item class="profile-item" role="listitem"><h2>PROFILE PICTURE</h2><span class="profile-spacer"></span>
-      <img
-        height="45" src="{{ 'http://localhost:3000' + profile.avatarImgName}}">
-
+      <img style="width: 45px; height: 45px; border-radius: 23px" src="{{userService.user.avatarImgName }}">
     </mat-list-item>
     <mat-list-item class="profile-item" role="listitem">
       <h2>DATE REGISTERED</h2>

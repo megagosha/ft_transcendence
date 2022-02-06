@@ -14,8 +14,7 @@
       <mat-slide-toggle [(ngModel)]="profile.isTwoAuth" color="primary"  (click)="enableTwoAuth()"></mat-slide-toggle>
     </mat-list-item>
     <mat-list-item class="profile-item" role="listitem"><h2>PROFILE PICTURE</h2><span class="profile-spacer"></span>
-      <img
-        height="45" src="{{ 'http://localhost:3000' + profile.avatarImgName}}">
+      <img style="width: 45px; height: 45px; border-radius: 23px" src="{{userService.user.avatarImgName }}">
       <button mat-icon-button>
         <mat-icon (click)="openAvatarDialog()">edit</mat-icon>
       </button>

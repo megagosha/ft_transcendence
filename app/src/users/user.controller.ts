@@ -18,7 +18,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { extname } from 'path';
+import {extname, join} from 'path';
 
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../auth/auth.service';
@@ -31,11 +31,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as fs from 'fs';
 import { UserProfileDto } from './dto/user-profile.dto';
-import { rootPath } from '../constants';
+import {chatAvatarsPath, rootPath, userAvatarsPath} from '../constants';
 import { SearchUsersResultsDto } from './dto/search-users-results.dto';
 import { Friendship } from './friendlist.entity';
 import { AddFriendDto } from './dto/add-friend.dto';
 import { NotFoundError } from 'rxjs';
+import {CurrentUserId} from "../util/user.decarator";
+import {writeFile} from "fs";
 // import { fileTypeFromFile } from 'file-type';
 
 @Controller('user')
@@ -59,31 +61,37 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: './upload',
-        filename: UserService.editFileName,
-      }),
       limits: { fileSize: 4000000 },
       fileFilter: UserService.imageFileFilter,
     }),
   )
   async setAvatar(
-    @UploadedFile() file: Array<Express.Multer.File>,
-    @Req() req,
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUserId() userId: number
   ): Promise<any> {
-    const dir = `${rootPath}${req.user.id}`;
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, {
-        recursive: true,
-      });
+    const user: User = await this.userService.findUser(userId);
+    const contentType: string = file.mimetype;
+    let extension: string;
+    if (contentType.includes("jpg")) {
+      extension = "jpg";
+    } else if (contentType.includes("jpeg")) {
+      extension = "jpeg"
+    } else if (contentType.includes("png")) {
+      extension = "png";
+    } else {
+      throw new BadRequestException("Недопустимый тип файла. Допустимые: png, jpg, jpeg");
     }
-    fs.rename(file['path'], `${dir}/${req.user.id}.png`, function (err) {
-      if (err) {
-        throw new InternalServerErrorException();
-      } else {
-        Logger.log('Successfully moved the file!');
+
+    const fileName = `${userId}.${extension}`;
+
+    await writeFile(join(userAvatarsPath, fileName), file.buffer,  "binary", function(err) {
+      if(err) {
+        throw new InternalServerErrorException(err, "Ошибка при загрузке файла");
       }
     });
+
+    user.avatarImgName = fileName;
+    this.userService.saveUser(user);
   }
 
   @Get('me')

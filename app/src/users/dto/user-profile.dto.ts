@@ -5,6 +5,7 @@ import { renderPath, rootPath } from '../../constants';
 import * as fs from 'fs';
 import { Logger } from '@nestjs/common';
 import { UserService } from '../user.service';
+import {UsersServiceSupport} from "../users.service-support";
 
 export class UserProfileDto {
   constructor(user: User) {
@@ -17,7 +18,7 @@ export class UserProfileDto {
     // this.statistic = user.statistic;
     this.invitedFriendships = user.invitedFriendships;
     this.invitorFriendships = user.invitorFriendships;
-    this.avatarImgName = UserService.getAvatarUrlById(user.id);
+    this.avatarImgName = UsersServiceSupport.getUserAvatarPath(user);
     this.isTwoAuth = user.twoAuth != null;
     Logger.log('Avatar is set to ' + this.avatarImgName);
   }

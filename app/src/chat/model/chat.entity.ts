@@ -5,13 +5,10 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
-  OneToOne,
   PrimaryGeneratedColumn,
   VersionColumn,
 } from "typeorm";
 import { User } from "../../users/user.entity";
-import { Uuid } from "node-ts-uuid";
-import { File } from "../../file/model/file.entity";
 
 export enum ChatType {
   PROTECTED = "PROTECTED",
@@ -75,9 +72,8 @@ export class Chat {
   dateTimePasswordChange: Date;
 
   /** Аватар */
-  @OneToOne(() => File, {nullable: true, cascade: true})
-  @JoinColumn({name: "avatar_file_id"})
-  avatar: File;
+  @Column({name: "avatar", nullable: true})
+  avatar: string;
 
   /** Владелец чата */
   @ManyToOne(() => User, { nullable: false })

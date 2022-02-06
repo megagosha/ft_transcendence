@@ -13,7 +13,6 @@ import { UserSocketServiceSupport } from "./user-socket.service-support";
 import { UserSocket } from "./model/user-socket.entity";
 import { SocketValidationPipe } from "./socket.validation-pipe";
 import { MessageServiceSupport } from "./message.service-support";
-import { FileModule } from "../file/file.module";
 import { SchedulerService } from "./scheduler.service";
 
 @Module({
@@ -21,7 +20,6 @@ import { SchedulerService } from "./scheduler.service";
     TypeOrmModule.forFeature([Chat, UserChatLink, Message, UserSocket]),
     forwardRef(() => UserModule),
     forwardRef(() => AuthModule),
-    forwardRef(() => FileModule),
   ],
   providers: [
     ChatService,
