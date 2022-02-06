@@ -13,7 +13,8 @@ import { UserSocketServiceSupport } from "./user-socket.service-support";
 import { UserSocket } from "./model/user-socket.entity";
 import { SocketValidationPipe } from "./socket.validation-pipe";
 import { MessageServiceSupport } from "./message.service-support";
-import {FileModule} from "../file/file.module";
+import { FileModule } from "../file/file.module";
+import { SchedulerService } from "./scheduler.service";
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import {FileModule} from "../file/file.module";
     UserSocketServiceSupport,
     SocketValidationPipe,
     MessageServiceSupport,
+    SchedulerService,
   ],
   controllers: [ChatController],
   exports: [ChatService, ChatServiceSupport],

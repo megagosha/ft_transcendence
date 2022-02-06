@@ -33,8 +33,7 @@
 		</div>
 		<mat-form-field *ngIf="chat.verified && chat.userChatStatus != 'MUTED'"
 						class="message-form" appearance="fill">
-			<input class="message-input-form"
-				   matInput
+			<input matInput
 				   type="text"
 				   minlength="1"
 				   maxlength="1000"

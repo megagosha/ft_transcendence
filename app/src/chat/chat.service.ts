@@ -321,7 +321,7 @@ export class ChatService {
         return dto;
       });
     } else {
-      const userChatLinks: UserChatLink[] = await this.chatServiceSupport.filterUserChatLinks(user, null, name, null, null, take, skip);
+      const userChatLinks: UserChatLink[] = await this.chatServiceSupport.filterUserChatLinks(user, null, name, null, true, take, skip);
       chatDtos = userChatLinks.map((link) => {
         const dto = plainToClass(ChatBriefOutDto, link.chat, { excludeExtraneousValues: true });
         dto.userChatRole = link.userRole;

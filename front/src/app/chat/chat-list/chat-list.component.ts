@@ -91,7 +91,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   }
 
   addChat() {
-    const dialogRef = this.dialog.open(ChatCreateNewComponent, {width: '450px', height: '575px', backdropClass: "backdrop-dialog-next"});
+    const dialogRef = this.dialog.open(ChatCreateNewComponent, {width: '450px', height: '575px', backdropClass: "backdrop-dialog"});
     dialogRef.afterClosed().subscribe((chat: Chat) => {
       if (chat != null) {
         this.chats.unshift(chat);

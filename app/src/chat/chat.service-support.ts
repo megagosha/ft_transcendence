@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException
-} from "@nestjs/common";
+import {BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException} from "@nestjs/common";
 import {InjectRepository} from "@nestjs/typeorm";
 import {UserChatLink, UserChatRole, UserChatStatus} from "./model/user-chat-link.entity";
 import {ILike, In, Not, Repository, SelectQueryBuilder} from "typeorm";
@@ -188,7 +181,20 @@ export class ChatServiceSupport {
         name: ILike(name + "%"),
         type: Not(ChatType.PRIVATE),
       },
+      relations: ["avatar"],
+      take: take,
+      skip: skip,
     });
+  }
+
+  async unblockUserChatLinks(dateExpire: Date) {
+    await this.userChatLinkRepository.createQueryBuilder()
+      .update()
+      .set({ userStatus: UserChatStatus.ACTIVE, dateTimeBlockExpire: null })
+      .andWhere("userStatus IN (:...statuses)", {statuses: [UserChatStatus.MUTED, UserChatStatus.BANNED]})
+      .andWhere("dateTimeBlockExpire IS NOT null")
+      .andWhere("dateTimeBlockExpire < :date", {date: dateExpire})
+      .execute();
   }
 
   public static verifyAction(userChatLink: UserChatLink, action: ChatAction): void {

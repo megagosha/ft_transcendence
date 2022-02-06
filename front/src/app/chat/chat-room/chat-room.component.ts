@@ -114,7 +114,12 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
   }
 
   openChatInfo() {
-    this.dialog.open(ChatInfoComponent, {width: '400px', backdropClass: "backdrop-dialog", height: '560px', data: this.chat});
+    const ref = this.dialog.open(ChatInfoComponent, {width: '400px', backdropClass: "backdrop-dialog", height: '560px', data: this.chat});
+    ref.afterClosed().subscribe(answer => {
+      if (answer.reload != null && answer.reload) {
+        this.openChatInfo();
+      }
+    })
   }
 
   getMessageBlockHeight() {
