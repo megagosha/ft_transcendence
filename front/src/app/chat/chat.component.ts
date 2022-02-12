@@ -14,7 +14,6 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 })
 export class ChatComponent implements OnInit, AfterViewInit {
 
-  // @ViewChild('messageScroller') scroller: ElementRef | any;
   @ViewChild(ChatRoomDirective, {static: true}) chatRoom!: ChatRoomDirective;
 
   user: Profile = this.userService.user;
@@ -30,20 +29,13 @@ export class ChatComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    // this.listenMessageReceive();
-    // this.listenMessagePageReceive();
-    // this.http.get<ChatPage>("http://localhost:3000/api/chat/my?take=20&skip=0")
-    //   .subscribe((success: ChatPage) => {
-    //       this.typesOfChats = success.chats;
-    //     }, error => {
-    //       console.error(error);
-    //     }, () => {
-    //       console.log("Complete");
-    //     });
+    const chat: Chat | null = this.chatService.getChat();
+    if (chat != null) {
+      this.enterChatRoom(chat);
+    }
   }
 
   enterChatRoom(chat: Chat) {
-    console.log(chat);
     this.chatRoom.containerRef.clear();
 
     if (chat.type != ChatType.PUBLIC && !chat.verified) {
@@ -67,49 +59,6 @@ export class ChatComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // sendMessage() {
-  //   if (this.messageText != '') {
-  //     this.socket.emit('/message/send', this.messageText);
-  //   }
-  //   this.messageText = '';
-  // }
-  //
   ngAfterViewInit() {
-    // this.scrollTreat.init(this.scroller.nativeElement);
-  }
-
-  // nextPage() {
-  //   const nextPage: Page = {
-  //     take: 20,
-  //     skip: this.messages.length
-  //   };
-  //   this.socket.emit('/message/page', nextPage);
-  // }
-
-  // private listenMessageReceive(): void {
-  //   this.socket.on<Message>('/message/receive').subscribe(message => {
-  //     if (message && message.chatId == this.currentChat.id && !this.messages.some(m => m.id == message.id)) {
-  //         this.messages.push(message);
-  //       }
-  //     });
-  //   this.scrollTreat.restore();
-  // }
-  //
-  // private listenMessagePageReceive(): void {
-  //   this.socket.on<MessagePage>('/message/page-receive').subscribe(messagePage => {
-  //     this.scrollTreat.prepareFor('up');
-  //     messagePage.messages.forEach(message => {
-  //       if (message.chatId == this.currentChat.id && !this.messages.some(m => m.id == message.id)) {
-  //         this.messages.unshift(message);
-  //       }
-  //     });
-  //     this.scrollTreat.restore();
-  //     // this.scrollToSavePosition();
-  //     // console.log(JSON.stringify(this.messages));
-  //   });
-  // }
-
-  private scrollToSavePosition() {
-    // this.messageScroller.scrollTo({bottom: this.saveScrollPosition - 1, behavior: "auto"});
   }
 }
