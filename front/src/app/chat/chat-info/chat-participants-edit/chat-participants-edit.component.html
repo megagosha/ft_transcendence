@@ -25,20 +25,24 @@
 			<img class="participant-avatar" *ngIf="user.avatar != null" src="{{user.avatar}}" alt="AV">
 			<div class="participant-name">{{user.username}}</div>
 			<mat-chip-list>
-				<mat-chip class="participant-chip" *ngIf="user.userChatStatus == 'BANNED'" color="warn" selected>{{user.userChatStatus.slice(0,1)}}</mat-chip>
-				<mat-chip class="participant-chip" *ngIf="user.userChatStatus == 'MUTED'" color="accent" selected>{{user.userChatStatus.slice(0,1)}}</mat-chip>
-				<mat-chip class="participant-chip" *ngIf="user.userChatStatus == 'ACTIVE'">{{user.userChatRole.slice(0,1)}}</mat-chip>
+				<mat-chip [matTooltip]="getTimeBlockExpire(user)" class="participant-chip" *ngIf="user.userChatStatus == 'BANNED'" color="warn" selected>{{user.userChatStatus.slice(0,1)}}</mat-chip>
+				<mat-chip [matTooltip]="getTimeBlockExpire(user)" class="participant-chip" *ngIf="user.userChatStatus == 'MUTED'" color="accent" selected>{{user.userChatStatus.slice(0,1)}}</mat-chip>
+				<mat-chip [matTooltip]="'Role: ' + user.userChatRole.toLowerCase()" class="participant-chip" *ngIf="user.userChatStatus == 'ACTIVE'">{{user.userChatRole.slice(0,1)}}</mat-chip>
 			</mat-chip-list>
 		</button>
-		<div class="row-suffix">
-			<button *ngIf="availableEdit(user); else notAvailableIcon" mat-icon-button style="color: #f44336">
-				<mat-icon style="font-size: 20px" (click)="onDelete(user)">delete</mat-icon>
+		<div>
+			<button mat-icon-button style="width: 24px" [matMenuTriggerFor]="menu">
+				<mat-icon style="color: #646464;">more_vert</mat-icon>
 			</button>
-			<ng-template #notAvailableIcon>
-				<button mat-icon-button disabled>
-					<mat-icon style="font-size: 20px">delete</mat-icon>
-				</button>
-			</ng-template>
+			<mat-menu #menu="matMenu">
+				<button mat-menu-item (click)="goToProfile(user)"
+						style="font-size: 10pt; height: 35px; line-height: 35px">User profile</button>
+				<button mat-menu-item (click)="inviteToPlay(user)"
+						style="font-size: 10pt; height: 35px; line-height: 35px">Invite to play</button>
+				<button mat-menu-item (click)="onDelete(user)"
+						style="font-size: 10pt; height: 35px; line-height: 35px"
+						[disabled]=!availableEdit(user)>Remove participant</button>
+			</mat-menu>
 		</div>
 	</div>
 </div>

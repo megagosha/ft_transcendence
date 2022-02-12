@@ -13,14 +13,17 @@
 			 [ngStyle]="{'height': getMessageBlockHeight()}"
 			 class="messages">
 			<div class="message-row" *ngFor="let message of messages">
-				<div class="name-avatar" *ngIf="message.authorUser.avatar == null">
+				<div (click)="goToProfile(message.authorUser)" class="name-avatar" *ngIf="message.authorUser.avatar == null">
 					<p class="short-name">{{message.authorUser.username.slice(0,2)}}</p>
 				</div>
-				<img class="profile-avatar" *ngIf="message.authorUser.avatar != null" src="{{message.authorUser.avatar}}" alt="AV">
+				<img (click)="goToProfile(message.authorUser)" class="profile-avatar" *ngIf="message.authorUser.avatar != null" src="{{message.authorUser.avatar}}" alt="AV">
 				<div class="msg-right-wrap">
-					<div class="username">{{message.authorUser.username}}</div>
 					<div class="message"
-						 [ngStyle]="{'background-color': message.authorUser.id == user.id ? '#d5cef5' : '#ffffff'}">
+						 [ngStyle]="{'background-color': message.authorUser.id == user.id ? '#eceafd' : '#ffffff'}">
+						<p style="text-align: left; font-size: 12px; color: #673ab5; margin: 0; font-weight: 500; cursor: pointer"
+						   (click)="goToProfile(message.authorUser)">
+							{{message.authorUser.username}}
+						</p>
 						<p style="font-size: 10pt; text-align: left; margin: 0 0 2px;">
 							{{message.text}}
 						</p>

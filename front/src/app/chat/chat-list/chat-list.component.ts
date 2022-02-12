@@ -33,7 +33,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   pageSize: number = 50;
 
   constructor(private readonly userService: UserService,
-              private readonly chatServie: ChatService,
+              private readonly chatService: ChatService,
               private readonly http: HttpClient,
               private readonly dialog: MatDialog,
               private readonly snackbar: MatSnackBar) {
@@ -72,7 +72,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   }
 
   nextPage() {
-    this.chatServie.findChats(this.name, this.global, this.pageSize, this.chats.length)
+    this.chatService.findChats(this.name, this.global, this.pageSize, this.chats.length)
       .subscribe((page: ChatPage) => {
         console.log(page);
         page.chats.forEach(chat => this.insertChat(this.chats, chat))
@@ -128,7 +128,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
         }
       });
     } else {
-      this.chatServie.joinChat(chat.id, null).subscribe(
+      this.chatService.joinChat(chat.id, null).subscribe(
         () => this.enterChat(chat),
         error => {
           this.snackbar.open(error.error.message, "OK", {duration: 5000});
@@ -138,9 +138,9 @@ export class ChatListComponent implements OnInit, AfterViewInit {
 
   getTimeBlockExpire(chat: Chat) {
     if (chat.userChatStatus == UserChatStatus.BANNED) {
-      return `Status: banned before '${this.chatServie.getTimeBlockExpire(chat)}'`;
+      return `Status: banned before '${this.chatService.getTimeBlockExpire(chat.dateTimeBlockExpire)}'`;
     }
-    return `Status: muted before '${this.chatServie.getTimeBlockExpire(chat)}'`;
+    return `Status: muted before '${this.chatService.getTimeBlockExpire(chat.dateTimeBlockExpire)}'`;
   }
 
   private enterChat(chat: Chat) {
