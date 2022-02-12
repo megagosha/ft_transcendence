@@ -54,7 +54,7 @@ export class ChatComponent implements OnInit, AfterViewInit {
 
     if (chat.userChatStatus == UserChatStatus.BANNED) {
       this.chatService.setChat(null, null);
-      this.snackBar.open(`You have been banned before: ${this.chatService.getTimeBlockExpire(chat)}`, "OK", {duration: 5000});
+      this.snackBar.open(`You have been banned before: ${this.chatService.getTimeBlockExpire(chat.dateTimeBlockExpire)}`, "OK", {duration: 5000});
       return;
     }
 
@@ -63,7 +63,7 @@ export class ChatComponent implements OnInit, AfterViewInit {
     containerRef.createComponent<ChatRoomComponent>(ChatRoomComponent);
 
     if (chat.userChatStatus == UserChatStatus.MUTED) {
-      this.snackBar.open(`You have been muted before: ${this.chatService.getTimeBlockExpire(chat)}`, "OK", {duration: 5000});
+      this.snackBar.open(`You have been muted before: ${this.chatService.getTimeBlockExpire(chat.dateTimeBlockExpire)}`, "OK", {duration: 5000});
     }
   }
 

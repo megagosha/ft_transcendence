@@ -2,7 +2,7 @@ import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/
 import {
   Chat,
   ChatService,
-  ChatType,
+  ChatType, ChatUser,
   Error,
   Message,
   MessagePage,
@@ -131,5 +131,9 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
 
   joinInChat() {
     document.getElementById("joinInChat")?.click();
+  }
+
+  goToProfile(authorUser: ChatUser) {
+    this.chatService.routeToProfile(authorUser.id);
   }
 }

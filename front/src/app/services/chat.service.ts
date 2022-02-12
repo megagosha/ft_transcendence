@@ -3,6 +3,7 @@ import {HttpClient} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {io, Socket} from "socket.io-client";
 import {token} from "../app.module";
+import {Router} from "@angular/router";
 
 export enum ChatType {
   PROTECTED = "PROTECTED",
@@ -150,7 +151,8 @@ export class ChatService {
   private readonly socket: Socket;
 
   constructor(private readonly http: HttpClient,
-              private readonly snackBar: MatSnackBar) {
+              private readonly snackBar: MatSnackBar,
+              private readonly router: Router) {
     this.socket = io("http://localhost:3000/chat", {transports: ['websocket'], auth: {token : token()}});
     console.log(this.socket);
   }
@@ -219,8 +221,8 @@ export class ChatService {
     return this.http.get<ChatDetails>(`/api/chat/${chatId}`);
   }
 
-  getTimeBlockExpire(chat: Chat): string {
-    return chat.dateTimeBlockExpire == null ? "forever" : new Date(chat.dateTimeBlockExpire).toLocaleDateString();
+  getTimeBlockExpire(date: Date | null): string {
+    return date == null ? "forever" : new Date(date).toLocaleDateString();
   }
 
   joinChat(chatId: number, password: string | null) {
@@ -234,5 +236,9 @@ export class ChatService {
     const formData = new FormData();
     formData.append('avatar', avatar);
     return this.http.post(`/api/chat/${chatId}/avatar/upload`, formData);
+  }
+
+  routeToProfile(id: number) {
+    this.router.navigateByUrl('/profile', {state: {"id": id}});
   }
 }

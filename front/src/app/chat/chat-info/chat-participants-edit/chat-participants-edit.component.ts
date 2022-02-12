@@ -122,4 +122,22 @@ export class ChatParticipantsEditComponent implements OnInit {
     }
     return false;
   }
+
+  getTimeBlockExpire(user: ChatUser) {
+    if (user.userChatStatus == UserChatStatus.BANNED) {
+      return `Status: banned before '${this.chatService.getTimeBlockExpire(user.dateTimeBlockExpire)}'`;
+    }
+    return `Status: muted before '${this.chatService.getTimeBlockExpire(user.dateTimeBlockExpire)}'`;
+  }
+
+  goToProfile(user: ChatUser) {
+    this.dialog.afterAllClosed.subscribe(() => {
+      this.chatService.routeToProfile(user.id);
+    })
+    this.dialog.closeAll();
+  }
+
+  inviteToPlay(user: ChatUser) {
+    
+  }
 }

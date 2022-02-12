@@ -12,7 +12,7 @@
 			<mat-icon style="cursor: pointer"
 					  (click)="changeSearch()"
 					  [color]="getSearchColor()"
-					  [title]="global ? 'Change to local search' : 'Change to global search'"
+					  [matTooltip]="global ? 'Change to local search' : 'Change to global search'"
 					  matSuffix>
 				travel_explore
 			</mat-icon>
@@ -20,7 +20,7 @@
 		<button style="margin-top: 10px; height: 40px; width: 40px"
 				mat-icon-button color="primary"
 				aria-label="Create new chat"
-				title="Create new chat"
+				matTooltip="Create new chat"
 				(click)="addChat()">
 			<mat-icon style="font-size: 40px; width: 40px; padding: 0">add</mat-icon>
 		</button>
@@ -39,13 +39,13 @@
 					<div class="chat-name">{{chat.name}}</div>
 					<div class="user-status-role">
 						<mat-chip-list *ngIf="chat.verified; else nonVerified">
-							<mat-chip [title]="getTimeBlockExpire(chat)" class="chat-chip" *ngIf="chat.userChatStatus == 'BANNED'" color="warn" selected>B</mat-chip>
-							<mat-chip [title]="getTimeBlockExpire(chat)" class="chat-chip" *ngIf="chat.userChatStatus == 'MUTED'" color="accent" selected>M</mat-chip>
-							<mat-chip [title]="'Role: ' + chat.userChatRole.toLowerCase()" class="chat-chip" *ngIf="chat.userChatStatus == 'ACTIVE'">{{chat.userChatRole.slice(0,1)}}</mat-chip>
+							<mat-chip [matTooltip]="getTimeBlockExpire(chat)" class="chat-chip" *ngIf="chat.userChatStatus == 'BANNED'" color="warn" selected>B</mat-chip>
+							<mat-chip [matTooltip]="getTimeBlockExpire(chat)" class="chat-chip" *ngIf="chat.userChatStatus == 'MUTED'" color="accent" selected>M</mat-chip>
+							<mat-chip [matTooltip]="'Role: ' + chat.userChatRole.toLowerCase()" class="chat-chip" *ngIf="chat.userChatStatus == 'ACTIVE'">{{chat.userChatRole.slice(0,1)}}</mat-chip>
 						</mat-chip-list>
 						<ng-template #nonVerified>
 							<mat-chip-list>
-								<mat-chip title="Join to chat"
+								<mat-chip matTooltip="Join to chat"
 										  [style]="'background-color: inherit;'"
 										  class="chat-chip">
 								</mat-chip>

@@ -59,6 +59,7 @@
 }
 
 .name-avatar {
+    cursor: pointer;
     margin: 10px;
     width: 30px;
     height: 30px;
@@ -77,13 +78,9 @@
 }
 
 .profile-avatar {
+    cursor: pointer;
     width: 30px;
     height: 30px;
-}
-
-.username {
-    font-size: 12px;
-    color: gray;
 }
 
 .msg-right-wrap {

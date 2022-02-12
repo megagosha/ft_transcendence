@@ -28,7 +28,7 @@
 
 .select-participant {
     height: auto;
-    flex-basis: calc(100% - 32px);
+    flex-basis: calc(100% - 30px);
     display: flex;
     flex-direction: row;
     align-items: center;

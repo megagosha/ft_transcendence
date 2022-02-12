@@ -70,6 +70,7 @@ import { EnterPasswordComponent } from './chat/enter-password/enter-password.com
 import { LadderComponent } from './ladder/ladder.component';
 import {ChangeUsernameDialog} from "./personal-profile/change-username-dialog.component";
 import {ChangeUserAvatarDialog} from "./personal-profile/change-useravatar-dialog.component";
+import {MatTooltipModule} from "@angular/material/tooltip";
 
 export function token(): any {
   return localStorage.getItem("token");
@@ -148,7 +149,8 @@ export function token(): any {
     MatRadioModule,
     MatCheckboxModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    MatTooltipModule
   ],
 
   exports: [SnackbarActionsComponent],
