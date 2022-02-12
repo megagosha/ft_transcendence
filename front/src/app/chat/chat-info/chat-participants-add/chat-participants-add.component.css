@@ -30,7 +30,7 @@
 
 .select-user {
     height: auto;
-    flex-basis: calc(100% - 33px);
+    flex-basis: calc(100% - 36px);
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -42,9 +42,9 @@
 }
 
 .user-name-avatar {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
+    width: 33px;
+    height: 33px;
+    min-width: 33px;
     border-radius: 16px;
     background-color: #e5e5e5;
     border: 1px solid #333333;
@@ -59,9 +59,10 @@
 }
 
 .user-avatar {
+    border-radius: 50%;;
     background-color: white;
-    width: 30px;
-    height: 30px;
+    width: 33px;
+    height: 33px;
 }
 
 .user-name {

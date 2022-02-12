@@ -122,6 +122,7 @@ export class ChatGateway
     await this.chatServiceSupport.updateChat(activeChat);
 
     const messageDto: MessageOutDto = plainToClass(MessageOutDto, message, { excludeExtraneousValues: true });
+    messageDto.authorUser.avatar = UsersServiceSupport.getUserAvatarPath(message.authorUser);
     const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(activeChat);
     sockets.forEach((socket) => {
       this.server.to(socket.id).emit("/message/receive", messageDto)
@@ -169,7 +170,9 @@ export class ChatGateway
   private async getMessagePage(chat: Chat, take: number, skip: number): Promise<MessagePageOutDto> {
     const messages: Message[] = await this.messageServiceSupport.findMessages(chat, take, skip);
     const messageDtos: MessageOutDto[] = messages.map((message) => {
-      return plainToClass(MessageOutDto, message, {excludeExtraneousValues: true});
+      const dto: MessageOutDto = plainToClass(MessageOutDto, message, {excludeExtraneousValues: true});
+      dto.authorUser.avatar = UsersServiceSupport.getUserAvatarPath(message.authorUser);
+      return dto;
     });
     return new MessagePageOutDto(messageDtos, take, skip);
   }

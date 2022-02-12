@@ -56,4 +56,10 @@ export class ChatUserOutDto {
     example: true,
   })
   verified: boolean;
+
+  @ApiProperty({
+    description: "Аватар",
+    example: "/files/1.png",
+  })
+  avatar: string;
 }
