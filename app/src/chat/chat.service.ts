@@ -380,6 +380,7 @@ export class ChatService {
       userDto.userChatStatus = link.userStatus;
       userDto.dateTimeBlockExpire = link.dateTimeBlockExpire;
       userDto.verified = link.verified;
+      userDto.avatar = UsersServiceSupport.getUserAvatarPath(link.user);
       return userDto;
     });
 
@@ -410,7 +411,9 @@ export class ChatService {
 
     const users: User[] = await this.userServiceSupport.findUsers(participantIds, name, skip, take);
     const userDtos = users.map((user) => {
-      return plainToClass(UserBriefOutDto, user, { excludeExtraneousValues: true });
+      const dto: UserBriefOutDto = plainToClass(UserBriefOutDto, user, { excludeExtraneousValues: true });
+      dto.avatar = UsersServiceSupport.getUserAvatarPath(user);
+      return dto;
     });
     return new UserBriefPageOutDto(userDtos, take, skip);
   }

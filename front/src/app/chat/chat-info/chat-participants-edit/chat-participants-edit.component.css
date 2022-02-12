@@ -28,7 +28,7 @@
 
 .select-participant {
     height: auto;
-    flex-basis: calc(100% - 30px);
+    flex-basis: calc(100% - 36px);
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -44,10 +44,10 @@
 }
 
 .participant-name-avatar {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
-    border-radius: 19px;
+    width: 33px;
+    height: 33px;
+    min-width: 33px;
+    border-radius: 50%;
     background-color: #e5e5e5;
     border: 1px solid #333333;
     display: flex;
@@ -61,8 +61,9 @@
 }
 
 .participant-avatar {
-    width: 30px;
-    height: 30px;
+    border-radius: 50%;
+    width: 33px;
+    height: 33px;
 }
 
 .participant-name {

@@ -51,8 +51,7 @@
 }
 
 .message-row {
-    margin-top: 5px;
-    margin-bottom: 5px;
+    margin: 10px;
     display: flex;
     flex-direction: row;
     height: auto !important;
@@ -60,11 +59,10 @@
 
 .name-avatar {
     cursor: pointer;
-    margin: 10px;
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
-    border-radius: 19px;
+    width: 35px;
+    height: 35px;
+    min-width: 35px;
+    border-radius: 50%;
     background-color: #e5e5e5;
     border: 1px solid #333333;
     display: flex;
@@ -79,25 +77,21 @@
 
 .profile-avatar {
     cursor: pointer;
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
 }
 
 .msg-right-wrap {
     float: right;
 }
 
-.username {
-    padding-left: 15px;
-    margin-bottom: -5px;
-}
-
 .message {
     background-color: #6AECC5;
-    margin: 5px 5px 5px 0;
+    margin-left: 10px;
     width: auto;
     border-radius: 10px;
-    padding: 5px 5px 5px;
+    padding: 6px;
     height: auto;
     word-break: break-all;
 }

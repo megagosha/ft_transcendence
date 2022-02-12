@@ -16,4 +16,10 @@ export class UserBriefOutDto {
     example: new Date(),
   })
   lastLoginDate: Date;
+
+  @ApiProperty({
+    description: "Аватар",
+    example: "/files/1.png",
+  })
+  avatar: string;
 }
