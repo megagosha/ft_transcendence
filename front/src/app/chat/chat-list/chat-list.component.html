@@ -44,10 +44,12 @@
 							<mat-chip [title]="'Role: ' + chat.userChatRole.toLowerCase()" class="chat-chip" *ngIf="chat.userChatStatus == 'ACTIVE'">{{chat.userChatRole.slice(0,1)}}</mat-chip>
 						</mat-chip-list>
 						<ng-template #nonVerified>
-							<mat-chip title="Join to chat" [style]="selectedChat != null && chat.id == selectedChat.id ? 'background-color: white;' : 'background-color: inherit;'"
-									  style="padding: 0 0 0 2px; cursor: pointer" class="chat-chip">
-								<mat-icon id="joinInChat" color="primary" (click)="joinInChat(chat)">login</mat-icon>
-							</mat-chip>
+							<mat-chip-list>
+								<mat-chip title="Join to chat"
+										  [style]="'background-color: inherit;'"
+										  class="chat-chip">
+								</mat-chip>
+							</mat-chip-list>
 						</ng-template>
 					</div>
 				</button>

@@ -24,7 +24,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   name = '';
 
   chats: Chat[] = [];
-  allChats: Chat[] = [];
+  allChats: Chat[] | null = null;
   return: boolean = false;
 
   global: boolean = false;
@@ -58,15 +58,15 @@ export class ChatListComponent implements OnInit, AfterViewInit {
 
   findChats() {
     if (this.name != null && this.name.length > 0 || this.global) {
-      if (this.allChats.length == 0) {
+      if (this.allChats == null) {
         this.allChats = this.chats;
         this.return = true;
       }
       this.chats = [];
       this.nextPage();
-    } else {
+    } else if (this.allChats != null) {
       this.chats = this.allChats;
-      this.allChats = [];
+      this.allChats = null;
       this.return = false;
     }
   }
@@ -74,6 +74,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   nextPage() {
     this.chatServie.findChats(this.name, this.global, this.pageSize, this.chats.length)
       .subscribe((page: ChatPage) => {
+        console.log(page);
         page.chats.forEach(chat => this.insertChat(this.chats, chat))
       }, error => {
         this.snackbar.open(error.error.message, "OK", {duration: 5000});
@@ -86,14 +87,20 @@ export class ChatListComponent implements OnInit, AfterViewInit {
     if (this.return) {
       this.searchName.setValue("");
     }
-    this.selectedChatEvent.emit(chat);
-    this.selectedChat = chat;
+    if (chat.verified || chat.type == ChatType.PUBLIC) {
+      this.selectedChatEvent.emit(chat);
+      this.selectedChat = chat;
+    } else {
+      this.joinInChat(chat);
+    }
   }
 
   addChat() {
     const dialogRef = this.dialog.open(ChatCreateNewComponent, {width: '450px', height: '575px', backdropClass: "backdrop-dialog"});
     dialogRef.afterClosed().subscribe((chat: Chat) => {
-      if (chat != null) {
+      if (this.allChats != null) {
+        this.allChats.unshift(chat);
+      } else {
         this.chats.unshift(chat);
       }
     })
@@ -142,7 +149,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
       chat.userChatStatus = UserChatStatus.ACTIVE;
       chat.userChatRole = UserChatRole.PARTICIPANT;
     }
-    if (this.return) {
+    if (this.return && this.allChats != null) {
       this.insertChat(this.allChats, chat, false);
     } else {
       this.insertChat(this.chats, chat, false);

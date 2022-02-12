@@ -64,7 +64,7 @@ export class ChatService {
     await this.userChatLinkRepository.save(userChatLink);
     Logger.log(`Link for user[id=${userId}] and chat[id=${chat.id}] was created`);
 
-    return new ChatCreateOutDto(chat.id);
+    return new ChatCreateOutDto(chat.id, this.chatServiceSupport.getChatAvatarPath(chat));
   }
 
   async createDirectChat(userId: number, targetUserId: number): Promise<ChatCreateOutDto> {
@@ -84,7 +84,7 @@ export class ChatService {
     await this.userChatLinkRepository.save([userChatLink, targetUserChatLink]);
     Logger.log(`Links for users [${userId}, ${targetUser.id}] and direct chat[id=${chat.id}] was created`);
 
-    return new ChatCreateOutDto(chat.id);
+    return new ChatCreateOutDto(chat.id, this.chatServiceSupport.getChatAvatarPath(chat));
   }
 
   async addParticipants(userId: number, chatId: number, userIds: number[]): Promise<void> {
