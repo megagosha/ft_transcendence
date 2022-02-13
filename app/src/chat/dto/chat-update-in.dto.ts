@@ -27,13 +27,4 @@ export class ChatUpdateInDto {
     message: `Описание чата должно иметь длину до ${Chat.DESCRIPTION_LENGTH} символов`,
   })
   readonly description: string;
-
-  @ApiProperty({
-    name: "Аватарка. Id файла в хранилище",
-    example: 1,
-    required: false,
-  })
-  @ValidateIf((dto) => dto.avatarFileId != null)
-  @IsNumber({}, { message: "Некорректный формат аватарки" })
-  avatarFileId: number;
 }

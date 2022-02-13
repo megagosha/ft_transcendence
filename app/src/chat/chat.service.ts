@@ -244,9 +244,10 @@ export class ChatService {
       Logger.log(`User[id=${userId}] blocked user[id=${participantId}]`);
     } else {
       participantChatLink.userStatus = dto.status;
+      participantChatLink.userRole = dto.role;
       participantChatLink.dateTimeBlockExpire = dateTimeBlockExpire;
       await this.userChatLinkRepository.save(participantChatLink);
-      Logger.log(`Participant [id=${participantId}] was ${dto.status} in chat[id=${chat.id}]`);
+      Logger.log(`Participant [id=${participantId}] was updated [status=${dto.status}, role=${dto.role}] in chat[id=${chat.id}]`);
     }
   }
 
