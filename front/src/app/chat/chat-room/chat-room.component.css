@@ -57,24 +57,6 @@
     height: auto !important;
 }
 
-.name-avatar {
-    cursor: pointer;
-    width: 35px;
-    height: 35px;
-    min-width: 35px;
-    border-radius: 50%;
-    background-color: #e5e5e5;
-    border: 1px solid #333333;
-    display: flex;
-}
-
-.short-name {
-    margin: auto;
-    font-size: 11pt;
-    color: #333333;
-    text-transform: uppercase;
-}
-
 .profile-avatar {
     cursor: pointer;
     width: 35px;

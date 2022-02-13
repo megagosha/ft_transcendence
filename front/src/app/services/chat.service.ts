@@ -240,6 +240,6 @@ export class ChatService {
   }
 
   routeToProfile(id: number) {
-    this.router.navigateByUrl('/profile', {state: {"id": id}});
+    this.router.navigate(['/user', { id: id }]);
   }
 }

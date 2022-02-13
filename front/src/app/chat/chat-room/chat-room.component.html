@@ -13,10 +13,7 @@
 			 [ngStyle]="{'height': getMessageBlockHeight()}"
 			 class="messages">
 			<div class="message-row" *ngFor="let message of messages">
-				<div (click)="goToProfile(message.authorUser)" class="name-avatar" *ngIf="message.authorUser.avatar == null">
-					<p class="short-name">{{message.authorUser.username.slice(0,2)}}</p>
-				</div>
-				<img (click)="goToProfile(message.authorUser)" class="profile-avatar" *ngIf="message.authorUser.avatar != null" src="{{message.authorUser.avatar}}" alt="AV">
+				<img (click)="goToProfile(message.authorUser)" class="profile-avatar" src="{{message.authorUser.avatar}}" alt="AV">
 				<div class="msg-right-wrap">
 					<div class="message"
 						 [ngStyle]="{'background-color': message.authorUser.id == user.id ? '#eceafd' : '#ffffff'}">
