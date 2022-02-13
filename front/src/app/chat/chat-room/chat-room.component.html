@@ -13,10 +13,17 @@
 			 [ngStyle]="{'height': getMessageBlockHeight()}"
 			 class="messages">
 			<div class="message-row" *ngFor="let message of messages">
-				<img (click)="goToProfile(message.authorUser)" class="profile-avatar" src="{{message.authorUser.avatar}}" alt="AV">
+				<div style="display: flex; flex-direction: column; width: 35px">
+					<img (click)="goToProfile(message.authorUser)" class="profile-avatar" src="{{message.authorUser.avatar}}" alt="AV">
+					<mat-icon class="invite-game"
+							  *ngIf="availableToMatch(message.authorUser)"
+							  (click)="inviteToGame(message.authorUser)">
+						sports_esports
+					</mat-icon>
+				</div>
 				<div class="msg-right-wrap">
 					<div class="message"
-						 [ngStyle]="{'background-color': message.authorUser.id == user.id ? '#eceafd' : '#ffffff'}">
+						 [ngStyle]="{'background-color': message.authorUser.id == user.id ? '#e4e1fd' : '#eeffca'}">
 						<p style="text-align: left; font-size: 10pt; color: #673ab5; margin: 0; font-weight: 500; cursor: pointer"
 						   (click)="goToProfile(message.authorUser)">
 							{{message.authorUser.username}}

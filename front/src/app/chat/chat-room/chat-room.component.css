@@ -77,3 +77,15 @@
     height: auto;
     word-break: break-all;
 }
+
+.invite-game {
+    align-self: center;
+    font-size: 35px;
+    width: 35px;
+    color: #858585;
+    cursor: pointer;
+}
+
+.invite-game:hover {
+    color: #673ab5;
+}
