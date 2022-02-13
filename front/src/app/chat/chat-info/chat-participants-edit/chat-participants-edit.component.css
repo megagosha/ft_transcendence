@@ -43,23 +43,6 @@
     cursor: auto;
 }
 
-.participant-name-avatar {
-    width: 33px;
-    height: 33px;
-    min-width: 33px;
-    border-radius: 50%;
-    background-color: #e5e5e5;
-    border: 1px solid #333333;
-    display: flex;
-}
-
-.participant-short-name {
-    margin: auto;
-    font-size: 11pt;
-    color: #333333;
-    text-transform: uppercase;
-}
-
 .participant-avatar {
     border-radius: 50%;
     width: 33px;

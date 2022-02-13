@@ -21,8 +21,7 @@
 	 class="participant-list-content">
 	<div class="participant-row" *ngFor="let user of users">
 		<button class="select-participant" (click)="onSelect(user)">
-			<div class="participant-name-avatar" *ngIf="user.avatar == null"><p class="participant-short-name">{{user.username.slice(0,2)}}</p></div>
-			<img class="participant-avatar" *ngIf="user.avatar != null" src="{{user.avatar}}" alt="AV">
+			<img class="participant-avatar" src="{{user.avatar}}" alt="AV">
 			<div class="participant-name">{{user.username}}</div>
 			<mat-chip-list>
 				<mat-chip [matTooltip]="getTimeBlockExpire(user)" class="participant-chip" *ngIf="user.userChatStatus == 'BANNED'" color="warn" selected>{{user.userChatStatus.slice(0,1)}}</mat-chip>

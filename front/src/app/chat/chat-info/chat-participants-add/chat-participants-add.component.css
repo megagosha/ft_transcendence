@@ -41,23 +41,6 @@
     cursor: inherit;
 }
 
-.user-name-avatar {
-    width: 33px;
-    height: 33px;
-    min-width: 33px;
-    border-radius: 16px;
-    background-color: #e5e5e5;
-    border: 1px solid #333333;
-    display: flex;
-}
-
-.user-short-name {
-    margin: auto;
-    font-size: 11pt;
-    color: #333333;
-    text-transform: uppercase;
-}
-
 .user-avatar {
     border-radius: 50%;;
     background-color: white;

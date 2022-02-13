@@ -428,12 +428,8 @@ export class ChatService {
     const contentType: string = avatar.mimetype;
 
     let extension: string;
-    if (contentType.includes("jpg")) {
-      extension = "jpg";
-    } else if (contentType.includes("jpeg")) {
-      extension = "jpeg"
-    } else if (contentType.includes("png")) {
-      extension = "png";
+    if (contentType.includes("jpg") || contentType.includes("jpeg") || contentType.includes("png")) {
+      extension = "jpeg";
     } else {
       throw new BadRequestException("Недопустимый тип файла. Допустимые: png, jpg, jpeg");
     }

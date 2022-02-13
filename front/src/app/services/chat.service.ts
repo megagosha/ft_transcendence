@@ -4,6 +4,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {io, Socket} from "socket.io-client";
 import {token} from "../app.module";
 import {Router} from "@angular/router";
+import {BehaviorSubject} from "rxjs";
 
 export enum ChatType {
   PROTECTED = "PROTECTED",
@@ -149,12 +150,12 @@ export class ChatService {
   private currentChat: Chat | null = null;
   private currentChatView: ViewContainerRef | null = null;
   private readonly socket: Socket;
+  private chatObserve = new BehaviorSubject(this.currentChat);
 
   constructor(private readonly http: HttpClient,
               private readonly snackBar: MatSnackBar,
               private readonly router: Router) {
     this.socket = io("http://localhost:3000/chat", {transports: ['websocket'], auth: {token : token()}});
-    console.log(this.socket);
   }
 
   getChat() {
