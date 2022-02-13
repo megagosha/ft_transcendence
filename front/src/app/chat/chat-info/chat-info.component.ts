@@ -10,6 +10,7 @@ import {ChatParticipantsEditComponent} from "./chat-participants-edit/chat-parti
 import {ChatParticipantsAddComponent} from "./chat-participants-add/chat-participants-add.component";
 import {ConfirmFormComponent} from "../../confirm-form/confirm-form.component";
 import {FormControl} from "@angular/forms";
+import {timeout} from "rxjs";
 
 @Component({
   selector: 'app-chat-info',
@@ -94,13 +95,18 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
   uploadAvatar(event: any) {
     const file: File = event.target.files[0];
     this.chatService.uploadAvatar(this.chatBrief.id, file).subscribe(() => {
-        const path: string = `/api/file/chat/${this.chatDetails.id}/avatar/${file.name}`;
-        this.chatDetails.avatar = path;
-        this.chatBrief.avatar = path;
-        this.currentDialog.close({reload: true});
+        // console.log(avatar);
+        // this.chatDetails.avatar = avatar;
+        // this.chatBrief.avatar = avatar;
       },
       error => {
         this.snackBar.open(error.error.message, "OK", {duration: 5000});
+      }, () => {
+        setTimeout(() => {
+          const avatar = this.chatDetails.avatar.split("?")[0] + `?${(new Date()).getTime().toString()}`;
+          this.chatDetails.avatar = avatar;
+          this.chatBrief.avatar = avatar;
+        }, 250)
       });
   }
 

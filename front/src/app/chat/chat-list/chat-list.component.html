@@ -34,8 +34,7 @@
 			<div class="chat-row" *ngFor="let chat of chats">
 				<button [class]="selectedChat != null && chat.id == selectedChat.id ? 'select-chat-hover' : 'select-chat'"
 						(click)="onSelect(chat)">
-					<div class="chat-name-avatar" *ngIf="chat.avatar == null"><p class="chat-short-name">{{chat.name.slice(0,2)}}</p></div>
-					<img class="chat-avatar" *ngIf="chat.avatar != null" src="{{chat.avatar}}" alt="AV">
+					<img class="chat-avatar" src="{{chat.avatar}}" alt="AV">
 					<div class="chat-name">{{chat.name}}</div>
 					<div class="user-status-role">
 						<mat-chip-list *ngIf="chat.verified; else nonVerified">

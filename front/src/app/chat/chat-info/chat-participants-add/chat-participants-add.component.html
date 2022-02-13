@@ -21,8 +21,7 @@
 	 class="user-list-content">
 	<div class="user-row" *ngFor="let user of users">
 		<button class="select-user" (click)="onSelect(user)">
-			<div class="user-name-avatar" *ngIf="user.avatar == null"><p class="user-short-name">{{user.username.slice(0,2)}}</p></div>
-			<img class="user-avatar" *ngIf="user.avatar != null" src="{{user.avatar}}" alt="AV">
+			<img class="user-avatar" src="{{user.avatar}}" alt="AV">
 			<div class="user-name">{{user.username}}</div>
 		</button>
 		<mat-checkbox class="user-checkbox" (change)="onSelect(user)" [checked]="selected(user)" color="primary"></mat-checkbox>

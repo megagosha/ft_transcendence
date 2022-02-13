@@ -28,13 +28,6 @@
     display: flex;
 }
 
-.chat-info-short-name {
-    margin: auto;
-    font-size: 15pt;
-    color: #333333;
-    text-transform: uppercase;
-}
-
 .chat-info-name-access {
     align-self: center;
 }

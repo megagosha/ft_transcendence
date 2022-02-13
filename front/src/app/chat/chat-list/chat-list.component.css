@@ -69,23 +69,6 @@
     background: white;
 }
 
-.chat-name-avatar {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    border-radius: 50%;
-    background-color: #e5e5e5;
-    border: 1px solid #333333;
-    display: flex;
-}
-
-.chat-short-name {
-    margin: auto;
-    font-size: 13pt;
-    color: #333333;
-    text-transform: uppercase;
-}
-
 .chat-avatar {
     background-color: white;
     width: 40px;
