@@ -117,13 +117,13 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
   canUpdateInfo() {
     return this.chatBrief.userChatRole != UserChatRole.PARTICIPANT
       && this.chatBrief.verified
-      && this.chatBrief.userChatStatus == UserChatStatus.ACTIVE;
+      && this.chatBrief.userChatStatus != UserChatStatus.BANNED;
   }
 
   canUpdateAccess() {
     return this.chatBrief.userChatRole == UserChatRole.OWNER
       && this.chatBrief.verified
-      && this.chatBrief.userChatStatus == UserChatStatus.ACTIVE;
+      && this.chatBrief.userChatStatus == UserChatStatus.BANNED;
   }
 
   canEditParticipants() {

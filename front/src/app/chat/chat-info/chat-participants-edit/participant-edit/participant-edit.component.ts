@@ -51,10 +51,6 @@ export class ParticipantEditComponent implements OnInit {
       return true;
     }
 
-    if (this.status != UserChatStatus.ACTIVE && role != UserChatRole.PARTICIPANT) {
-      return true;
-    }
-
     if (this.chat.userChatRole != UserChatRole.OWNER) {
       return true;
     }
@@ -100,10 +96,6 @@ export class ParticipantEditComponent implements OnInit {
     if (this.chat.userChatRole == UserChatRole.PARTICIPANT
       || this.participant.userChatRole == UserChatRole.OWNER
       || (this.participant.userChatRole == UserChatRole.ADMIN && this.chat.userChatRole != UserChatRole.OWNER)) {
-      return true;
-    }
-
-    if (this.role != UserChatRole.PARTICIPANT && status != UserChatStatus.ACTIVE) {
       return true;
     }
 

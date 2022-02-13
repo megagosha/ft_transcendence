@@ -38,11 +38,11 @@ export class ChatServiceSupport {
     ChatServiceSupport.ROLES.set(ChatAction.ENTER_CHAT, [UserChatRole.OWNER, UserChatRole.ADMIN, UserChatRole.PARTICIPANT, null, undefined]);
 
     ChatServiceSupport.STATUSES.set(ChatAction.CHAT_INFO, [UserChatStatus.ACTIVE, UserChatStatus.MUTED, null, undefined]);
-    ChatServiceSupport.STATUSES.set(ChatAction.ADD_PARTICIPANT, [UserChatStatus.ACTIVE]);
-    ChatServiceSupport.STATUSES.set(ChatAction.UPDATE_CHAT_INFO, [UserChatStatus.ACTIVE]);
-    ChatServiceSupport.STATUSES.set(ChatAction.UPDATE_STATUS, [UserChatStatus.ACTIVE]);
-    ChatServiceSupport.STATUSES.set(ChatAction.UPDATE_ROLE, [UserChatStatus.ACTIVE]);
-    ChatServiceSupport.STATUSES.set(ChatAction.UPDATE_ACCESS, [UserChatStatus.ACTIVE]);
+    ChatServiceSupport.STATUSES.set(ChatAction.ADD_PARTICIPANT, [UserChatStatus.ACTIVE, UserChatStatus.MUTED]);
+    ChatServiceSupport.STATUSES.set(ChatAction.UPDATE_CHAT_INFO, [UserChatStatus.ACTIVE, UserChatStatus.MUTED]);
+    ChatServiceSupport.STATUSES.set(ChatAction.UPDATE_STATUS, [UserChatStatus.ACTIVE, UserChatStatus.MUTED]);
+    ChatServiceSupport.STATUSES.set(ChatAction.UPDATE_ROLE, [UserChatStatus.ACTIVE, UserChatStatus.MUTED]);
+    ChatServiceSupport.STATUSES.set(ChatAction.UPDATE_ACCESS, [UserChatStatus.ACTIVE, UserChatStatus.MUTED]);
     ChatServiceSupport.STATUSES.set(ChatAction.RECEIVE_MESSAGE, [UserChatStatus.ACTIVE, UserChatStatus.MUTED, null, undefined]);
     ChatServiceSupport.STATUSES.set(ChatAction.SEND_MESSAGE, [UserChatStatus.ACTIVE]);
     ChatServiceSupport.STATUSES.set(ChatAction.ENTER_CHAT, [UserChatStatus.ACTIVE, UserChatStatus.MUTED, null, undefined]);
