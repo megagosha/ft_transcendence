@@ -26,7 +26,6 @@ export class UserProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.userId = Number(this._route.snapshot.paramMap.get('id'));
-    console.log(this.userId);
     this.profileUpdate();
     this._router.events.subscribe((val) => {
       if (val instanceof NavigationStart) {
