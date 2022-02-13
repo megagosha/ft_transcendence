@@ -16,6 +16,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatDialog} from "@angular/material/dialog";
 import {ChatInfoComponent} from "../chat-info/chat-info.component";
 import {Socket} from "socket.io-client";
+import {GameService} from "../../services/game.service";
 
 @Component({
   selector: 'app-chat-room',
@@ -36,7 +37,8 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
   constructor(private readonly userService: UserService,
               private readonly chatService: ChatService,
               private snackBar: MatSnackBar,
-              private dialog: MatDialog) {
+              private dialog: MatDialog,
+              private readonly gameService: GameService) {
     this.chat = <Chat>chatService.getChat();
     this.socket = chatService.getSocket();
   }
@@ -135,5 +137,13 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
 
   goToProfile(authorUser: ChatUser) {
     this.chatService.routeToProfile(authorUser.id);
+  }
+
+  availableToMatch(user: ChatUser) {
+    return this.user.id != user.id;
+  }
+
+  inviteToGame(authorUser: ChatUser) {
+    this.gameService.inviteToPlay(authorUser.id);
   }
 }

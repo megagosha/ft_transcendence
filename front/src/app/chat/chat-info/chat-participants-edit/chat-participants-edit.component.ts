@@ -8,6 +8,7 @@ import {FormControl} from "@angular/forms";
 import {debounceTime, distinctUntilChanged, map} from "rxjs";
 import {ConfirmFormComponent} from "../../../confirm-form/confirm-form.component";
 import {ParticipantEditComponent} from "./participant-edit/participant-edit.component";
+import {GameService} from "../../../services/game.service";
 
 @Component({
   selector: 'app-chat-participants-edit',
@@ -29,7 +30,8 @@ export class ChatParticipantsEditComponent implements OnInit {
               private chatService: ChatService,
               private snackbar: MatSnackBar,
               private userService: UserService,
-              private dialog: MatDialog) {
+              private dialog: MatDialog,
+              private gameService: GameService) {
     this.details = data.details;
     this.brief = data.brief;
     this.currentUser = userService.user;
@@ -137,7 +139,11 @@ export class ChatParticipantsEditComponent implements OnInit {
     this.dialog.closeAll();
   }
 
+  availableToMatch(user: ChatUser) {
+    return this.currentUser.id != user.id;
+  }
+
   inviteToPlay(user: ChatUser) {
-    
+      this.gameService.inviteToPlay(user.id);
   }
 }

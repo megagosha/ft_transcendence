@@ -35,12 +35,19 @@
 			</button>
 			<mat-menu #menu="matMenu">
 				<button mat-menu-item (click)="goToProfile(user)"
-						style="font-size: 10pt; height: 35px; line-height: 35px">User profile</button>
+						style="font-size: 10pt; height: 35px; line-height: 35px">
+					User profile
+				</button>
 				<button mat-menu-item (click)="inviteToPlay(user)"
-						style="font-size: 10pt; height: 35px; line-height: 35px">Invite to play</button>
+						style="font-size: 10pt; height: 35px; line-height: 35px"
+						[disabled]="!availableToMatch(user)">
+					Invite to play
+				</button>
 				<button mat-menu-item (click)="onDelete(user)"
 						style="font-size: 10pt; height: 35px; line-height: 35px"
-						[disabled]=!availableEdit(user)>Remove participant</button>
+						[disabled]=!availableEdit(user)>
+					Remove participant
+				</button>
 			</mat-menu>
 		</div>
 	</div>
