@@ -16,10 +16,8 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { GameService } from './game.service';
-import { User } from '../users/user.entity';
 import { GameStatsDto } from './gamestats.dto';
-import { SearchUsersDto } from '../users/dto/search-users.dto';
-import { GameStatistic } from './game.history.entity';
+import {UsersServiceSupport} from "../users/users.service-support";
 
 @ApiTags('game')
 @Controller('game')
@@ -34,6 +32,8 @@ export class GameController {
     if (!data.id) throw new NotFoundException();
     const res = await this.gameService.getGameResult(data.id);
     if (!res) throw new NotFoundException();
+    res.userWon.avatarImgName = UsersServiceSupport.getUserAvatarPath(res.userWon);
+    res.userLost.avatarImgName = UsersServiceSupport.getUserAvatarPath(res.userLost);
     console.log('results: ');
     console.log(res);
     return new GameStatsDto(res);
@@ -53,6 +53,10 @@ export class GameController {
       data.skip,
     );
     if (!res) return null;
+    res.forEach(game => {
+      game.userWon.avatarImgName = UsersServiceSupport.getUserAvatarPath(game.userWon);
+      game.userLost.avatarImgName = UsersServiceSupport.getUserAvatarPath(game.userLost);
+    })
     return res;
   }
 
@@ -68,6 +72,10 @@ export class GameController {
       data.skip,
     );
     if (!res) return null;
+    res.forEach(game => {
+      game.userWon.avatarImgName = UsersServiceSupport.getUserAvatarPath(game.userWon);
+      game.userLost.avatarImgName = UsersServiceSupport.getUserAvatarPath(game.userLost);
+    });
     return res;
   }
 
