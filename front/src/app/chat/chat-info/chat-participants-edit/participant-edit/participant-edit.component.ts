@@ -66,7 +66,9 @@ export class ParticipantEditComponent implements OnInit {
     if (this.participant.userChatStatus != this.status
       || this.participant.userChatRole != this.role
       || this.participant.dateTimeBlockExpire != this.date) {
-      this.date.setHours(23, 59, 59);
+      if (this.date != null) {
+        this.date.setHours(23, 59, 59);
+      }
       this.chatService.updateChatUser(this.chat.id, this.participant.id, {
         role: this.role,
         status: this.status,
