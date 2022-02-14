@@ -6,6 +6,7 @@ import { AuthService } from '../services/auth/auth.service';
 import { MatDialog } from '@angular/material/dialog';
 import { User } from '../services/search-users.interface';
 import { formatDate } from '@angular/common';
+import {GameService} from "../services/game.service";
 
 @Component({
   selector: 'app-personal-profile',
@@ -19,7 +20,8 @@ export class UserProfileComponent implements OnInit {
 
   constructor(private _router: Router, private _route: ActivatedRoute,
               public userService: UserService, private _authService: AuthService,
-              public dialog: MatDialog) {
+              public dialog: MatDialog,
+              private readonly gameService: GameService) {
     this.userId = 0;
     this.profile = new Profile();
   }
@@ -46,5 +48,9 @@ export class UserProfileComponent implements OnInit {
       this.profile.registerDate = formatDate(data.registerDate, 'shortDate', 'en-US');
       this.profile.status = data.status;
     });
+  }
+
+  inviteToGame() {
+    this.gameService.inviteToPlay(this.userId);
   }
 }

@@ -22,7 +22,7 @@
       <span class="profile-spacer"></span>{{profile.status}}
     </mat-list-item>
   </mat-list>
-  <button class="invite-button" mat-button color="primary" *ngIf="profile.status == 'ONLINE'" >Invite to play</button>
+  <button (click)="inviteToGame()" class="invite-button" mat-button color="primary" *ngIf="profile.status == 'ONLINE'" >Invite to play</button>
   <!--</div>-->
 </mat-card>
 
