@@ -16,8 +16,12 @@
   overflow: scroll;
   height: 90%;
 }
+
+.list-element {
+  /*margin-top: 30px;*/
+}
 .friend-list-options {
-  float: right;
+  /*float: right;*/
 }
 .spacer {
   flex: 1 1 auto;
@@ -28,9 +32,15 @@
   top: 300px;
   left: 300px;
   /*transform: translate(-50%, -50%);*/
-
 }
 
+.dot {
+  height: 5px;
+  width: 5px;
+  background-color: green;
+  border-radius: 50%;
+  display: inline-block;
+}
 /*.friend-list {*/
 /*  position: relative;*/
 /*  height: 100%;*/

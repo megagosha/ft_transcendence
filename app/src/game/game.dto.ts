@@ -1,7 +1,7 @@
-import { Logger } from '@nestjs/common';
-import { stringify } from 'querystring';
-import { Server, Socket } from 'socket.io';
-import { User } from '../users/user.entity';
+import { Logger } from "@nestjs/common";
+import { stringify } from "querystring";
+import { Server, Socket } from "socket.io";
+import { User } from "../users/user.entity";
 
 export class Bounds {
   top: number;
@@ -21,7 +21,7 @@ export class GameObject {
     public x: number,
     public y: number,
     public width,
-    public height,
+    public height
   ) {}
 
   public getBounds(): Bounds {
@@ -44,7 +44,7 @@ export class Player extends GameObject {
   constructor(x: number, y: number, w: number, h: number) {
     super(x, y, w, h);
     this.height = h;
-    this.color = 'red';
+    this.color = "red";
     this.score = 0;
   }
 
@@ -67,7 +67,7 @@ export class Ball extends GameObject {
     this.speedX = 0.5;
     this.speedY = 0.5;
     this.maxSpeed = 1;
-    this.color = 'red';
+    this.color = "red";
   }
 
   bounceX(): void {
@@ -106,7 +106,7 @@ export class Game {
     let vsr = -(this.ball.y - player.y) / (bounds.top - player.y);
     // Max vsr is 1
     vsr = Math.min(vsr, 1);
-    Logger.log(Logger.getTimestamp() + ' vsr ' + vsr);
+    Logger.log(Logger.getTimestamp() + " vsr " + vsr);
     this.ball.speedY = vsr;
     console.log(this.ball.speedY);
   }
@@ -172,7 +172,7 @@ export class GameStorage {
   }
 
   userAinvitedB(userA: number, userB: number) {
-    Logger.log('UserA ' + userA + ' waiting for accept from ' + userB);
+    Logger.log("UserA " + userA + " waiting for accept from " + userB);
     this.waitingForAccept.set(userA, userB);
   }
 
@@ -186,7 +186,7 @@ export class GameStorage {
     const game = this.games.get(roomId);
     if (game && game.players) {
       for (const player in game.players) {
-        this.players.get(Number(player)).gameRoom = '';
+        this.players.get(Number(player)).gameRoom = "";
       }
     }
     this.games.delete(roomId);
@@ -195,18 +195,18 @@ export class GameStorage {
 
   unsetGameRoom(userId: number) {
     const roomId = this.players.get(userId);
-    if (roomId && roomId.gameRoom) roomId.gameRoom = '';
+    if (roomId && roomId.gameRoom) roomId.gameRoom = "";
   }
 
   findRoomId(userId: number): string {
     const res = this.players.get(userId);
-    if (!res) return '';
+    if (!res) return "";
     return res.gameRoom;
   }
 
   findPlayerSocket(userId: number): string {
     const res = this.players.get(userId);
-    if (!res) return '';
+    if (!res) return "";
     return res.playerSocket;
   }
 
@@ -235,9 +235,17 @@ export class GameStorage {
     clearInterval(this.intervals.get(roomId));
     this.intervals.delete(roomId);
   }
+  // //@todo delete after use
+  // dumpIntervals() {
+  //   console.log("Printing intervals in game: ");
+  //   for (const [key, value] of this.intervals) {
+  //     console.log("room " + key + " val " + value);
+  //   }
+  //   console.log("Finished printing intervals");
+  // }
 
   addPlayer(userId: number, socketId: string) {
-    this.players.set(userId, { playerSocket: socketId, gameRoom: '' });
+    this.players.set(userId, { playerSocket: socketId, gameRoom: "" });
     // this.game.addPlayer(userId, roomId, socketId);
   }
 
@@ -254,13 +262,10 @@ export class GameStorage {
 
   getOpponentUserId(userId: number) {
     const res = this.players.get(userId);
-    console.log('a');
     if (!res || !res.gameRoom) return 0;
     const game = this.games.get(res.gameRoom);
-    console.log('b');
     if (!game || !game.players) return 0;
     const players = Object.keys(game.players);
-    console.log(players);
     if (Number(players[0]) != userId) return Number(players[0]);
     else return Number(players[1]);
     return 0;

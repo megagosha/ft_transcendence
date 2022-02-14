@@ -1,11 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User, UserStatus } from '../users/user.entity';
-import { Repository } from 'typeorm';
-import { UserService } from '../users/user.service';
-import { Ball, Game, GameStorage, Player } from './game.dto';
-import { GameStatistic } from './game.history.entity';
-import { number } from 'joi';
+import { Injectable, Logger } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User, UserStatus } from "../users/user.entity";
+import { Repository } from "typeorm";
+import { UserService } from "../users/user.service";
+import { Ball, Game, GameStorage, Player } from "./game.dto";
+import { GameStatistic } from "./game.history.entity";
+import { number } from "joi";
+import { SearchUsersResultsDto } from "../users/dto/search-users-results.dto";
+import { LadderDto } from "./dto/ladder.dto";
+import { Server, Socket } from "socket.io";
 
 @Injectable()
 export class GameService {
@@ -15,18 +18,18 @@ export class GameService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     @InjectRepository(GameStatistic)
     private readonly gameStatRepo: Repository<GameStatistic>,
-    private readonly userService: UserService,
+    private readonly userService: UserService
   ) {
     this.game = new GameStorage();
   }
 
   invitePlayer(
     inviterId: number,
-    invitedId: number,
+    invitedId: number
   ): { status: boolean; data: string } {
     const player = this.game.getPlayer(invitedId);
-    if (!player) return { status: false, data: 'User offline' };
-    if (player.gameRoom != '') return { status: false, data: 'Player in game' };
+    if (!player) return { status: false, data: "User offline" };
+    if (player.gameRoom != "") return { status: false, data: "Player in game" };
     this.game.userAinvitedB(inviterId, invitedId);
     return { status: true, data: player.playerSocket };
   }
@@ -66,21 +69,21 @@ export class GameService {
 
   async getPlayersInfo(gameRoom: string) {
     const game = this.game.findGame(gameRoom);
-    Logger.log('service ');
+    Logger.log("service ");
     Logger.log(game);
     console.log(game.players);
     if (!game || !game.players)
       return {
         status: false,
-        reason: 'Game not found',
+        reason: "Game not found",
       };
     const data = {
       status: false,
-      reason: 'internal error',
+      reason: "internal error",
       userAId: 0,
-      userAUsername: '',
+      userAUsername: "",
       userBId: 0,
-      userBUsername: '',
+      userBUsername: "",
     };
     const players = Object.keys(game.players);
     if (game.players[players[0]].x > 10) {
@@ -98,25 +101,28 @@ export class GameService {
     ).username;
     if (data.userAUsername && data.userBUsername) {
       data.status = true;
-      data.reason = 'ok';
+      data.reason = "ok";
     }
     return data;
   }
 
-  async endGame(userId: number) {
+  async endGame(userId: number, server: Server) {
     let res = 0;
     const playerA = this.game.players.get(userId);
-
-    if (!playerA || !playerA.gameRoom || playerA.gameRoom == '') return;
+    if (!playerA || !playerA.gameRoom || playerA.gameRoom == "") return;
     const playerB = this.game.getOpponentUserId(userId);
-    console.log('opponent id : ' + playerB);
     if (playerB != 0)
       res = (await this.saveGameStat(playerA.gameRoom, userId, playerB)).id;
+    const roomId = this.game.findRoomId(userId);
+    if (roomId) {
+      server.to(roomId).emit("game_ended", { id: res });
+      server.in(roomId).socketsLeave(roomId);
+    }
+    this.game.removeInterval(playerA.gameRoom);
     this.game.unsetGameRoom(userId);
     this.game.unsetGameRoom(playerB);
     this.userService.setStatus(userId, UserStatus.ONLINE);
     this.userService.setStatus(playerB, UserStatus.ONLINE);
-    this.game.removeInterval(playerA.gameRoom);
     this.game.games.delete(playerA.gameRoom);
     return res;
   }
@@ -126,14 +132,6 @@ export class GameService {
     const res = new GameStatistic();
     let winner: number;
     let loser: number;
-    console.log('1');
-    console.log(gameRoom);
-    console.log('1');
-    console.log(game);
-    console.log(userA);
-    console.log(userB);
-    console.log(game.players[userA]);
-    console.log(game.players[userB]);
     if (game.players[userA].score > game.players[userB].score) {
       winner = userA;
       loser = userB;
@@ -164,7 +162,7 @@ export class GameService {
   async getGameResult(id: number): Promise<GameStatistic> {
     return await this.gameStatRepo.findOne(
       { id: id },
-      { relations: ['userWon', 'userLost'] },
+      { relations: ["userWon", "userLost"] }
     );
   }
 
@@ -172,7 +170,7 @@ export class GameService {
     userA: number,
     userB: number,
     take: number,
-    skip: number,
+    skip: number
   ): Promise<GameStatistic[]> {
     return await this.gameStatRepo.find({
       where: [
@@ -182,7 +180,7 @@ export class GameService {
         },
         { userWon: userA, userLost: userB },
       ],
-      relations: ['userWon', 'userLost'],
+      relations: ["userWon", "userLost"],
       take: take,
       skip: skip,
     });
@@ -191,38 +189,42 @@ export class GameService {
   async getPersonalHistory(
     userA: number,
     take: number,
-    skip: number,
+    skip: number
   ): Promise<GameStatistic[]> {
     return await this.gameStatRepo.find({
       where: [
         {
-          userLost: userA,
+          userWonId: userA,
         },
-        { userWon: userA },
+        {
+          userLostId: userA,
+        },
       ],
-      relations: ['userWon', 'userLost'],
+      relations: ["userWon", "userLost"],
       // take: take,
       // skip: skip,
     });
   }
 
-  async getLadder() {
-    return (
-      this.gameStatRepo
-        .createQueryBuilder('game')
-        .leftJoinAndSelect('game.userWon', 'user')
-        .select('user.username')
-        .addSelect('user.avatarImgName')
+  async getLadder(): Promise<LadderDto[]> {
+    const res = (
+      await this.gameStatRepo
+        .createQueryBuilder("game")
+        .leftJoinAndSelect("game.userWon", "user")
+        .select("user.username")
+        .addSelect("user.avatarImgName")
         // .select('user.username')
-        .addSelect('game.userWonId AS userWonId')
-        .addSelect('COUNT(*) AS count')
-        .groupBy('game.userWonId')
-        .addGroupBy('user.username')
-        .addGroupBy('user.avatarImgName')
-        .orderBy('count', 'DESC')
+        .addSelect("game.userWonId AS userWonId")
+        .addSelect("COUNT(*) AS count")
+        .groupBy("game.userWonId")
+        .addGroupBy("user.username")
+        .addGroupBy("user.avatarImgName")
+        .orderBy("count", "DESC")
         // .skip(skip)
         // .take(take)
         .getRawMany()
-    );
+    ).map((obj, ix) => new LadderDto(obj, ix));
+    console.log(res);
+    return res;
   }
 }

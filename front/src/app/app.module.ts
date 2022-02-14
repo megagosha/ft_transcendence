@@ -61,16 +61,19 @@ import {MatRadioModule} from "@angular/material/radio";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import { ChatParticipantsEditComponent } from './chat/chat-info/chat-participants-edit/chat-participants-edit.component';
 import { ChatParticipantsAddComponent } from './chat/chat-info/chat-participants-add/chat-participants-add.component';
-import { ConfirmFormComponent } from './confirm-form/confirm-form.component';
-import { ParticipantEditComponent } from './chat/chat-info/chat-participants-edit/participant-edit/participant-edit.component';
-import {MatDatepickerModule} from "@angular/material/datepicker";
-import {MAT_DATE_LOCALE, MatNativeDateModule} from "@angular/material/core";
-import { ChatCreateNewComponent } from './chat/chat-create-new/chat-create-new.component';
-import { EnterPasswordComponent } from './chat/enter-password/enter-password.component';
-import { LadderComponent } from './ladder/ladder.component';
-import {ChangeUsernameDialog} from "./personal-profile/change-username-dialog.component";
-import {ChangeUserAvatarDialog} from "./personal-profile/change-useravatar-dialog.component";
-import {MatTooltipModule} from "@angular/material/tooltip";
+import { ConfirmFormComponent }                                  from './confirm-form/confirm-form.component';
+import { ParticipantEditComponent }                              from './chat/chat-info/chat-participants-edit/participant-edit/participant-edit.component';
+import {MatDatepickerModule}                                     from "@angular/material/datepicker";
+import { MAT_DATE_LOCALE, MatNativeDateModule, MatRippleModule } from "@angular/material/core";
+import { ChatCreateNewComponent }                                from './chat/chat-create-new/chat-create-new.component';
+import { EnterPasswordComponent }                                from './chat/enter-password/enter-password.component';
+import { LadderComponent }                                       from './ladder/ladder.component';
+import {ChangeUsernameDialog}                                    from "./personal-profile/change-username-dialog.component";
+import {ChangeUserAvatarDialog}                                  from "./personal-profile/change-useravatar-dialog.component";
+import {MatTooltipModule}                                        from "@angular/material/tooltip";
+import { MatchMakingComponent }                                  from './match-making/match-making.component';
+import { ColorPickerModule }                                     from "ngx-color-picker";
+import { MatExpansionModule }                                    from "@angular/material/expansion";
 
 export function token(): any {
   return localStorage.getItem("token");
@@ -108,50 +111,54 @@ export function token(): any {
     ParticipantEditComponent,
     ChatCreateNewComponent,
     EnterPasswordComponent,
+    MatchMakingComponent,
   ],
-  imports: [
-    NgxMatFileInputModule,
-    MatDialogModule,
-    MatSliderModule,
-    MatButtonModule,
-    MatToolbarModule,
-    HttpClientModule,
-    BrowserModule,
-    AppRoutingModule,
-    BrowserAnimationsModule,
-    MatIconModule,
-    NgOtpInputModule,
-    MatTabsModule,
-    MatListModule,
-    MatDividerModule,
-    MatGridListModule,
-    MatInputModule,
-    FormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    ReactiveFormsModule,
-    MatProgressBarModule,
-    MatAutocompleteModule,
-    MatMenuModule,
-    MatSnackBarModule,
-    RouterModule,
-    ScrollingModule,
-    MatSlideToggleModule,
-    MatTableModule,
-    ScrollingModule,
-    FlexLayoutModule,
-    InfiniteScrollModule,
-    MatChipsModule,
-    MatAutocompleteModule,
-    MatSnackBarModule,
-    MatSelectModule,
-    MatRadioModule,
-    MatCheckboxModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatTooltipModule
-  ],
+    imports: [
+        NgxMatFileInputModule,
+        MatDialogModule,
+        MatSliderModule,
+        MatButtonModule,
+        ColorPickerModule,
+        MatToolbarModule,
+        HttpClientModule,
+        BrowserModule,
+        AppRoutingModule,
+        BrowserAnimationsModule,
+        MatIconModule,
+        NgOtpInputModule,
+        MatTabsModule,
+        MatListModule,
+        MatDividerModule,
+        MatGridListModule,
+        MatInputModule,
+        FormsModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatInputModule,
+        ReactiveFormsModule,
+        MatProgressBarModule,
+        MatAutocompleteModule,
+        MatMenuModule,
+        MatSnackBarModule,
+        RouterModule,
+        ScrollingModule,
+        MatSlideToggleModule,
+        MatTableModule,
+        ScrollingModule,
+        FlexLayoutModule,
+        InfiniteScrollModule,
+        MatChipsModule,
+        MatAutocompleteModule,
+        MatSnackBarModule,
+        MatSelectModule,
+        MatRadioModule,
+        MatCheckboxModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        MatTooltipModule,
+        MatRippleModule,
+        MatExpansionModule
+    ],
 
   exports: [SnackbarActionsComponent],
   providers: [

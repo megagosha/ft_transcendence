@@ -9,22 +9,22 @@ import {
   WebSocketServer,
   WsException,
   WsResponse,
-} from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-import { Logger, OnModuleInit, UseFilters } from '@nestjs/common';
-import { AuthService } from '../auth/auth.service';
-import { User } from '../users/user.entity';
-import { SocketExceptionFilter } from '../chat/socket.exception-filter';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { GameService } from './game.service';
-import { UserService } from '../users/user.service';
+} from "@nestjs/websockets";
+import { Server, Socket } from "socket.io";
+import { Logger, OnModuleInit, UseFilters } from "@nestjs/common";
+import { AuthService } from "../auth/auth.service";
+import { User } from "../users/user.entity";
+import { SocketExceptionFilter } from "../chat/socket.exception-filter";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { GameService } from "./game.service";
+import { UserService } from "../users/user.service";
 
 @WebSocketGateway({
-  namespace: '/game_sock',
-  transports: 'websocket',
+  namespace: "/game_sock",
+  transports: "websocket",
   cors: {
-    origin: ['http://localhost:3000', 'http://localhost:4200'],
+    origin: ["http://localhost:3000", "http://localhost:4200"],
   },
 })
 @UseFilters(SocketExceptionFilter)
@@ -38,22 +38,22 @@ export class GameGateway
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private readonly gameService: GameService,
-    private userService: UserService,
+    private userService: UserService
   ) {
-    Logger.log('socket constructor init');
+    Logger.log("socket constructor init");
   }
 
   afterInit(server: Server) {
-    Logger.log('chat gateway init');
+    Logger.log("chat gateway init");
   }
 
   handleConnection(client: Socket): any {
     try {
       const user: User = this.authService.decodeJwtToken(
-        client.handshake.auth.token,
+        client.handshake.auth.token
       );
       if (!user) {
-        client.emit('Unauthorized');
+        client.emit("Unauthorized");
         this.handleDisconnect(client);
       } else {
         this.gameService.newConnection(user.id, client.id);
@@ -61,7 +61,7 @@ export class GameGateway
         client.data.username = user.username;
       }
     } catch (err) {
-      client.emit('Unauthorized');
+      client.emit("Unauthorized");
       this.handleDisconnect(client);
     }
   }
@@ -69,54 +69,54 @@ export class GameGateway
   /*
    1.
    */
-  handleDisconnect(client: Socket): any {
+  async handleDisconnect(client: Socket): Promise<any> {
     if (!client.data.userId) return client.disconnect();
-    this.gameService.endGame(client.data.userId);
+    await this.gameService.endGame(client.data.userId, this.server);
     this.gameService.removePlayer(client.data.userId);
     client.disconnect();
     return;
   }
 
-  @SubscribeMessage('invite_player')
+  @SubscribeMessage("invite_player")
   invitePlayer(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { userId: number },
+    @MessageBody() data: { userId: number }
   ): WsResponse<string> {
-    const event = 'invite_player_result';
+    const event = "invite_player_result";
     // if (!opponentRoom) throw new WsException('Player not found');
     const res = this.gameService.invitePlayer(client.data.userId, data.userId);
     if (res.status == false) throw new WsException(res.data);
-    this.server.in(res.data).emit('pending_invite', {
+    this.server.in(res.data).emit("pending_invite", {
       userId: client.data.userId,
       username: client.data.username,
     });
-    return { event: event, data: 'ok' };
+    return { event: event, data: "ok" };
     // if (this.gameService.game.findRoomId(data.userId))
     //   if (this.gameService.game.findGame()) return { event: event, data: data };
   }
 
-  @SubscribeMessage('join_game')
+  @SubscribeMessage("join_game")
   joinGame(@MessageBody() data: string): string {
     return data;
   }
 
-  @SubscribeMessage('invite_declined')
+  @SubscribeMessage("invite_declined")
   declineInvite(@MessageBody() data: { userId: number }) {
     this.gameService.inviteDeclined(data.userId);
-    Logger.log('invite from user ' + data.userId + ' declined');
+    Logger.log("invite from user " + data.userId + " declined");
   }
 
-  @SubscribeMessage('accept_invite')
+  @SubscribeMessage("accept_invite")
   async acceptInvite(
     @MessageBody() data: { userId: number },
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket
   ): Promise<WsResponse<boolean>> {
     if (!this.gameService.acceptInvite(data.userId, client.data.userId))
-      return { event: 'accept_invite', data: false };
+      return { event: "accept_invite", data: false };
     const gameRoom =
-      data.userId.toString() + 'x' + client.data.userId.toString();
+      data.userId.toString() + "x" + client.data.userId.toString();
     const opponent_id = this.gameService.game.players.get(
-      data.userId,
+      data.userId
     ).playerSocket;
 
     client.rooms.clear();
@@ -130,17 +130,17 @@ export class GameGateway
     const game = this.gameService.createNewGame(
       gameRoom,
       data.userId,
-      client.data.userId,
+      client.data.userId
     );
     const left = game.players[data.userId].x < 10;
     let username: string = (await this.userService.findUser(data.userId))
       .username;
     //
-    client.emit('game_ready', data.userId, username, left);
+    client.emit("game_ready", data.userId, username, left);
     username = (await this.userService.findUser(client.data.userId)).username;
     this.server
       .in(opponent_id)
-      .emit('game_ready', client.data.userId, username, !left);
+      .emit("game_ready", client.data.userId, username, !left);
     let userA, userB: number;
     if (left) {
       userA = data.userId;
@@ -155,18 +155,18 @@ export class GameGateway
       this.server
         .to(gameRoom)
         .emit(
-          'game_update',
-          this.gameService.getGameUpdate(gameRoom, userA, userB),
+          "game_update",
+          this.gameService.getGameUpdate(gameRoom, userA, userB)
         );
     }, 16);
     this.gameService.game.registerInterval(gameRoom, interval);
-    return { event: 'accept_invite', data: true };
+    return { event: "accept_invite", data: true };
   }
 
-  @SubscribeMessage('watch_game')
+  @SubscribeMessage("watch_game")
   async watch(
     @MessageBody() data: { userId: number },
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket
   ): Promise<{
     status: boolean;
     reason: string;
@@ -181,17 +181,17 @@ export class GameGateway
     if (!gameRoom || !gameRoom.gameRoom)
       return {
         status: false,
-        reason: 'Game not found',
+        reason: "Game not found",
       };
     const res = await this.gameService.getPlayersInfo(gameRoom.gameRoom);
     if (res.status == true) client.join(gameRoom.gameRoom);
     return res;
   }
 
-  @SubscribeMessage('game_move')
+  @SubscribeMessage("game_move")
   move(
     @MessageBody() cords: { x: number; y: number },
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket
   ): void {
     // if (!cords || !cords.x || !cords.y) return;
 
@@ -204,21 +204,20 @@ export class GameGateway
     // console.log('result: ' + game.players[client.data.userId].y);
   }
 
-  @SubscribeMessage('game_end')
+  @SubscribeMessage("game_end")
   async gameEnd(
     @MessageBody() data: { userId: number },
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket
   ): Promise<void> {
     if (data.userId != client.data.userId)
-      throw new WsException('Player not found');
-    let res = 0;
+      throw new WsException("Player not found");
     const room = this.gameService.game.findRoomId(client.data.userId);
     try {
-      res = await this.gameService.endGame(data.userId);
+      await this.gameService.endGame(data.userId, this.server);
     } catch (e) {
       Logger.log(e);
     }
-    this.server.to(room).emit('game_ended', { id: res });
-    this.server.in(room).socketsLeave(room);
+    // this.server.to(room).emit("game_ended", { id: res });
+    // this.server.in(room).socketsLeave(room);
   }
 }

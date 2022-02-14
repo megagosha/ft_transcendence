@@ -29,9 +29,10 @@ import {SocketValidationPipe} from "./socket.validation-pipe";
 import {PageDto} from "./dto/page.dto";
 import {MessagePageOutDto} from "./dto/message-page-out.dto";
 
-@UseFilters(new SocketExceptionFilter())
+@UseFilters(SocketExceptionFilter)
 @WebSocketGateway({
   namespace: "/chat",
+  transports: 'websocket',
   cors: {
     origin: ["http://localhost:3000", "http://localhost:4200"],
   },
@@ -56,8 +57,13 @@ export class ChatGateway
   }
 
   async handleConnection(client: Socket): Promise<void> {
-    const userId: number = this.getCurrentUserId(client);
-    const user: User = await this.usersServiceSupport.getCurrentUser(userId);
+    let user: User;
+    try {
+      const userId: number = this.getCurrentUserId(client);
+      user = await this.usersServiceSupport.getCurrentUser(userId);
+    } catch (e) {
+      return;
+    }
     await this.userSocketServiceSupport.addUserSocket(user, client.id);
   }
 
@@ -156,7 +162,9 @@ export class ChatGateway
   }
 
   private getCurrentUserId(client: Socket): number {
-    const user: User = this.authService.decodeJwtToken(client.handshake.auth.token);
+    const user: User = this.authService.decodeJwtToken(
+      client.handshake.auth.token
+    );
     if (!user) {
       this.disconnect(client);
     }

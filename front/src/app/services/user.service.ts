@@ -86,6 +86,7 @@ export class UserService {
   }
 
   addFriend(user_id: number): Observable<HttpResponse<User>> {
+    console.log('add friend' + user_id);
     return this.http.post<User>(this.apiUrl + 'user/add_friend', { friend_id: user_id }, { observe: 'response' });
   }
 

@@ -24,7 +24,6 @@ import {ChatPageOutDto} from "./dto/chat-page-out.dto";
 import {ChatOutDto} from "./dto/chat-out.dto";
 import {ChatUpdateInDto} from "./dto/chat-update-in.dto";
 import {ChatUserOutDto} from "./dto/chat-user-out.dto";
-import {UuidUtil} from "../util/uuid.util";
 import {UserBriefOutDto} from "./dto/user-brief-out-dto";
 import {UserBriefPageOutDto} from "./dto/user-brief-page-out-dto";
 import {ChatUserPageOutDto} from "./dto/chat-user-page-out-dto";

@@ -7,7 +7,7 @@
       class="profile-spacer"></span>{{profile.username}}
     </mat-list-item>
     <mat-list-item class="profile-item" role="listitem"><h2>PROFILE PICTURE</h2><span class="profile-spacer"></span>
-      <img style="width: 45px; height: 45px; border-radius: 23px" src="{{userService.user.avatarImgName }}">
+      <img style="width: 45px; height: 45px; border-radius: 23px" src="{{profile.avatarImgName }}">
     </mat-list-item>
     <mat-list-item class="profile-item" role="listitem">
       <h2>DATE REGISTERED</h2>
@@ -27,4 +27,5 @@
 </mat-card>
 
 <app-one-on-one [value]="this.userId"></app-one-on-one>
+<app-ladder></app-ladder>
 
