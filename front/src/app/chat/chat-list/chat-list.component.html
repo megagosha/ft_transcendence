@@ -40,7 +40,9 @@
 						<mat-chip-list *ngIf="chat.verified; else nonVerified">
 							<mat-chip [matTooltip]="getTimeBlockExpire(chat)" class="chat-chip" *ngIf="chat.userChatStatus == 'BANNED'" color="warn" selected>B</mat-chip>
 							<mat-chip [matTooltip]="getTimeBlockExpire(chat)" class="chat-chip" *ngIf="chat.userChatStatus == 'MUTED'" color="accent" selected>M</mat-chip>
-							<mat-chip [matTooltip]="'Role: ' + chat.userChatRole.toLowerCase()" class="chat-chip" *ngIf="chat.userChatStatus == 'ACTIVE'">{{chat.userChatRole.slice(0,1)}}</mat-chip>
+							<mat-chip [matTooltip]="'Role: ' + chat.userChatRole.toLowerCase()"
+									  class="chat-chip" *ngIf="chat.userChatStatus == 'ACTIVE'"
+									  color="primary" [selected]="getColor(chat)">{{chat.userChatRole.slice(0,1)}}</mat-chip>
 						</mat-chip-list>
 						<ng-template #nonVerified>
 							<mat-chip-list>

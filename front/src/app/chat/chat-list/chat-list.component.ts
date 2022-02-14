@@ -168,4 +168,8 @@ export class ChatListComponent implements OnInit, AfterViewInit {
       chats.unshift(chat);
     }
   }
+
+  getColor(chat: Chat) {
+    return !(chat.id == this.selectedChat?.id || chat.userChatRole == UserChatRole.PARTICIPANT);
+  }
 }
