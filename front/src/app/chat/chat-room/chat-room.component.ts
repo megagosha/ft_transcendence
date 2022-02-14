@@ -144,6 +144,8 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
   }
 
   inviteToGame(authorUser: ChatUser) {
-    this.gameService.inviteToPlay(authorUser.id);
+    if (this.user.id != authorUser.id) {
+      this.gameService.inviteToPlay(authorUser.id);
+    }
   }
 }

@@ -26,7 +26,11 @@
 			<mat-chip-list>
 				<mat-chip [matTooltip]="getTimeBlockExpire(user)" class="participant-chip" *ngIf="user.userChatStatus == 'BANNED'" color="warn" selected>{{user.userChatStatus.slice(0,1)}}</mat-chip>
 				<mat-chip [matTooltip]="getTimeBlockExpire(user)" class="participant-chip" *ngIf="user.userChatStatus == 'MUTED'" color="accent" selected>{{user.userChatStatus.slice(0,1)}}</mat-chip>
-				<mat-chip [matTooltip]="'Role: ' + user.userChatRole.toLowerCase()" class="participant-chip" *ngIf="user.userChatStatus == 'ACTIVE'">{{user.userChatRole.slice(0,1)}}</mat-chip>
+				<mat-chip class="participant-chip" *ngIf="user.userChatStatus == 'ACTIVE'"
+						  [matTooltip]="'Role: ' + user.userChatRole.toLowerCase()"
+						  color="primary" [selected]="user.userChatRole != 'PARTICIPANT'">
+					{{user.userChatRole.slice(0,1)}}
+				</mat-chip>
 			</mat-chip-list>
 		</button>
 		<div>
