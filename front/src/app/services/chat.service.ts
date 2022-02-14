@@ -5,6 +5,7 @@ import {io, Socket} from "socket.io-client";
 import {token} from "../app.module";
 import {Router} from "@angular/router";
 import {BehaviorSubject} from "rxjs";
+import {UserService} from "./user.service";
 
 export enum ChatType {
   PROTECTED = "PROTECTED",
@@ -150,11 +151,11 @@ export class ChatService {
   private currentChat: Chat | null = null;
   private currentChatView: ViewContainerRef | null = null;
   private readonly socket: Socket;
-  private chatObserve = new BehaviorSubject(this.currentChat);
 
   constructor(private readonly http: HttpClient,
               private readonly snackBar: MatSnackBar,
-              private readonly router: Router) {
+              private readonly router: Router,
+              private readonly userService: UserService) {
     this.socket = io("http://localhost:3000/chat", {transports: ['websocket'], auth: {token : token()}});
   }
 
@@ -240,6 +241,10 @@ export class ChatService {
   }
 
   routeToProfile(id: number) {
-    this.router.navigate(['/user', { id: id }]);
+    if (id == this.userService.user.id) {
+      this.router.navigateByUrl('/profile');
+    } else {
+      this.router.navigate(['/user', { id: id }]);
+    }
   }
 }
