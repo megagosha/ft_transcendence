@@ -4,7 +4,6 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {io, Socket} from "socket.io-client";
 import {token} from "../app.module";
 import {Router} from "@angular/router";
-import {BehaviorSubject} from "rxjs";
 import {UserService} from "./user.service";
 
 export enum ChatType {
@@ -56,10 +55,11 @@ export interface Chat {
   name: string;
   type: ChatType;
   userChatStatus: UserChatStatus;
-  dateTimeBlockExpire: Date;
+  dateTimeBlockExpire: Date | null;
   userChatRole: UserChatRole;
   avatar: string;
   verified: boolean;
+  secondUserId: number;
 }
 
 export interface ChatUpdate {
@@ -150,6 +150,7 @@ export class ChatService {
 
   private currentChat: Chat | null = null;
   private currentChatView: ViewContainerRef | null = null;
+  private chats: Chat[] = [];
   private readonly socket: Socket;
 
   constructor(private readonly http: HttpClient,
@@ -157,6 +158,7 @@ export class ChatService {
               private readonly router: Router,
               private readonly userService: UserService) {
     this.socket = io("http://localhost:3000/chat", {transports: ['websocket'], auth: {token : token()}});
+    this.listenChatsUpdate();
   }
 
   getChat() {
@@ -170,6 +172,22 @@ export class ChatService {
       this.currentChatView = null;
     } else {
       this.currentChatView = chatView;
+    }
+  }
+
+  setChats(chats: Chat[]) {
+    this.chats = chats;
+  }
+
+  addChat(chat: Chat, back = false) {
+    const chatInd: number = this.chats.findIndex(c => c.id == chat.id);
+    if (chatInd >= 0) {
+      this.chats.splice(chatInd, 1);
+    }
+    if (back) {
+      this.chats.push(chat);
+    } else {
+      this.chats.unshift(chat);
     }
   }
 
@@ -246,5 +264,16 @@ export class ChatService {
     } else {
       this.router.navigate(['/user', { id: id }]);
     }
+  }
+
+  directChat(userId: number) {
+    console.log(`/api/chat/direct/user/${userId}`);
+    return this.http.post<Chat>(`/api/chat/direct/user/${userId}`, null);
+  }
+
+  private listenChatsUpdate() {
+    this.socket.on('/chat/receive', (chat: Chat) => {
+      this.addChat(chat);
+    });
   }
 }

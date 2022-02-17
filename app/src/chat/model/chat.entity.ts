@@ -81,6 +81,6 @@ export class Chat {
   ownerUser: User;
 
   /** Время последнего действия в чате */
-  @Column({ name: "datetime_last_message", nullable: false })
+  @Column({ name: "datetime_last_message", nullable: true })
   dateTimeLastAction: Date;
 }

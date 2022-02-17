@@ -30,7 +30,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   global: boolean = false;
 
   user: Profile;
-  pageSize: number = 50;
+  pageSize: number = 100;
 
   constructor(private readonly userService: UserService,
               private readonly chatService: ChatService,
@@ -38,6 +38,8 @@ export class ChatListComponent implements OnInit, AfterViewInit {
               private readonly dialog: MatDialog,
               private readonly snackbar: MatSnackBar) {
     this.user = userService.user;
+    this.selectedChat = chatService.getChat();
+    this.chatService.setChats(this.chats);
   }
 
   ngOnInit(): void {
@@ -74,7 +76,6 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   nextPage() {
     this.chatService.findChats(this.name, this.global, this.pageSize, this.chats.length)
       .subscribe((page: ChatPage) => {
-        console.log(page);
         page.chats.forEach(chat => this.insertChat(this.chats, chat))
       }, error => {
         this.snackbar.open(error.error.message, "OK", {duration: 5000});
@@ -98,11 +99,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   addChat() {
     const dialogRef = this.dialog.open(ChatCreateNewComponent, {width: '450px', height: '575px', backdropClass: "backdrop-dialog"});
     dialogRef.afterClosed().subscribe((chat: Chat) => {
-      if (this.allChats != null) {
-        this.allChats.unshift(chat);
-      } else {
-        this.chats.unshift(chat);
-      }
+      this.chatService.addChat(chat);
     })
   }
 
@@ -119,7 +116,11 @@ export class ChatListComponent implements OnInit, AfterViewInit {
     return this.global ? "Global search by name ..." : "Local search by name ...";
   }
 
-  joinInChat(chat: Chat) {
+  joinInChat(chat: Chat | null) {
+    if (chat == null) {
+      return;
+    }
+
     if (chat.type == ChatType.PROTECTED) {
       const dialogRef = this.dialog.open(EnterPasswordComponent, {width: '300px', data: {chatId: chat.id}});
       dialogRef.afterClosed().subscribe((success: boolean) => {
@@ -170,6 +171,18 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   }
 
   getColor(chat: Chat) {
-    return !(chat.id == this.selectedChat?.id || chat.userChatRole == UserChatRole.PARTICIPANT);
+    return !(chat.id == this.selectedChat?.id || chat.userChatRole != UserChatRole.OWNER);
+  }
+
+  showChip(chat: Chat) {
+    if (!chat.verified || chat.type == ChatType.DIRECT) {
+      return false;
+    }
+
+    if (chat.userChatStatus != UserChatStatus.ACTIVE) {
+      return true;
+    }
+
+    return chat.userChatRole == UserChatRole.OWNER || this.global;
   }
 }

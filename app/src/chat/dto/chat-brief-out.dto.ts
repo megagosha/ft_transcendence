@@ -21,6 +21,13 @@ export class ChatBriefOutDto {
   type: ChatType;
 
   @ApiProperty({
+    name: "Id второго пользователя, если это DIRECT",
+    enum: ChatType,
+    example: ChatType.PRIVATE,
+  })
+  secondUserId: number;
+
+  @ApiProperty({
     description: "Путь аватарки",
     example: "/api/chat/1/avatar",
   })
