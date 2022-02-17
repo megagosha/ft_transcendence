@@ -11,6 +11,7 @@
     border: none;
     display: flex;
     flex-direction: column;
+    align-items: center;
     cursor: pointer;
 }
 
@@ -57,15 +58,19 @@
     height: auto !important;
 }
 
+.info-message-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin: 10px auto;
+}
+
 .profile-avatar {
     cursor: pointer;
     width: 35px;
     height: 35px;
     border-radius: 50%;
-}
-
-.msg-right-wrap {
-    float: right;
 }
 
 .message {

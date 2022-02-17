@@ -94,11 +94,7 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
 
   uploadAvatar(event: any) {
     const file: File = event.target.files[0];
-    this.chatService.uploadAvatar(this.chatBrief.id, file).subscribe(() => {
-        // console.log(avatar);
-        // this.chatDetails.avatar = avatar;
-        // this.chatBrief.avatar = avatar;
-      },
+    this.chatService.uploadAvatar(this.chatBrief.id, file).subscribe(() => {},
       error => {
         this.snackBar.open(error.error.message, "OK", {duration: 5000});
       }, () => {
@@ -132,6 +128,6 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
 
   joinInChat() {
     document.getElementById("joinInChat")?.click();
-    this.currentDialog.close({reload: false});
+    this.currentDialog.close();
   }
 }

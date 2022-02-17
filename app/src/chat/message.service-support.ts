@@ -4,6 +4,7 @@ import { Message } from "./model/message.entity";
 import { Repository } from "typeorm";
 import {Chat} from "./model/chat.entity";
 import {User} from "../users/user.entity";
+import {ChatChange} from "./model/chat-change.entity";
 
 @Injectable()
 export class MessageServiceSupport {
@@ -12,15 +13,16 @@ export class MessageServiceSupport {
     private readonly messageRepository: Repository<Message>
   ) {}
 
-  async addMessage(user: User, chat: Chat, text: string, visible: boolean = true): Promise<Message> {
+  async addMessage(user: User | null, chat: Chat, text: string | null, chatChange: ChatChange, visible = true): Promise<Message> {
     const message: Message = new Message();
     message.text = text;
     message.authorUser = user;
     message.targetChat = chat;
     message.visible = visible;
+    message.chatChange = chatChange;
     await this.messageRepository.save(message);
 
-    Logger.log(`Message[id=${message.id}] was added to chat[id=${chat.id}] by user[id=${user.id}]`);
+    Logger.log(`Message[id=${message.id}] was added to chat[id=${chat.id}]`);
 
     return message;
   }
@@ -36,7 +38,7 @@ export class MessageServiceSupport {
       },
       take: take,
       skip: skip,
-      relations: ["authorUser", "targetChat"],
+      relations: ["authorUser", "targetChat", "chatChange"],
     });
   }
 }

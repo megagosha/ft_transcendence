@@ -24,10 +24,10 @@ export enum UserChatStatus {
 
 @Entity("ft_user_chat_link")
 @Index("userchatlink_user_chat_index", ["user", "chat"], { unique: true })
+@Index("userchatlink_user_second_user_index", ["user", "secondUser"], { unique: true })
 export class UserChatLink {
   public static readonly USER_CHAT_STATUS_LENGTH: number = 15;
   public static readonly USER_CHAT_ROLE_LENGTH: number = 15;
-  public static readonly SUBSCRIPTION_STATUS_LENGTH: number = 15;
 
   /** Id связи */
   @PrimaryGeneratedColumn()
@@ -37,6 +37,11 @@ export class UserChatLink {
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: "user_id", referencedColumnName: "id" })
   user: User;
+
+  /** Второй пользоваятель DIRECT-чата */
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: "second_user_id", referencedColumnName: "id" })
+  secondUser: User;
 
   /** Статус пользователя в чате */
   @Column({

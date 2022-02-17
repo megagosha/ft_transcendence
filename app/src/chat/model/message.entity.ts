@@ -4,11 +4,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   VersionColumn,
 } from "typeorm";
 import { User } from "../../users/user.entity";
 import { Chat } from "./chat.entity";
+import { ChatChange } from "./chat-change.entity";
 
 @Entity("ft_message", { orderBy: { dateTimeSend: "DESC" } })
 export class Message {
@@ -22,7 +24,7 @@ export class Message {
   version: number;
 
   /** Текст сообщения */
-  @Column({ name: "text", length: Message.TEXT_LENGTH, nullable: false })
+  @Column({ name: "text", length: Message.TEXT_LENGTH, nullable: true })
   text: string;
 
   /** Время отправки */
@@ -39,7 +41,7 @@ export class Message {
   dateTimeEdit: Date;
 
   /** Автор */
-  @ManyToOne(() => User, { nullable: false })
+  @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: "author_user_id", referencedColumnName: "id" })
   authorUser: User;
 
@@ -51,4 +53,9 @@ export class Message {
   @ManyToOne(() => Chat, { nullable: false })
   @JoinColumn({ name: "target_chat_id", referencedColumnName: "id" })
   targetChat: Chat;
+
+  /** Изменение чата для которого было создано сообщение */
+  @OneToOne(() => ChatChange, { nullable: true, cascade: true })
+  @JoinColumn({ name: "chat_change_id" })
+  chatChange: ChatChange;
 }

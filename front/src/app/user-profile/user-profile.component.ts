@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import { Profile } from '../login/profile.interface';
 import { ActivatedRoute, NavigationStart, Router } from '@angular/router';
 import { UserService } from '../services/user.service';
@@ -7,6 +7,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { User } from '../services/search-users.interface';
 import { formatDate } from '@angular/common';
 import {GameService} from "../services/game.service";
+import {Chat, ChatService} from "../services/chat.service";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-personal-profile',
@@ -21,7 +23,9 @@ export class UserProfileComponent implements OnInit {
   constructor(private _router: Router, private _route: ActivatedRoute,
               public userService: UserService, private _authService: AuthService,
               public dialog: MatDialog,
-              private readonly gameService: GameService) {
+              private readonly gameService: GameService,
+              private readonly chatServise: ChatService,
+              private readonly snackbar: MatSnackBar) {
     this.userId = 0;
     this.profile = new Profile();
   }
@@ -52,5 +56,16 @@ export class UserProfileComponent implements OnInit {
 
   inviteToGame() {
     this.gameService.inviteToPlay(this.userId);
+  }
+
+  sendMessage() {
+    this.chatServise.directChat(this.userId).subscribe((chat: Chat) => {
+      this.chatServise.setChat(chat, null);
+      },
+      error => {
+        this.snackbar.open(error.error.message, "OK", {duration: 5000});
+      }, () => {
+        this._router.navigateByUrl("/chat");
+      })
   }
 }
