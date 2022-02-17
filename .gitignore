@@ -1,3 +1,4 @@
 .vscode
 2docker*
 node_modules
+dist
