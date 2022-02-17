@@ -55,11 +55,21 @@ export class ChatGateway
     await this.userSocketServiceSupport.removeAllSockets();
   }
 
-  async handleConnection(client: Socket): Promise<void> {
-    const userId: number = this.getCurrentUserId(client);
-    const user: User = await this.usersServiceSupport.getCurrentUser(userId);
-    await this.userSocketServiceSupport.addUserSocket(user, client.id);
-  }
+//   async handleConnection(client: Socket): Promise<void> {
+//     const userId: number = this.getCurrentUserId(client);
+//     const user: User = await this.usersServiceSupport.getCurrentUser(userId);
+//     await this.userSocketServiceSupport.addUserSocket(user, client.id);
+//   }
+	async handleConnection(client: Socket): Promise<void> {
+		let user: User;
+		try {
+			const userId: number = this.getCurrentUserId(client);
+			user = await this.usersServiceSupport.getCurrentUser(userId);
+		} catch (e) {
+			return;
+		}
+		await this.userSocketServiceSupport.addUserSocket(user, client.id);
+	}
 
   async handleDisconnect(client: Socket): Promise<void> {
     await this.userSocketServiceSupport.removeSocket(client.id);

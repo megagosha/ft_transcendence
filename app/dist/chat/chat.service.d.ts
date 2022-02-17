@@ -1,0 +1,40 @@
+/// <reference types="multer" />
+import { Chat } from "./model/chat.entity";
+import { ChatCreateInDto } from "./dto/chat-create-in.dto";
+import { Repository } from "typeorm";
+import { UserChatLink } from "./model/user-chat-link.entity";
+import { ChatCreateOutDto } from "./dto/chat-create-out.dto";
+import { UsersServiceSupport } from "../users/users.service-support";
+import { ChatServiceSupport } from "./chat.service-support";
+import { ChatAccessUpdateInDto } from "./dto/chat-access-update-in.dto";
+import { ChatUserUpdateInDto } from "./dto/chat-user-update-in.dto";
+import { ChatUserRoleUpdateInDto } from "./dto/chat-user-role-update-in.dto";
+import { ChatPageOutDto } from "./dto/chat-page-out.dto";
+import { ChatOutDto } from "./dto/chat-out.dto";
+import { ChatUpdateInDto } from "./dto/chat-update-in.dto";
+import { UserBriefPageOutDto } from "./dto/user-brief-page-out-dto";
+import { ChatUserPageOutDto } from "./dto/chat-user-page-out-dto";
+export declare class ChatService {
+    private readonly chatRepository;
+    private readonly userChatLinkRepository;
+    private readonly userServiceSupport;
+    private readonly chatServiceSupport;
+    constructor(chatRepository: Repository<Chat>, userChatLinkRepository: Repository<UserChatLink>, userServiceSupport: UsersServiceSupport, chatServiceSupport: ChatServiceSupport);
+    createChat(dto: ChatCreateInDto, userId: number): Promise<ChatCreateOutDto>;
+    createDirectChat(userId: number, targetUserId: number): Promise<ChatCreateOutDto>;
+    addParticipants(userId: number, chatId: number, userIds: number[]): Promise<void>;
+    deleteParticipant(userId: number, chatId: number, participantId: number): Promise<void>;
+    updateAccess(userId: number, chatId: number, dto: ChatAccessUpdateInDto): Promise<void>;
+    updateChat(userId: number, chatId: number, dto: ChatUpdateInDto): Promise<void>;
+    updateUserChatRole(userId: number, chatId: number, participantId: number, dto: ChatUserRoleUpdateInDto): Promise<void>;
+    updateUserChat(userId: number, chatId: number, participantId: number, dto: ChatUserUpdateInDto): Promise<void>;
+    joinChat(userId: number, chatId: number, password: string): Promise<void>;
+    leaveChat(userId: number, chatId: number): Promise<void>;
+    getUserChats(userId: number, name: string, global: boolean, take: number, skip: number): Promise<ChatPageOutDto>;
+    getChat(userId: number, chatId: number): Promise<ChatOutDto>;
+    getChatUsers(userId: number, name: string, chatId: number, take: number, skip: number): Promise<ChatUserPageOutDto>;
+    findNotParticipants(userId: number, chatId: number, name: string, take: number, skip: number): Promise<UserBriefPageOutDto>;
+    uploadAvatar(userId: number, chatId: number, avatar: Express.Multer.File): Promise<void>;
+    private createUserChatLink;
+    private setTypeAndPassword;
+}
