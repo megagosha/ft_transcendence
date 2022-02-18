@@ -18,6 +18,8 @@ WORKDIR /usr/src/app
 #COPY *.json ./
 #COPY --chown=755 ../static /var/www/app/
 COPY . .
+#RUN mv static /usr/src/
+#COPY static /usr/src/static
 RUN npm install && nest update && npm run build
 
 EXPOSE ${NESTJS_CONTAINER_PORT}

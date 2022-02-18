@@ -39,6 +39,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/swagger-ui', app, document);
 
-  await app.listen(3000, '0.0.0.0');
+	await app.listen(process.env.NESTJS_CONTAINER_PORT, '0.0.0.0');
 }
 bootstrap();

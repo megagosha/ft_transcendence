@@ -25,7 +25,7 @@ services:
     volumes:
       - ./app/:/usr/src/app
 #      - ./usr/src/app/node_modules
-      - ./static:/var/www/app/static
+#      - ./static:/var/www/app/static
     env_file: 
       - .env # при таком включении есть баг один с числами типа PORT=3000. Это чекать нужно, они иногда неопрокидываются. Я с этим долго провозился
     ports:

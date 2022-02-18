@@ -21,7 +21,7 @@ import { ScheduleModule } from "@nestjs/schedule";
     GameModule,
     ChatModule,
     ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), "..", "static"),
+      rootPath: join(process.cwd(), "static"),
       exclude: ["/api*"],
     }),
     TypeOrmModule.forRoot({
