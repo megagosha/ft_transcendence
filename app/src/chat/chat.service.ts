@@ -90,18 +90,23 @@ export class ChatService {
   }
 
   async addParticipants(userId: number, chatId: number, userIds: number[]): Promise<void> {
+    if (userIds.length < 1) {
+      return ;
+    }
+
     const user: User = await this.userServiceSupport.getCurrentUser(userId);
     const chat: Chat = await this.chatServiceSupport.findChatById(chatId);
     const userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, chat);
 
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.ADD_PARTICIPANT);
 
-    // Вытащим id уже подписаных пользователей через их подписки на выбранный чат
+    // Вытащим id уже подписаных неверифицированных пользователей через их подписки на выбранный чат
     const existLinks: UserChatLink[] = await this.userChatLinkRepository
       .createQueryBuilder("link")
       .leftJoinAndSelect("link.user", "user")
       .leftJoinAndSelect("link.chat", "chat")
       .where("link.chat = :chat", { chat: chatId })
+      .andWhere("link.verified = false")
       .andWhere("link.user IN (:...users)", { users: userIds })
       .getMany();
     const linkedUserIds: number[] = existLinks.map((link) => link.user.id);
@@ -125,7 +130,8 @@ export class ChatService {
 
     notLinkedUsers.forEach(user => Logger.log(`Participant [id=${user.id}] was added to chat[id=${chatId}]`));
 
-    const chatChanges: ChatChange[] = notLinkedUsers.map(targetUser => {
+    const users: User[] = [...existLinks.map(link => link.user), ...notLinkedUsers];
+    const chatChanges: ChatChange[] = users.map(targetUser => {
       return this.mapToChatChange(chat, user, ChangeType.ADD_PARTICIPANT, targetUser);
     });
 
@@ -141,13 +147,12 @@ export class ChatService {
 
     const participant: User = await this.userServiceSupport.findById(participantId, "Участник не найден");
     const participantChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(participant, chat);
-    participantChatLink.verified = false;
-    await this.userChatLinkRepository.save(participantChatLink);
-
-    Logger.log(`Participant [id=${participantId} was disabled in chat [id=${chatId}]]`);
 
     const chatChange: ChatChange = this.mapToChatChange(chat, user, ChangeType.REMOVE_PARTICIPANT, participant);
     this.chatGateway.sendSpecificMessages([chatChange], chat);
+    Logger.log(`Participant [id=${participantId} was deleted from chat [id=${chatId}]]`);
+
+    await this.userChatLinkRepository.delete(participantChatLink.id);
   }
 
   async updateAccess(userId: number, chatId: number, dto: ChatAccessUpdateInDto): Promise<void> {
@@ -169,6 +174,9 @@ export class ChatService {
     }
 
     Logger.log(`Password for chat[id=${chat.id}] was updated]`);
+
+    const chatChange = this.mapToChatChange(chat, user, ChangeType.UPDATE_ACCESS, null);
+    this.chatGateway.refreshChat(chat, chatChange);
   }
 
   async updateChat(userId: number, chatId: number, dto: ChatUpdateInDto): Promise<void> {
@@ -196,31 +204,6 @@ export class ChatService {
     Logger.log(`Chat[id=${chat.id}] was updated]`);
 
     this.chatGateway.sendSpecificMessages(chatChanges, chat);
-  }
-
-  async updateUserChatRole(
-    userId: number,
-    chatId: number,
-    participantId: number,
-    dto: ChatUserRoleUpdateInDto
-  ): Promise<void> {
-    if (userId == participantId) {
-      throw new BadRequestException("Нельзя изменить роль самому себе");
-    }
-
-    const user: User = await this.userServiceSupport.getCurrentUser(userId);
-    const chat: Chat = await this.chatServiceSupport.findChatById(chatId);
-    const userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, chat);
-
-    ChatServiceSupport.verifyAction(userChatLink, ChatAction.UPDATE_ROLE);
-
-    const participant: User = await this.userServiceSupport.findById(participantId, "Участник чата не найден");
-    const participantChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(participant, chat);
-
-    participantChatLink.userRole = dto.role;
-    await this.userChatLinkRepository.save(participantChatLink);
-
-    Logger.log(`Participant [id=${participantId}] became ${dto.role} in chat[id=${chat.id}]`);
   }
 
   async updateUserChat(
@@ -269,6 +252,9 @@ export class ChatService {
       await this.userChatLinkRepository.save(participantChatLink);
       Logger.log(`Participant [id=${participantId}] was updated [status=${dto.status}, role=${dto.role}] in chat[id=${chat.id}]`);
     }
+
+    const chatChange = this.mapToChatChange(chat, user, ChangeType.UPDATE_CHAT_USER, participant);
+    this.chatGateway.refreshChat(chat, chatChange);
   }
 
   async joinChat(userId: number, chatId: number, password: string) {
@@ -298,6 +284,7 @@ export class ChatService {
       userChatLink = this.createUserChatLink(chat, user);
       chat.dateTimeLastAction = new Date();
       await this.chatServiceSupport.updateChat(chat);
+      changed = true;
     } else if (!userChatLink.verified) {
       changed = true;
     }
@@ -309,7 +296,7 @@ export class ChatService {
 
     if (changed) {
       const chatChange: ChatChange = this.mapToChatChange(chat, user, ChangeType.JOIN_CHAT, null);
-      this.chatGateway.sendSpecificMessages([chatChange], null);
+      this.chatGateway.sendSpecificMessages([chatChange], chat);
     }
   }
 
@@ -322,16 +309,19 @@ export class ChatService {
     }
 
     const userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, chat);
-    const changed = userChatLink.verified ? true : false;
-    userChatLink.verified = false;
-    await this.userChatLinkRepository.save(userChatLink);
+    let chatChange: ChatChange;
+    if (userChatLink.chat.type == ChatType.PRIVATE) {
+      await this.userChatLinkRepository.delete(userChatLink.id);
+      chatChange = this.mapToChatChange(chat, user, ChangeType.LEAVE_PRIVATE_CHAT, null);
+      this.chatGateway.sendSpecificMessages([chatChange], chat);
+    } else if (userChatLink.verified) {
+      userChatLink.verified = false;
+      await this.userChatLinkRepository.save(userChatLink);
+      chatChange = this.mapToChatChange(chat, user, ChangeType.LEAVE_CHAT, null);
+      this.chatGateway.sendSpecificMessages([chatChange], chat);
+    }
 
     Logger.log(`User [id=${userId}] left(disable self) chat[id=${chat.id}]`);
-
-    if (changed) {
-      const chatChange: ChatChange = this.mapToChatChange(chat, user, ChangeType.LEAVE_CHAT, null);
-      this.chatGateway.sendSpecificMessages([chatChange], null);
-    }
   }
 
   async getUserChats(userId: number, name: string, global: boolean, take: number, skip: number): Promise<ChatPageOutDto> {

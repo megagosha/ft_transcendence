@@ -1,7 +1,14 @@
-import { Chat, ChatType } from "../model/chat.entity";
+import { ChatType } from "../model/chat.entity";
 import { Expose } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
-import { UserChatRole, UserChatStatus} from "../model/user-chat-link.entity";
+import { UserChatRole, UserChatStatus } from "../model/user-chat-link.entity";
+import { ChatChangeDto } from "./chat-change.dto";
+
+export enum ActionType {
+  ADD = "ADD",
+  REMOVE = "REMOVE",
+  REFRESH = "REFRESH",
+}
 
 export class ChatBriefOutDto {
   @Expose()
@@ -22,8 +29,7 @@ export class ChatBriefOutDto {
 
   @ApiProperty({
     name: "Id второго пользователя, если это DIRECT",
-    enum: ChatType,
-    example: ChatType.PRIVATE,
+    example: 1,
   })
   secondUserId: number;
 
@@ -56,4 +62,9 @@ export class ChatBriefOutDto {
     example: true,
   })
   verified: boolean;
+
+  @ApiProperty({
+    description: "Измение чата",
+  })
+  change: ChatChangeDto | null;
 }

@@ -10,7 +10,6 @@ import {ChatParticipantsEditComponent} from "./chat-participants-edit/chat-parti
 import {ChatParticipantsAddComponent} from "./chat-participants-add/chat-participants-add.component";
 import {ConfirmFormComponent} from "../../confirm-form/confirm-form.component";
 import {FormControl} from "@angular/forms";
-import {timeout} from "rxjs";
 
 @Component({
   selector: 'app-chat-info',
@@ -38,6 +37,7 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
         this.chatDetails = chat;
         this.chatDetails.dateTimePasswordChange = new Date(chat.dateTimePasswordChange);
         this.chatDetails.dateTimeCreate = new Date(chat.dateTimeCreate);
+        this.chatService.setChatDetails(this.chatDetails);
       },
       (error) => {
         this.snackBar.open(error.error.message, "OK", {duration: 5000});
@@ -76,7 +76,7 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
               this.chatService.setChat(null, null);
             }
             this.chatBrief.verified = false;
-            this.currentDialog.close({reload: false});
+            this.currentDialog.close();
           }, error => {
             this.snackBar.open(error.error.message, "OK", {duration: 5000});
           }, () => {
@@ -118,8 +118,7 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
 
   canUpdateAccess() {
     return this.chatBrief.userChatRole == UserChatRole.OWNER
-      && this.chatBrief.verified
-      && this.chatBrief.userChatStatus == UserChatStatus.BANNED;
+      && this.chatBrief.verified;
   }
 
   canEditParticipants() {

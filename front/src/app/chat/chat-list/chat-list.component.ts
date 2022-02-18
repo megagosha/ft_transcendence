@@ -97,10 +97,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   }
 
   addChat() {
-    const dialogRef = this.dialog.open(ChatCreateNewComponent, {width: '450px', height: '575px', backdropClass: "backdrop-dialog"});
-    dialogRef.afterClosed().subscribe((chat: Chat) => {
-      this.chatService.addChat(chat);
-    })
+    this.dialog.open(ChatCreateNewComponent, {width: '450px', height: '575px', backdropClass: "backdrop-dialog"});
   }
 
   changeSearch() {
@@ -125,12 +122,17 @@ export class ChatListComponent implements OnInit, AfterViewInit {
       const dialogRef = this.dialog.open(EnterPasswordComponent, {width: '300px', data: {chatId: chat.id}});
       dialogRef.afterClosed().subscribe((success: boolean) => {
         if (success) {
-          this.enterChat(chat)
+          chat.verified = true;
+          if (chat.userChatStatus == null) {
+            chat.userChatStatus = UserChatStatus.ACTIVE;
+            chat.userChatRole = UserChatRole.PARTICIPANT;
+          }
+          this.onSelect(chat);
         }
       });
     } else {
       this.chatService.joinChat(chat.id, null).subscribe(
-        () => this.enterChat(chat),
+        () => this.onSelect(chat),
         error => {
           this.snackbar.open(error.error.message, "OK", {duration: 5000});
         })
@@ -142,20 +144,6 @@ export class ChatListComponent implements OnInit, AfterViewInit {
       return `Status: banned before '${this.chatService.getTimeBlockExpire(chat.dateTimeBlockExpire)}'`;
     }
     return `Status: muted before '${this.chatService.getTimeBlockExpire(chat.dateTimeBlockExpire)}'`;
-  }
-
-  private enterChat(chat: Chat) {
-    chat.verified = true;
-    if (chat.userChatStatus == null) {
-      chat.userChatStatus = UserChatStatus.ACTIVE;
-      chat.userChatRole = UserChatRole.PARTICIPANT;
-    }
-    if (this.return && this.allChats != null) {
-      this.insertChat(this.allChats, chat, false);
-    } else {
-      this.insertChat(this.chats, chat, false);
-    }
-    this.onSelect(chat);
   }
 
   private insertChat(chats: Chat[], chat: Chat, back = true) {

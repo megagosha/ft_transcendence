@@ -1,12 +1,14 @@
-import {BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException} from "@nestjs/common";
+import {BadRequestException, Injectable, Logger, NotFoundException} from "@nestjs/common";
 import {InjectRepository} from "@nestjs/typeorm";
 import {UserChatLink, UserChatRole, UserChatStatus} from "./model/user-chat-link.entity";
 import {ILike, In, Not, Repository, SelectQueryBuilder} from "typeorm";
 import {Chat, ChatType} from "./model/chat.entity";
 import {User} from "../users/user.entity";
-import {ChatBriefOutDto} from "./dto/chat-brief-out.dto";
+import {ActionType, ChatBriefOutDto} from "./dto/chat-brief-out.dto";
 import {UsersServiceSupport} from "../users/users.service-support";
 import {plainToClass} from "class-transformer";
+import {ChangeType, ChatChange} from "./model/chat-change.entity";
+import {ChatChangeDto} from "./dto/chat-change.dto";
 
 export enum ChatAction {
   CHAT_INFO,
@@ -234,7 +236,7 @@ export class ChatServiceSupport {
     return `http://localhost:3000/files/chat/default.png`;
   }
 
-  mapToChatBriefDto(link: UserChatLink): ChatBriefOutDto {
+  mapToChatBriefDto(link: UserChatLink, change: ChatChange = null): ChatBriefOutDto {
     const dto = plainToClass(ChatBriefOutDto, link.chat, { excludeExtraneousValues: true });
     if (dto.type != ChatType.DIRECT) {
       dto.dateTimeBlockExpire = link.dateTimeBlockExpire;
@@ -247,6 +249,14 @@ export class ChatServiceSupport {
       dto.name = link.secondUser.username;
       dto.secondUserId = link.secondUser.id;
       dto.avatar = UsersServiceSupport.getUserAvatarPath(link.secondUser);
+    }
+
+    if (change != null) {
+      const changeDto: ChatChangeDto = new ChatChangeDto();
+      changeDto.changeType = change.type;
+      changeDto.changerUserId = change.changerUser.id;
+      changeDto.targetUserId = change.targetUser?.id;
+      dto.change = changeDto;
     }
 
     return dto;

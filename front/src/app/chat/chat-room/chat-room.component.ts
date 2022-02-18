@@ -77,14 +77,12 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
 
   private listenMessageReceive(): void {
     this.socket.on('/message/receive', (message: Message) => {
+      const chat: Chat = message.targetChat;
       if (message && message.targetChat.id == this.chat.id && !this.messages.some(m => m.id == message.id)) {
-        console.log(message);
         message.dateTimeSend = new Date(message.dateTimeSend);
         this.messages.push(message);
       }
-      const chat: Chat = message.targetChat;
-      chat.dateTimeBlockExpire = chat.dateTimeBlockExpire != null ? new Date(chat.dateTimeBlockExpire) : null;
-      this.chatService.addChat(chat);
+      this.chatService.treatChat(chat);
     });
   }
 
@@ -134,7 +132,7 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
     document.getElementById("joinInChat")?.click();
   }
 
-  goToProfile(userId: number) {
+  goToProfile(userId: number | null) {
     if (userId != null) {
       this.chatService.routeToProfile(userId);
     }

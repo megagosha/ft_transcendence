@@ -125,20 +125,6 @@ export class ChatController {
     await this.chatService.updateAccess(userId, chatId, dto);
   }
 
-  @ApiOperation({ description: "Изменить роль участника чате" })
-  @ApiParam({ name: "chatId", description: "Id чата", example: 1, required: true })
-  @ApiParam({ name: "participantId", description: "Id участника", example: 1, required: true })
-  @ApiBody({ description: "Роль пользователя в чате", type: ChatUserRoleUpdateInDto })
-  @Put(":chatId/participant/:participantId/role")
-  async updateUserChatRole(
-    @Param("chatId", ParseIntPipe) chatId: number,
-    @Param("participantId", ParseIntPipe) participantId: number,
-    @Body() dto: ChatUserRoleUpdateInDto,
-    @CurrentUserId() userId: number
-  ): Promise<void> {
-    await this.chatService.updateUserChatRole(userId, chatId, participantId, dto);
-  }
-
   @ApiOperation({ description: "Изменить участника чата" })
   @ApiParam({ name: "chatId", description: "Id чата", example: 1, required: true })
   @ApiParam({ name: "participantId", description: "Id участника", example: 1, required: true })
