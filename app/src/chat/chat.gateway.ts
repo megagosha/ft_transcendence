@@ -29,6 +29,7 @@ import {SocketValidationPipe} from "./socket.validation-pipe";
 import {PageDto} from "./dto/page.dto";
 import {MessagePageOutDto} from "./dto/message-page-out.dto";
 import {ChangeType, ChatChange} from "./model/chat-change.entity";
+import {ActionType} from "./dto/chat-brief-out.dto";
 
 @UseFilters(new SocketExceptionFilter())
 @WebSocketGateway({
@@ -103,10 +104,6 @@ export class ChatGateway
     const socket: UserSocket = await this.userSocketServiceSupport.findSocket(client.id);
     const activeChat: Chat = socket.activeChat;
 
-    if (activeChat == null) {
-      throw new WsException("Необходимо присоединиться к чату");
-    }
-
     const userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, activeChat);
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.SEND_MESSAGE);
 
@@ -117,36 +114,7 @@ export class ChatGateway
       visible = true;
     }
 
-    const message: Message = await this.messageServiceSupport.addMessage(user, activeChat, text, null, visible);
-    activeChat.dateTimeLastAction = new Date();
-    await this.chatServiceSupport.updateChat(activeChat);
-
-    const messageDto: MessageOutDto = plainToClass(MessageOutDto, message, { excludeExtraneousValues: true });
-    messageDto.authorUser.avatar = UsersServiceSupport.getUserAvatarPath(message.authorUser);
-
-    const linkByUserId: Map<number, UserChatLink> = new Map<number, UserChatLink>();
-    const userIds: number[] = [];
-    (await this.chatServiceSupport.filterUserChatLinks(null, activeChat, null, null, null, null, null)).forEach(link => {
-      linkByUserId.set(link.user.id, link);
-      userIds.push(link.user.id);
-    });
-
-    const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(userIds, activeChat);
-    const defaultLink: UserChatLink = new UserChatLink();
-    defaultLink.chat = activeChat;
-    sockets.forEach((socket) => {
-      let link = linkByUserId.get(socket.user.id);
-      if (link == null) {
-        link = defaultLink;
-      }
-      messageDto.targetChat = this.chatServiceSupport.mapToChatBriefDto(link);
-
-      if (socket.activeChat != null) {
-        this.server.to(socket.id).emit("/message/receive", messageDto);
-      } else {
-        this.server.to(socket.id).emit("/chat/receive", messageDto.targetChat);
-      }
-    });
+    this.saveAndSendMessage(activeChat, user, text, null, visible);
   }
 
   @SubscribeMessage("/message/page")
@@ -175,8 +143,31 @@ export class ChatGateway
     client.emit("/message/page-receive", messagePage);
   }
 
-  async sendSpecificMessages(chatChanges: ChatChange[], chat: Chat) {
+  sendSpecificMessages(chatChanges: ChatChange[], chat: Chat) {
     chatChanges.forEach(chatChange => this.saveAndSendMessage(chat, null, null, chatChange));
+  }
+
+  async refreshChat(chat: Chat, change: ChatChange) {
+    const linkByUserId: Map<number, UserChatLink> = new Map<number, UserChatLink>();
+    const userIds: number[] = [];
+
+    if (change.targetUser == null) {
+      (await this.chatServiceSupport.filterUserChatLinks(null, chat, null, null, null, null, null)).forEach(link => {
+        linkByUserId.set(link.user.id, link);
+        userIds.push(link.user.id);
+      });
+    } else {
+      const targetUser = change.targetUser;
+
+      userIds.push(targetUser.id);
+      linkByUserId.set(targetUser.id, await this.chatServiceSupport.findUserChatLink(targetUser, chat));
+    }
+
+    const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(userIds, null);
+    sockets.forEach((socket) => {
+      let link = linkByUserId.get(socket.user.id);
+      this.server.to(socket.id).emit("/chat/receive", this.chatServiceSupport.mapToChatBriefDto(link, change));
+    });
   }
 
   private getCurrentUserId(client: Socket): number {
@@ -207,15 +198,15 @@ export class ChatGateway
   }
 
   private async saveAndSendMessage(
-    activeChat: Chat,
+    targetChat: Chat,
     authorUser: User | null,
     text: string | null,
     chatChange: ChatChange | null,
     visible = true)
   {
-    const message: Message = await this.messageServiceSupport.addMessage(authorUser, activeChat, text, chatChange, visible);
-    activeChat.dateTimeLastAction = new Date();
-    await this.chatServiceSupport.updateChat(activeChat);
+    const message: Message = await this.messageServiceSupport.addMessage(authorUser, targetChat, text, chatChange, visible);
+    targetChat.dateTimeLastAction = new Date();
+    await this.chatServiceSupport.updateChat(targetChat);
 
     const messageDto: MessageOutDto = plainToClass(MessageOutDto, message, { excludeExtraneousValues: true });
     if (message.chatChange != null) {
@@ -227,22 +218,32 @@ export class ChatGateway
 
     const linkByUserId: Map<number, UserChatLink> = new Map<number, UserChatLink>();
     const userIds: number[] = [];
-    (await this.chatServiceSupport.filterUserChatLinks(null, activeChat, null, null, null, null, null)).forEach(link => {
+    (await this.chatServiceSupport.filterUserChatLinks(null, targetChat, null, null, true, null, null)).forEach(link => {
       linkByUserId.set(link.user.id, link);
       userIds.push(link.user.id);
     });
 
-    const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(userIds, activeChat);
+    if (chatChange != null) {
+      if (!userIds.includes(chatChange.changerUser.id)) {
+        userIds.push(chatChange.changerUser.id);
+      }
+      if (chatChange.targetUser != null && !userIds.includes(chatChange.targetUser.id)) {
+        userIds.push(chatChange.targetUser.id);
+      }
+    }
+
+    const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(userIds, targetChat);
     const defaultLink: UserChatLink = new UserChatLink();
-    defaultLink.chat = activeChat;
+    defaultLink.chat = targetChat;
+    defaultLink.verified = false;
     sockets.forEach((socket) => {
       let link = linkByUserId.get(socket.user.id);
-      if (link == null) {
+      if (link == null || !link.verified) {
         link = defaultLink;
       }
-      messageDto.targetChat = this.chatServiceSupport.mapToChatBriefDto(link);
 
-      if (socket.activeChat != null) {
+      messageDto.targetChat = this.chatServiceSupport.mapToChatBriefDto(link, chatChange);
+      if (socket.activeChat != null && socket.activeChat.id == targetChat.id) {
         this.server.to(socket.id).emit("/message/receive", messageDto);
       } else {
         this.server.to(socket.id).emit("/chat/receive", messageDto.targetChat);
@@ -265,9 +266,10 @@ export class ChatGateway
       case ChangeType.REMOVE_PARTICIPANT:
         return `${chatChange.changerUser.username} removed ${chatChange.targetUser.username}`;
       case ChangeType.JOIN_CHAT:
-        return `${chatChange.changerUser.username} joined`;
+        return `${chatChange.changerUser.username} joined chat`;
+      case ChangeType.LEAVE_PRIVATE_CHAT:
       case ChangeType.LEAVE_CHAT:
-        return `${chatChange.changerUser.username} leaved`;
+        return `${chatChange.changerUser.username} leaved chat`;
     }
   }
 }
