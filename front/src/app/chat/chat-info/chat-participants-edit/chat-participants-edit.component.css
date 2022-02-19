@@ -28,7 +28,7 @@
 
 .select-participant {
     height: auto;
-    flex-basis: calc(100% - 32px);
+    flex-basis: calc(100% - 24px);
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -43,37 +43,24 @@
     cursor: auto;
 }
 
-.participant-name-avatar {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
-    border-radius: 19px;
-    background-color: #e5e5e5;
-    border: 1px solid #333333;
-    display: flex;
-}
-
-.participant-short-name {
-    margin: auto;
-    font-size: 11pt;
-    color: #333333;
-    text-transform: uppercase;
-}
-
 .participant-avatar {
-    width: 30px;
-    height: 30px;
+    border-radius: 50%;
+    width: 33px;
+    height: 33px;
 }
 
 .participant-name {
     font-size: 10pt;
-    flex-basis: calc(100% - 70px);
+    flex-basis: calc(100% - 80px);
     word-break: break-all;
     padding-right: 5px;
 }
 
 .participant-chip {
-    margin: 0;
-    width: 32px;
-    font-size: 7pt;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+    font-size: 8pt;
 }

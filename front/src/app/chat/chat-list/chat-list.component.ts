@@ -24,20 +24,22 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   name = '';
 
   chats: Chat[] = [];
-  allChats: Chat[] = [];
+  allChats: Chat[] | null = null;
   return: boolean = false;
 
   global: boolean = false;
 
   user: Profile;
-  pageSize: number = 50;
+  pageSize: number = 100;
 
   constructor(private readonly userService: UserService,
-              private readonly chatServie: ChatService,
+              private readonly chatService: ChatService,
               private readonly http: HttpClient,
               private readonly dialog: MatDialog,
               private readonly snackbar: MatSnackBar) {
     this.user = userService.user;
+    this.selectedChat = chatService.getChat();
+    this.chatService.setChats(this.chats);
   }
 
   ngOnInit(): void {
@@ -58,21 +60,21 @@ export class ChatListComponent implements OnInit, AfterViewInit {
 
   findChats() {
     if (this.name != null && this.name.length > 0 || this.global) {
-      if (this.allChats.length == 0) {
+      if (this.allChats == null) {
         this.allChats = this.chats;
         this.return = true;
       }
       this.chats = [];
       this.nextPage();
-    } else {
+    } else if (this.allChats != null) {
       this.chats = this.allChats;
-      this.allChats = [];
+      this.allChats = null;
       this.return = false;
     }
   }
 
   nextPage() {
-    this.chatServie.findChats(this.name, this.global, this.pageSize, this.chats.length)
+    this.chatService.findChats(this.name, this.global, this.pageSize, this.chats.length)
       .subscribe((page: ChatPage) => {
         page.chats.forEach(chat => this.insertChat(this.chats, chat))
       }, error => {
@@ -86,17 +88,16 @@ export class ChatListComponent implements OnInit, AfterViewInit {
     if (this.return) {
       this.searchName.setValue("");
     }
-    this.selectedChatEvent.emit(chat);
-    this.selectedChat = chat;
+    if (chat.verified || chat.type == ChatType.PUBLIC) {
+      this.selectedChatEvent.emit(chat);
+      this.selectedChat = chat;
+    } else {
+      this.joinInChat(chat);
+    }
   }
 
   addChat() {
-    const dialogRef = this.dialog.open(ChatCreateNewComponent, {width: '450px', height: '575px', backdropClass: "backdrop-dialog"});
-    dialogRef.afterClosed().subscribe((chat: Chat) => {
-      if (chat != null) {
-        this.chats.unshift(chat);
-      }
-    })
+    this.dialog.open(ChatCreateNewComponent, {width: '450px', height: '575px', backdropClass: "backdrop-dialog"});
   }
 
   changeSearch() {
@@ -112,17 +113,26 @@ export class ChatListComponent implements OnInit, AfterViewInit {
     return this.global ? "Global search by name ..." : "Local search by name ...";
   }
 
-  joinInChat(chat: Chat) {
+  joinInChat(chat: Chat | null) {
+    if (chat == null) {
+      return;
+    }
+
     if (chat.type == ChatType.PROTECTED) {
       const dialogRef = this.dialog.open(EnterPasswordComponent, {width: '300px', data: {chatId: chat.id}});
       dialogRef.afterClosed().subscribe((success: boolean) => {
         if (success) {
-          this.enterChat(chat)
+          chat.verified = true;
+          if (chat.userChatStatus == null) {
+            chat.userChatStatus = UserChatStatus.ACTIVE;
+            chat.userChatRole = UserChatRole.PARTICIPANT;
+          }
+          this.onSelect(chat);
         }
       });
     } else {
-      this.chatServie.joinChat(chat.id, null).subscribe(
-        () => this.enterChat(chat),
+      this.chatService.joinChat(chat.id, null).subscribe(
+        () => this.onSelect(chat),
         error => {
           this.snackbar.open(error.error.message, "OK", {duration: 5000});
         })
@@ -131,23 +141,9 @@ export class ChatListComponent implements OnInit, AfterViewInit {
 
   getTimeBlockExpire(chat: Chat) {
     if (chat.userChatStatus == UserChatStatus.BANNED) {
-      return `Status: banned before '${this.chatServie.getTimeBlockExpire(chat)}'`;
+      return `Status: banned before '${this.chatService.getTimeBlockExpire(chat.dateTimeBlockExpire)}'`;
     }
-    return `Status: muted before '${this.chatServie.getTimeBlockExpire(chat)}'`;
-  }
-
-  private enterChat(chat: Chat) {
-    chat.verified = true;
-    if (chat.userChatStatus == null) {
-      chat.userChatStatus = UserChatStatus.ACTIVE;
-      chat.userChatRole = UserChatRole.PARTICIPANT;
-    }
-    if (this.return) {
-      this.insertChat(this.allChats, chat, false);
-    } else {
-      this.insertChat(this.chats, chat, false);
-    }
-    this.onSelect(chat);
+    return `Status: muted before '${this.chatService.getTimeBlockExpire(chat.dateTimeBlockExpire)}'`;
   }
 
   private insertChat(chats: Chat[], chat: Chat, back = true) {
@@ -160,5 +156,21 @@ export class ChatListComponent implements OnInit, AfterViewInit {
     } else {
       chats.unshift(chat);
     }
+  }
+
+  getColor(chat: Chat) {
+    return !(chat.id == this.selectedChat?.id || chat.userChatRole != UserChatRole.OWNER);
+  }
+
+  showChip(chat: Chat) {
+    if (!chat.verified || chat.type == ChatType.DIRECT) {
+      return false;
+    }
+
+    if (chat.userChatStatus != UserChatStatus.ACTIVE) {
+      return true;
+    }
+
+    return chat.userChatRole == UserChatRole.OWNER || this.global;
   }
 }

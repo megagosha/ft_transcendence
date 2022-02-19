@@ -65,12 +65,7 @@ export class ChatCreateNewComponent implements OnInit {
       name: this.name.value,
       description: this.description.value,
     }).subscribe((chat: Chat) => {
-      chat.type = this.type;
-      chat.userChatRole = UserChatRole.OWNER;
-      chat.userChatStatus = UserChatStatus.ACTIVE;
-      chat.name = this.name.value;
-      chat.verified = true;
-      this.dialogRef.close(chat);
+      this.dialogRef.close();
     }, error => {
       const messages: string [] = ErrorUtil.toMessages(error.error.message);
 

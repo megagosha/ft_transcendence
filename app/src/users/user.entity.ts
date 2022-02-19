@@ -96,7 +96,7 @@ export class User {
   /** Статисктика и достижения пользователя в играх */
   @OneToOne(() => UserStatistics, { nullable: true, cascade: true })
   @JoinColumn({ name: 'game_statistic_id', referencedColumnName: 'id' })
-  statistic: UserStatistics = new UserStatistics();
+  statistic: UserStatistics;
 
   /** Дружбы, в которых пользователь является инициатором */
   @OneToMany(() => Friendship, (friendship) => friendship.invitorUser)

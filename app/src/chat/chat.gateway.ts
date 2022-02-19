@@ -16,7 +16,7 @@ import {UsersServiceSupport} from "../users/users.service-support";
 import {UserSocketServiceSupport} from "./user-socket.service-support";
 import {SocketExceptionFilter} from "./socket.exception-filter";
 import {UserSocket} from "./model/user-socket.entity";
-import {UserChatLink, UserChatStatus} from "./model/user-chat-link.entity";
+import {UserChatLink} from "./model/user-chat-link.entity";
 import {Chat, ChatType} from "./model/chat.entity";
 import {ChatAction, ChatServiceSupport} from "./chat.service-support";
 import {Message} from "./model/message.entity";
@@ -28,6 +28,8 @@ import {InjectRepository} from "@nestjs/typeorm";
 import {SocketValidationPipe} from "./socket.validation-pipe";
 import {PageDto} from "./dto/page.dto";
 import {MessagePageOutDto} from "./dto/message-page-out.dto";
+import {ChangeType, ChatChange} from "./model/chat-change.entity";
+import {ActionType} from "./dto/chat-brief-out.dto";
 
 @UseFilters(new SocketExceptionFilter())
 @WebSocketGateway({
@@ -41,6 +43,8 @@ export class ChatGateway
 {
   @WebSocketServer()
   server: Server;
+
+  lookUserIdsByChatId: Map<number, number[]> = new Map<number, number[]>();
 
   constructor(
     private readonly authService: AuthService,
@@ -110,32 +114,17 @@ export class ChatGateway
     const socket: UserSocket = await this.userSocketServiceSupport.findSocket(client.id);
     const activeChat: Chat = socket.activeChat;
 
-    if (activeChat == null) {
-      throw new WsException("Необходимо присоединиться к чату");
-    }
-
     const userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, activeChat);
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.SEND_MESSAGE);
 
     let visible: boolean;
     if (activeChat.type == ChatType.DIRECT) {
-      const secondUserChatLink: UserChatLink = await this.chatServiceSupport.findSecondChatLink(user, activeChat);
-      if (secondUserChatLink.userStatus == UserChatStatus.MUTED) {
-        visible = false;
-      }
+      const secondUserChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(userChatLink.secondUser, activeChat);
     } else {
       visible = true;
     }
 
-    const message: Message = await this.messageServiceSupport.addMessage(user, activeChat, text, visible);
-    activeChat.dateTimeLastAction = new Date();
-    await this.chatServiceSupport.updateChat(activeChat);
-
-    const messageDto: MessageOutDto = plainToClass(MessageOutDto, message, { excludeExtraneousValues: true });
-    const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(activeChat);
-    sockets.forEach((socket) => {
-      this.server.to(socket.id).emit("/message/receive", messageDto)
-    });
+    this.saveAndSendMessage(activeChat, user, text, null, visible);
   }
 
   @SubscribeMessage("/message/page")
@@ -164,6 +153,33 @@ export class ChatGateway
     client.emit("/message/page-receive", messagePage);
   }
 
+  sendSpecificMessages(chatChanges: ChatChange[], chat: Chat) {
+    chatChanges.forEach(chatChange => this.saveAndSendMessage(chat, null, null, chatChange));
+  }
+
+  async refreshChat(chat: Chat, change: ChatChange) {
+    const linkByUserId: Map<number, UserChatLink> = new Map<number, UserChatLink>();
+    const userIds: number[] = [];
+
+    if (change.targetUser == null) {
+      (await this.chatServiceSupport.filterUserChatLinks(null, chat, null, null, null, null, null)).forEach(link => {
+        linkByUserId.set(link.user.id, link);
+        userIds.push(link.user.id);
+      });
+    } else {
+      const targetUser = change.targetUser;
+
+      userIds.push(targetUser.id);
+      linkByUserId.set(targetUser.id, await this.chatServiceSupport.findUserChatLink(targetUser, chat));
+    }
+
+    const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(userIds, null);
+    sockets.forEach((socket) => {
+      let link = linkByUserId.get(socket.user.id);
+      this.server.to(socket.id).emit("/chat/receive", this.chatServiceSupport.mapToChatBriefDto(link, change));
+    });
+  }
+
   private getCurrentUserId(client: Socket): number {
     const user: User = this.authService.decodeJwtToken(client.handshake.auth.token);
     if (!user) {
@@ -179,8 +195,91 @@ export class ChatGateway
   private async getMessagePage(chat: Chat, take: number, skip: number): Promise<MessagePageOutDto> {
     const messages: Message[] = await this.messageServiceSupport.findMessages(chat, take, skip);
     const messageDtos: MessageOutDto[] = messages.map((message) => {
-      return plainToClass(MessageOutDto, message, {excludeExtraneousValues: true});
+      const dto: MessageOutDto = plainToClass(MessageOutDto, message, {excludeExtraneousValues: true});
+      if (message.chatChange != null) {
+        dto.text = this.getChatchangeMessage(message.chatChange);
+      }
+      if (message.authorUser != null) {
+        dto.authorUser.avatar = UsersServiceSupport.getUserAvatarPath(message.authorUser);
+      }
+      return dto;
     });
     return new MessagePageOutDto(messageDtos, take, skip);
+  }
+
+  private async saveAndSendMessage(
+    targetChat: Chat,
+    authorUser: User | null,
+    text: string | null,
+    chatChange: ChatChange | null,
+    visible = true)
+  {
+    const message: Message = await this.messageServiceSupport.addMessage(authorUser, targetChat, text, chatChange, visible);
+    targetChat.dateTimeLastAction = new Date();
+    await this.chatServiceSupport.updateChat(targetChat);
+
+    const messageDto: MessageOutDto = plainToClass(MessageOutDto, message, { excludeExtraneousValues: true });
+    if (message.chatChange != null) {
+      messageDto.text = this.getChatchangeMessage(message.chatChange);
+    }
+    if (message.authorUser != null) {
+      messageDto.authorUser.avatar = UsersServiceSupport.getUserAvatarPath(message.authorUser);
+    }
+
+    const linkByUserId: Map<number, UserChatLink> = new Map<number, UserChatLink>();
+    const userIds: number[] = [];
+    (await this.chatServiceSupport.filterUserChatLinks(null, targetChat, null, null, true, null, null)).forEach(link => {
+      linkByUserId.set(link.user.id, link);
+      userIds.push(link.user.id);
+    });
+
+    if (chatChange != null) {
+      if (!userIds.includes(chatChange.changerUser.id)) {
+        userIds.push(chatChange.changerUser.id);
+      }
+      if (chatChange.targetUser != null && !userIds.includes(chatChange.targetUser.id)) {
+        userIds.push(chatChange.targetUser.id);
+      }
+    }
+
+    const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(userIds, targetChat);
+    const defaultLink: UserChatLink = new UserChatLink();
+    defaultLink.chat = targetChat;
+    defaultLink.verified = false;
+    sockets.forEach((socket) => {
+      let link = linkByUserId.get(socket.user.id);
+      if (link == null || !link.verified) {
+        link = defaultLink;
+      }
+
+      messageDto.targetChat = this.chatServiceSupport.mapToChatBriefDto(link, chatChange);
+      if (socket.activeChat != null && socket.activeChat.id == targetChat.id) {
+        this.server.to(socket.id).emit("/message/receive", messageDto);
+      } else {
+        this.server.to(socket.id).emit("/chat/receive", messageDto.targetChat);
+      }
+    });
+  }
+
+  private getChatchangeMessage(chatChange: ChatChange): string {
+    switch (chatChange.type) {
+      case ChangeType.CREATION:
+        return `${chatChange.changerUser.username} created chat`;
+      case ChangeType.UPDATE_NAME:
+        return `${chatChange.changerUser.username} update name`;
+      case ChangeType.UPDATE_DESCRIPTION:
+        return `${chatChange.changerUser.username} update description`;
+      case ChangeType.UPDATE_AVATAR:
+        return `${chatChange.changerUser.username} update avatar`;
+      case ChangeType.ADD_PARTICIPANT:
+        return `${chatChange.changerUser.username} added ${chatChange.targetUser.username}`;
+      case ChangeType.REMOVE_PARTICIPANT:
+        return `${chatChange.changerUser.username} removed ${chatChange.targetUser.username}`;
+      case ChangeType.JOIN_CHAT:
+        return `${chatChange.changerUser.username} joined chat`;
+      case ChangeType.LEAVE_PRIVATE_CHAT:
+      case ChangeType.LEAVE_CHAT:
+        return `${chatChange.changerUser.username} leaved chat`;
+    }
   }
 }

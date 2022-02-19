@@ -1,16 +1,17 @@
-
 .card-container {
-  margin-top: 10px;
+  margin-top: 5px;
   display: flex;
-}
-.player-info {
-  width: 25%;
-  margin-left: auto;
+  justify-content: space-around;
 }
 
+.player-info {
+  height: auto;
+  padding-left: 20px;
+  padding-right: 20px;
+  text-align: center;
+}
 
 img {
-
   display: block;
   margin: 0 auto;
 }
@@ -18,12 +19,12 @@ img {
 .username {
   color: black;
   font-size: 15px;
-  margin: 15px auto;
+  margin: 5px auto;
 }
 
 .score {
+  margin-top: 20px;
   color: #673ab7;
-  margin: auto;
   font-size: 30px;
   font-weight: bolder;
 }

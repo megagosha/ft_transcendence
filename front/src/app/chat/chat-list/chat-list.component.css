@@ -69,28 +69,11 @@
     background: white;
 }
 
-.chat-name-avatar {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    border-radius: 20px;
-    background-color: #e5e5e5;
-    border: 1px solid #333333;
-    display: flex;
-}
-
-.chat-short-name {
-    margin: auto;
-    font-size: 13pt;
-    color: #333333;
-    text-transform: uppercase;
-}
-
 .chat-avatar {
     background-color: white;
     width: 40px;
     height: 40px;
-    border-radius: 20px;
+    border-radius: 50%;
 }
 
 .chat-name {
@@ -101,8 +84,10 @@
 }
 
 .chat-chip {
-    text-align-all: center;
-    margin: 0;
-    width: 32px;
-    font-size: 7pt;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+    font-size: 8pt;
 }

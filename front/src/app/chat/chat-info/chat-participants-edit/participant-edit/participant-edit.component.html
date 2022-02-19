@@ -3,7 +3,7 @@
 </p>
 <div style="height: calc(100% - 20px - 70px); overflow-y: auto; scrollbar-width: thin;">
 	<mat-radio-group color="primary"
-					 style="display: flex; justify-content: space-between; width: 100%" aria-label="Select chat access type"
+					 style="display: flex; justify-content: space-between; width: 100%"
 					 [(ngModel)]="role">
 		<mat-radio-button value="PARTICIPANT" [disabled]="disabledRole('PARTICIPANT')">PARTICIPANT</mat-radio-button>
 		<mat-radio-button value="ADMIN" [disabled]="disabledRole('ADMIN')">ADMIN</mat-radio-button>
@@ -34,15 +34,15 @@
 		</ul>
 		<ul type="none" style="padding: 0; list-style-position: inside;" *ngSwitchCase="'ADMIN'">
 			<div style="display: flex; align-items: center;">
-				<mat-icon style="color: #851d1d">close</mat-icon>
+				<mat-icon style="color: #20851d">check</mat-icon>
 				<p style="margin: 0">Edit main chat info (name, description, avatar)</p>
 			</div>
 			<div style="display: flex; align-items: center;">
-				<mat-icon style="color: #851d1d">close</mat-icon>
+				<mat-icon style="color: #20851d">check</mat-icon>
 				<p style="margin: 0">Add users</p>
 			</div>
 			<div style="display: flex; align-items: center;">
-				<mat-icon style="color: #851d1d">close</mat-icon>
+				<mat-icon style="color: #20851d">check</mat-icon>
 				<p style="margin: 0">Block (ban/mute) users</p>
 			</div>
 			<div style="display: flex; align-items: center;">
@@ -56,23 +56,23 @@
 		</ul>
 		<ul type="none" style="padding: 0; list-style-position: inside;" *ngSwitchCase="'OWNER'">
 			<div style="display: flex; align-items: center;">
-				<mat-icon style="color: #20851d">close</mat-icon>
+				<mat-icon style="color: #20851d">check</mat-icon>
 				<p style="margin: 0">Edit main chat info (name, description, avatar)</p>
 			</div>
 			<div style="display: flex; align-items: center;">
-				<mat-icon style="color: #20851d">close</mat-icon>
+				<mat-icon style="color: #20851d">check</mat-icon>
 				<p style="margin: 0">Add users</p>
 			</div>
 			<div style="display: flex; align-items: center;">
-				<mat-icon style="color: #20851d">close</mat-icon>
+				<mat-icon style="color: #20851d">check</mat-icon>
 				<p style="margin: 0">Block (ban/mute) users</p>
 			</div>
 			<div style="display: flex; align-items: center;">
-				<mat-icon style="color: #20851d">close</mat-icon>
+				<mat-icon style="color: #20851d">check</mat-icon>
 				<p style="margin: 0">Change users role</p>
 			</div>
 			<div style="display: flex; align-items: center;">
-				<mat-icon style="color: #20851d">close</mat-icon>
+				<mat-icon style="color: #20851d">check</mat-icon>
 				<p style="margin: 0">Edit chat access</p>
 			</div>
 		</ul>
@@ -82,7 +82,7 @@
 			User status
 		</p>
 		<mat-radio-group color="primary"
-						 style="display: flex; justify-content: space-between; width: 100%" aria-label="Select chat access type"
+						 style="display: flex; justify-content: space-between; width: 100%"
 						 [(ngModel)]="status">
 			<mat-radio-button value="ACTIVE" [disabled]="disabledStatus('ACTIVE')">ACTIVE</mat-radio-button>
 			<mat-radio-button value="MUTED" [disabled]="disabledStatus('MUTED')">MUTED</mat-radio-button>

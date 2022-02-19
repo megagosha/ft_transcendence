@@ -51,10 +51,6 @@ export class ParticipantEditComponent implements OnInit {
       return true;
     }
 
-    if (this.status != UserChatStatus.ACTIVE && role != UserChatRole.PARTICIPANT) {
-      return true;
-    }
-
     if (this.chat.userChatRole != UserChatRole.OWNER) {
       return true;
     }
@@ -66,7 +62,9 @@ export class ParticipantEditComponent implements OnInit {
     if (this.participant.userChatStatus != this.status
       || this.participant.userChatRole != this.role
       || this.participant.dateTimeBlockExpire != this.date) {
-      this.date.setHours(23, 59, 59);
+      if (this.date != null) {
+        this.date.setHours(23, 59, 59);
+      }
       this.chatService.updateChatUser(this.chat.id, this.participant.id, {
         role: this.role,
         status: this.status,
@@ -98,10 +96,6 @@ export class ParticipantEditComponent implements OnInit {
     if (this.chat.userChatRole == UserChatRole.PARTICIPANT
       || this.participant.userChatRole == UserChatRole.OWNER
       || (this.participant.userChatRole == UserChatRole.ADMIN && this.chat.userChatRole != UserChatRole.OWNER)) {
-      return true;
-    }
-
-    if (this.role != UserChatRole.PARTICIPANT && status != UserChatStatus.ACTIVE) {
       return true;
     }
 

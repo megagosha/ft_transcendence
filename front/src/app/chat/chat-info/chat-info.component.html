@@ -3,16 +3,13 @@
 </p>
 <div class="chat-info-block">
 	<div class="chat-info-header">
-		<div *ngIf="chatDetails.avatar == null" class="chat-info-avatar">
-			<p class="chat-info-short-name">{{chatDetails.name.slice(0,2)}}</p>
-		</div>
-		<div *ngIf="chatDetails.avatar != null" (click)="delegate($event)" [ngStyle]="{'cursor' : getCursor()}">
+		<div (click)="delegate($event)" [ngStyle]="{'cursor' : getCursor()}">
 			<input (change)="uploadAvatar($event)"
 				   accept="image/*"
 				   id="imageInput"
 				   style="display: none"
 				   type="file">
-			<img class="chat-info-avatar" [src]="chatDetails.avatar" alt="AV">
+			<img class="chat-info-avatar" src="{{chatDetails.avatar}}" alt="AV">
 		</div>
 		<div class="chat-info-name-access">
 			<p class="chat-info-name text">{{chatDetails.name}}</p>
