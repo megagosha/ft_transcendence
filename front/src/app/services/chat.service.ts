@@ -188,7 +188,7 @@ export class ChatService {
               private readonly router: Router,
               private readonly userService: UserService,
               private readonly dialog: MatDialog) {
-    this.socket = io("http://localhost:3000/chat", {transports: ['websocket'], auth: {token : token()}});
+    this.socket = io("/chat", {transports: ['websocket'], auth: {token : token()}});
     this.listenChatsUpdate();
   }
 

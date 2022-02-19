@@ -40,7 +40,7 @@ import {CurrentUserId} from "../util/user.decarator";
 import {writeFile} from "fs";
 // import { fileTypeFromFile } from 'file-type';
 
-@Controller('user')
+@Controller('/api/user')
 export class UserController {
   constructor(
     private authService: AuthService,

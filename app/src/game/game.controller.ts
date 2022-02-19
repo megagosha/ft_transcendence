@@ -20,7 +20,7 @@ import { GameStatsDto } from './gamestats.dto';
 import {UsersServiceSupport} from "../users/users.service-support";
 
 @ApiTags('game')
-@Controller('game')
+@Controller('/api/game')
 @UseGuards(JwtAuthGuard)
 export class GameController {
   constructor(private readonly gameService: GameService) {}
