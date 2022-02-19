@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import * as global from '../globals';
 import { BehaviorSubject, EMPTY, map, Observable, tap, throwError } from 'rxjs';
 import { UserService } from './user.service';
 import { io, Socket } from 'socket.io-client';
@@ -8,14 +7,12 @@ import { SnackbarActionsComponent } from '../snackbar-actions/snackbar-actions.c
 import { Router } from '@angular/router';
 import { GameDto, GameStatsDto } from '../game/game.dto';
 import { Coordinates, Game } from '../game/elements.entity';
-import { User } from './search-users.interface';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
-  public apiUrl: string = global.apiUrl;
   public userService: UserService | undefined;
   private socket: Socket | undefined;
   public snackBar: MatSnackBar;
@@ -43,7 +40,7 @@ export class GameService {
     if (!token)
       token = '';
     console.log(token);
-    this.socket = io('http://localhost:3000/game_sock', { transports: ['websocket'], auth: { token: token } });
+    this.socket = io('/game_sock', { transports: ['websocket'], auth: { token: token } });
     console.log(this.socket);
     this.getNewGameEvent();
   }
@@ -160,7 +157,7 @@ export class GameService {
 
   getGameResult(gameId: number): Observable<GameStatsDto> {
     console.log('get game resuilts init with id :' + gameId);
-    return this.http.get<GameStatsDto>(this.apiUrl + 'game/result', {
+    return this.http.get<GameStatsDto>('/api/game/result', {
       params: {
         id: gameId
       }
@@ -173,7 +170,7 @@ export class GameService {
   }
 
   getPersonalHistory(userId: number, take: number, skip: number): Observable<GameStatsDto[]> {
-    return this.http.get<GameStatsDto[]>(this.apiUrl + 'game/personal_history', {
+    return this.http.get<GameStatsDto[]>('/api/game/personal_history', {
       params: {
         userId: userId,
         take: take,

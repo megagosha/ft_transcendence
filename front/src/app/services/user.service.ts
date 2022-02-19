@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import * as global from '../globals';
 import { Profile } from '../login/profile.interface';
 import { HttpClient, HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
@@ -9,7 +8,6 @@ import { GameService } from './game.service';
 
 @Injectable()
 export class UserService {
-  public apiUrl: string = global.apiUrl;
   public user: Profile = new Profile();
   private _user = new BehaviorSubject(this.user);
 
@@ -26,7 +24,7 @@ export class UserService {
   }
 
   getUserProfile() {
-    return this.http.get<Profile>(this.apiUrl + 'user/me').pipe(
+    return this.http.get<Profile>('/api/user/me').pipe(
       retry(3),
       catchError(this.handleError)
     );
@@ -43,7 +41,7 @@ export class UserService {
   }
 
   getUserInfo(userId: number): Observable<User> {
-    return this.http.get<User>(this.apiUrl + 'user/user', {
+    return this.http.get<User>('/api/user/user', {
       params: {
         userId: userId
       }
@@ -56,7 +54,7 @@ export class UserService {
   }
 
   setUserName(username: string): Observable<HttpResponse<any>> {
-    return (this.http.post<HttpResponse<any>>(this.apiUrl + 'user/set_username', { username: username }, { observe: 'response' }));
+    return (this.http.post<HttpResponse<any>>('/api/user/set_username', { username: username }, { observe: 'response' }));
   }
 
   changeAvatar(avatar: File): Observable<any> {
@@ -64,14 +62,14 @@ export class UserService {
     console.log({ avatar: avatar });
     const formData = new FormData();
     formData.append('avatar', avatar);
-    return this.http.post(this.apiUrl + 'user/set_avatar', formData, {
+    return this.http.post('/api/user/set_avatar', formData, {
       reportProgress: true,
       observe: 'events'
     });
   }
 
   searchUserByUsername(username: string, filter: number = 0): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl + 'user/search', {
+    return this.http.get<User[]>('/api/user/search', {
       params: {
         username: username,
         take: 10,
@@ -82,11 +80,11 @@ export class UserService {
   }
 
   getFriends(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl + 'user/friends');
+    return this.http.get<User[]>('/api/user/friends');
   }
 
   addFriend(user_id: number): Observable<HttpResponse<User>> {
-    return this.http.post<User>(this.apiUrl + 'user/add_friend', { friend_id: user_id }, { observe: 'response' });
+    return this.http.post<User>('/api/user/add_friend', { friend_id: user_id }, { observe: 'response' });
   }
 
   private handleError(error: HttpErrorResponse) {
@@ -113,7 +111,7 @@ export class UserService {
   //   console.log("New user aded " + body.username);
   // }
   removeFriend(selectedUser: User) {
-    return this.http.delete<boolean>(this.apiUrl + 'user/delete_friend', { body: { friend_id: selectedUser.id } });
+    return this.http.delete<boolean>('/api/user/delete_friend', { body: { friend_id: selectedUser.id } });
   }
 
   profileUpdate() {
