@@ -10,9 +10,9 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
       PG_DATA: /var/lib/postgresql/data
-    ports: # порты указываем из env явно
+    ports: 
       - "${DB_HOST_PORT}:${DB_CONTAINER_PORT}"
-    volumes: # network закинуть
+    volumes: 
       - pgdata:/var/lib/postgresql/data
     networks:
       - backend
@@ -21,21 +21,16 @@ services:
     container_name: nestjs-container
     build:
       context: ./app
-      dockerfile: Dockerfile # stage?
+      dockerfile: Dockerfile 
     volumes:
       - ./app/:/usr/src/app
-#      - ./usr/src/app/node_modules
-#      - ./static:/var/www/app/static
     env_file: 
-      - .env # при таком включении есть баг один с числами типа PORT=3000. Это чекать нужно, они иногда неопрокидываются. Я с этим долго провозился
+      - .env 
     ports:
       - "${NESTJS_HOST_PORT}:${NESTJS_CONTAINER_PORT}" 
-#    command: npm run start # Можем в Dockerfile просто добавить скрипт, который запускает и обновляет пакеты, все скачивает и т.д.
     depends_on:
       - postgres
     restart: always
-#    links: # хз, никогда не опрокидывал так никогда. Можно оставить, но нужно глянуть, на сколько валидно
-#      - postgres:postgres
     networks:
       - backend
       - frontend
@@ -48,13 +43,11 @@ services:
     command: sh -c "npm start"
     restart: always
     env_file: 
-      - .env # при таком включении есть баг один с числами типа PORT=3000. Это чекать нужно, они иногда неопрокидываются. Я с этим долго провозился
+      - .env
     volumes:
       - ./front:/app
     ports:
       - "${ANGULAR_HOST_PORT}:${ANGULAR_CONTAINER_PORT}"
-    # links:
-    #   - main
     networks:
       - frontend
 
