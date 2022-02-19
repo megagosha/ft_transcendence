@@ -13,8 +13,6 @@ RUN apk add --no-cache tzdata && \
 
 WORKDIR /usr/src/app
 COPY . .
-#moved from start.sh for restart time decrease
-RUN npm install && nest update && npm run build
 
 EXPOSE ${NESTJS_CONTAINER_PORT}
 
