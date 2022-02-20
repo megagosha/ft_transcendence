@@ -102,10 +102,15 @@ export class UserController {
 
   @Get('user')
   @UseGuards(JwtAuthGuard)
-  async userInfo(@Query() data: { userId: number }): Promise<UserProfileDto> {
-    const res = await this.userService.findUser(data.userId);
-    if (!res) throw new NotFoundException();
-    return new UserProfileDto(res);
+  async userInfo(
+    @Query() data: { userId: number },
+    @CurrentUserId() userId: number
+  ): Promise<UserProfileDto> {
+    const user = await this.userService.findUser(userId);
+    const targetUser = await this.userService.findUser(data.userId);
+    if (!user || !targetUser) throw new NotFoundException();
+    const blocked: boolean = await this.userService.isBlockedUser(user, targetUser);
+    return new UserProfileDto(targetUser, blocked);
   }
 
   @Get('search')
