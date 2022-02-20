@@ -366,6 +366,10 @@ export class ChatService {
     return this.http.post<Chat>(`/api/chat/direct/user/${userId}`, null);
   }
 
+  blockUser(userId: number, block: boolean) {
+    return this.http.put(`/api/chat/user/${userId}/block`, {block: block});
+  }
+
   removeChat(chat: Chat) {
     const chatInd: number = this.chats.findIndex(c => c.id == chat.id);
     if (chatInd >= 0) {
@@ -447,5 +451,4 @@ export class ChatService {
   //     this.currentChatDetails.avatar = avatar;
   //   }
   // }
-
 }

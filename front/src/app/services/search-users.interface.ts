@@ -5,6 +5,7 @@ export interface User {
   status: string;
   registerDate: Date
   lastLoginDate: Date;
+  blocked: boolean;
 }
 
 export declare type Users = User[];

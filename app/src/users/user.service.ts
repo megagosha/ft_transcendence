@@ -19,6 +19,7 @@ import { Friendship } from './friendlist.entity';
 import { use } from 'passport';
 import { stringify } from 'querystring';
 import { json } from 'express';
+import {ChatServiceSupport} from "../chat/chat.service-support";
 
 // This should be a real class/interface representing a user entity
 // export type User = any;
@@ -30,6 +31,7 @@ export class UserService {
     private userRepo: Repository<User>,
     @InjectRepository(Friendship)
     private friendlistRepo: Repository<Friendship>,
+    private readonly chatServiceSupport: ChatServiceSupport,
   ) {}
 
   async saveUser(user: User) {
@@ -246,5 +248,9 @@ export class UserService {
     return this.userRepo.update(userId, {
       twoAuth: null,
     });
+  }
+
+  async isBlockedUser(user: User, targetUser: User) {
+    return this.chatServiceSupport.isBlockedUser(user, targetUser);
   }
 }

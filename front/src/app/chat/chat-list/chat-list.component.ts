@@ -163,7 +163,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   }
 
   showChip(chat: Chat) {
-    if (!chat.verified || chat.type == ChatType.DIRECT) {
+    if (!chat.verified || (chat.type == ChatType.DIRECT)) {
       return false;
     }
 

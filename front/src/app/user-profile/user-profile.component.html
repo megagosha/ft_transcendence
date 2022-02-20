@@ -22,20 +22,25 @@
       <span class="profile-spacer"></span>{{profile.status}}
     </mat-list-item>
   </mat-list>
-  <div *ngIf="profile.status == 'ONLINE'"
-       style="margin-top: 20px; width: 100%; display: flex; justify-content: space-around">
-    <button (click)="inviteToGame()"
+  <div style="margin-top: 20px; width: 100%; display: flex; justify-content: space-around">
+    <button *ngIf="profile.status == 'ONLINE'"
+            (click)="inviteToGame()"
             mat-flat-button
             color="primary">
       Invite to play
     </button>
-    <button (click)="sendMessage()"
+    <button *ngIf="!profile.blocked"
+            (click)="sendMessage()"
             mat-flat-button
             color="primary">
       Send message
     </button>
+    <button (click)="blockUser()"
+            mat-stroked-button
+            color="warn">
+      {{profile.blocked ? 'Unblock' : 'Block'}}
+    </button>
   </div>
-  <!--</div>-->
 </mat-card>
 
 <app-one-on-one [value]="this.userId"></app-one-on-one>

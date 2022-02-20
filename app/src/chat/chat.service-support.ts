@@ -4,10 +4,10 @@ import {UserChatLink, UserChatRole, UserChatStatus} from "./model/user-chat-link
 import {ILike, In, Not, Repository, SelectQueryBuilder} from "typeorm";
 import {Chat, ChatType} from "./model/chat.entity";
 import {User} from "../users/user.entity";
-import {ActionType, ChatBriefOutDto} from "./dto/chat-brief-out.dto";
+import {ChatBriefOutDto} from "./dto/chat-brief-out.dto";
 import {UsersServiceSupport} from "../users/users.service-support";
 import {plainToClass} from "class-transformer";
-import {ChangeType, ChatChange} from "./model/chat-change.entity";
+import {ChatChange} from "./model/chat-change.entity";
 import {ChatChangeDto} from "./dto/chat-change.dto";
 
 export enum ChatAction {
@@ -53,7 +53,7 @@ export class ChatServiceSupport {
     ChatServiceSupport.TYPES.set(ChatAction.CHAT_INFO, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
     ChatServiceSupport.TYPES.set(ChatAction.ADD_PARTICIPANT, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
     ChatServiceSupport.TYPES.set(ChatAction.UPDATE_CHAT_INFO, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
-    ChatServiceSupport.TYPES.set(ChatAction.UPDATE_STATUS, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
+    ChatServiceSupport.TYPES.set(ChatAction.UPDATE_STATUS, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE, ChatType.DIRECT]);
     ChatServiceSupport.TYPES.set(ChatAction.UPDATE_ROLE, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
     ChatServiceSupport.TYPES.set(ChatAction.UPDATE_ACCESS, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
     ChatServiceSupport.TYPES.set(ChatAction.RECEIVE_MESSAGE, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE, ChatType.DIRECT]);
@@ -109,14 +109,16 @@ export class ChatServiceSupport {
     username: string | null,
     verified: boolean | null,
     take: number | null,
-    skip: number | null
+    skip: number | null,
+    includeBanned: boolean = null,
+    excludeUserIds : number[] = []
   ): Promise<UserChatLink[]> {
     const qb: SelectQueryBuilder<UserChatLink> = this.userChatLinkRepository
       .createQueryBuilder("link")
       .leftJoinAndSelect("link.user", "user")
       .leftJoinAndSelect("link.secondUser", "seconduser")
       .leftJoinAndSelect("link.chat", "chat")
-      .where("chat.dateTimeLastAction IS NOT NULL");
+      .where("link.dateTimeLastVisibleMessage IS NOT NULL");
 
     if (chatname != null && chatname.length > 0) {
       qb.andWhere(
@@ -136,6 +138,12 @@ export class ChatServiceSupport {
     if (verified != null) {
       qb.andWhere(`link.verified = ${verified}`);
     }
+    if (includeBanned != null && !includeBanned) {
+      qb.andWhere("link.userStatus != 'BANNED'");
+    }
+    if (excludeUserIds != null && excludeUserIds.length > 0) {
+      qb.andWhere("link.user NOT IN (:...users)", { users: excludeUserIds });
+    }
     if (take != null) {
       qb.take(take);
     }
@@ -143,7 +151,7 @@ export class ChatServiceSupport {
       qb.skip(skip);
     }
 
-    qb.orderBy("chat.dateTimeLastAction", "DESC", "NULLS LAST");
+    qb.orderBy("link.dateTimeLastVisibleMessage", "DESC", "NULLS LAST");
 
     return qb.getMany();
   }
@@ -225,7 +233,7 @@ export class ChatServiceSupport {
         user: user,
         secondUser: secondUser
       },
-      relations: ["chat", "secondUser"]
+      relations: ["chat", "user", "secondUser"]
     });
   }
 
@@ -234,6 +242,27 @@ export class ChatServiceSupport {
       return `http://localhost:3000/files/chat/${chat.avatar}`;
     }
     return `http://localhost:3000/files/chat/default.png`;
+  }
+
+  async getBlockedUserDirectChatLinks(user: User) {
+    return await this.userChatLinkRepository.find({
+      where: {
+        secondUser: user,
+        userStatus: UserChatStatus.MUTED,
+      },
+      relations: ["user", "secondUser"]
+    });
+  }
+
+  async getBlockMeDirectChatLinks(user: User) {
+    return this.userChatLinkRepository.createQueryBuilder("link")
+      .leftJoinAndSelect("link.user", "first")
+      .leftJoinAndSelect("link.secondUser", "second")
+      .leftJoinAndSelect("link.chat", "chat")
+      .where("link.user = :user", {user: user.id})
+      .andWhere("link.secondUser IS NOT NULL")
+      .andWhere("link.userStatus = :status", {status: UserChatStatus.MUTED})
+      .getMany();
   }
 
   mapToChatBriefDto(link: UserChatLink, change: ChatChange = null): ChatBriefOutDto {
@@ -247,6 +276,7 @@ export class ChatServiceSupport {
     } else {
       dto.verified = true;
       dto.name = link.secondUser.username;
+      dto.userChatStatus = link.userStatus;
       dto.secondUserId = link.secondUser.id;
       dto.avatar = UsersServiceSupport.getUserAvatarPath(link.secondUser);
     }
@@ -260,5 +290,9 @@ export class ChatServiceSupport {
     }
 
     return dto;
+  }
+
+  async isBlockedUser(user: User, targetUser: User) {
+    return (await this.findDirectChatLink(targetUser, user)).userStatus == UserChatStatus.MUTED;
   }
 }

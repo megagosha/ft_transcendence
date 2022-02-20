@@ -30,6 +30,7 @@ import {PageDto} from "./dto/page.dto";
 import {MessagePageOutDto} from "./dto/message-page-out.dto";
 import {ChangeType, ChatChange} from "./model/chat-change.entity";
 import {ActionType} from "./dto/chat-brief-out.dto";
+import {log} from "util";
 
 @UseFilters(new SocketExceptionFilter())
 @WebSocketGateway({
@@ -52,7 +53,8 @@ export class ChatGateway
     private readonly userSocketServiceSupport: UserSocketServiceSupport,
     private readonly chatServiceSupport: ChatServiceSupport,
     private readonly messageServiceSupport: MessageServiceSupport,
-    @InjectRepository(UserSocket) private readonly socketRepository: Repository<UserSocket>
+    @InjectRepository(UserSocket) private readonly socketRepository: Repository<UserSocket>,
+    @InjectRepository(UserChatLink) private readonly userChatLinkRepository: Repository<UserChatLink>
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -90,7 +92,7 @@ export class ChatGateway
     socket.activeChat = chat;
     await this.socketRepository.save(socket);
 
-    const messagePage: MessagePageOutDto = await this.getMessagePage(chat, 20, 0);
+    const messagePage: MessagePageOutDto = await this.getMessagePage(chat, user, 20, 0);
     client.emit("/message/page-receive", messagePage);
   }
 
@@ -107,14 +109,7 @@ export class ChatGateway
     const userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, activeChat);
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.SEND_MESSAGE);
 
-    let visible: boolean;
-    if (activeChat.type == ChatType.DIRECT) {
-      const secondUserChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(userChatLink.secondUser, activeChat);
-    } else {
-      visible = true;
-    }
-
-    this.saveAndSendMessage(activeChat, user, text, null, visible);
+    this.saveAndSendMessage(activeChat, user, text, null);
   }
 
   @SubscribeMessage("/message/page")
@@ -139,15 +134,15 @@ export class ChatGateway
 
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.RECEIVE_MESSAGE);
 
-    const messagePage: MessagePageOutDto = await this.getMessagePage(activeChat, page.take, page.skip);
+    const messagePage: MessagePageOutDto = await this.getMessagePage(activeChat, user, page.take, page.skip);
     client.emit("/message/page-receive", messagePage);
   }
 
-  sendSpecificMessages(chatChanges: ChatChange[], chat: Chat) {
-    chatChanges.forEach(chatChange => this.saveAndSendMessage(chat, null, null, chatChange));
+  sendSpecificMessages(chatChanges: ChatChange[], chat: Chat, createdLinks: UserChatLink[] = []) {
+    chatChanges.forEach(chatChange => this.saveAndSendMessage(chat, null, null, chatChange, createdLinks));
   }
 
-  async refreshChat(chat: Chat, change: ChatChange) {
+  async refreshChat(chat: Chat, change: ChatChange, targetUserLink: UserChatLink = null) {
     const linkByUserId: Map<number, UserChatLink> = new Map<number, UserChatLink>();
     const userIds: number[] = [];
 
@@ -156,14 +151,13 @@ export class ChatGateway
         linkByUserId.set(link.user.id, link);
         userIds.push(link.user.id);
       });
-    } else {
+    } else if (targetUserLink != null) {
       const targetUser = change.targetUser;
-
       userIds.push(targetUser.id);
-      linkByUserId.set(targetUser.id, await this.chatServiceSupport.findUserChatLink(targetUser, chat));
+      linkByUserId.set(targetUser.id, targetUserLink);
     }
 
-    const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(userIds, null);
+    const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(userIds);
     sockets.forEach((socket) => {
       let link = linkByUserId.get(socket.user.id);
       this.server.to(socket.id).emit("/chat/receive", this.chatServiceSupport.mapToChatBriefDto(link, change));
@@ -182,8 +176,11 @@ export class ChatGateway
     throw new WsException("Неавтиризованный пользователь");
   }
 
-  private async getMessagePage(chat: Chat, take: number, skip: number): Promise<MessagePageOutDto> {
-    const messages: Message[] = await this.messageServiceSupport.findMessages(chat, take, skip);
+  private async getMessagePage(chat: Chat, user: User, take: number, skip: number): Promise<MessagePageOutDto> {
+    const blockedUsers: User[] = await this.getBlokedUsers(user);
+    const messages: Message[] = await this.messageServiceSupport.findMessages(chat, blockedUsers, take, skip);
+    console.log(messages);
+
     const messageDtos: MessageOutDto[] = messages.map((message) => {
       const dto: MessageOutDto = plainToClass(MessageOutDto, message, {excludeExtraneousValues: true});
       if (message.chatChange != null) {
@@ -202,11 +199,9 @@ export class ChatGateway
     authorUser: User | null,
     text: string | null,
     chatChange: ChatChange | null,
-    visible = true)
+    additionalTargetLinks: UserChatLink[] = [])
   {
-    const message: Message = await this.messageServiceSupport.addMessage(authorUser, targetChat, text, chatChange, visible);
-    targetChat.dateTimeLastAction = new Date();
-    await this.chatServiceSupport.updateChat(targetChat);
+    const message: Message = await this.messageServiceSupport.addMessage(authorUser, targetChat, text, chatChange);
 
     const messageDto: MessageOutDto = plainToClass(MessageOutDto, message, { excludeExtraneousValues: true });
     if (message.chatChange != null) {
@@ -218,9 +213,21 @@ export class ChatGateway
 
     const linkByUserId: Map<number, UserChatLink> = new Map<number, UserChatLink>();
     const userIds: number[] = [];
-    (await this.chatServiceSupport.filterUserChatLinks(null, targetChat, null, null, true, null, null)).forEach(link => {
+    const blockMeUserIds: number[] = authorUser != null ? (await this.getBlockMeUsers(authorUser)).map(u => u.id) : [];
+    const targetLinks: UserChatLink[] = await this.chatServiceSupport
+      .filterUserChatLinks(null, targetChat, null, null, true, null, null, false, blockMeUserIds);
+
+    additionalTargetLinks.forEach(link => {
+      if (targetLinks.findIndex(l => l.id == link.id) < 0) {
+        targetLinks.push(link);
+      }
+    });
+
+    targetLinks.forEach(link => {
       linkByUserId.set(link.user.id, link);
       userIds.push(link.user.id);
+      link.dateTimeLastVisibleMessage = new Date();
+      this.userChatLinkRepository.save(link);
     });
 
     if (chatChange != null) {
@@ -232,7 +239,7 @@ export class ChatGateway
       }
     }
 
-    const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(userIds, targetChat);
+    const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(userIds, blockMeUserIds, targetChat);
     const defaultLink: UserChatLink = new UserChatLink();
     defaultLink.chat = targetChat;
     defaultLink.verified = false;
@@ -271,5 +278,15 @@ export class ChatGateway
       case ChangeType.LEAVE_CHAT:
         return `${chatChange.changerUser.username} leaved chat`;
     }
+  }
+
+  private async getBlokedUsers(user: User) {
+    return (await this.chatServiceSupport.getBlockedUserDirectChatLinks(user))
+      .map(link => link.user);
+  }
+
+  private async getBlockMeUsers(user: User) {
+    return (await this.chatServiceSupport.getBlockMeDirectChatLinks(user))
+      .map(link => link.secondUser);
   }
 }

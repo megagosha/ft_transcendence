@@ -1,7 +1,7 @@
 import {Injectable, Logger, NotFoundException} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserSocket } from "./model/user-socket.entity";
-import {In, Repository} from "typeorm";
+import {In, Not, Repository} from "typeorm";
 import { User } from "../users/user.entity";
 import {Chat} from "./model/chat.entity";
 
@@ -46,10 +46,17 @@ export class UserSocketServiceSupport {
     return socket;
   }
 
-  async findSockets(userIds: number[], activeChat: Chat): Promise<UserSocket[]> {
-    return this.userSocketRepository.find({
-      where: [{ user: In(userIds) }, { activeChat: activeChat }],
-      relations: ["user", "activeChat"],
-    });
+  async findSockets(userIds: number[], excludeUserIds: number[] = [], activeChat: Chat = null): Promise<UserSocket[]> {
+    if (activeChat != null) {
+      return this.userSocketRepository.find({
+        where: [{ user: In(userIds) }, { user: Not(In(excludeUserIds)), activeChat: activeChat }],
+        relations: ["user", "activeChat"],
+      });
+    } else {
+      return this.userSocketRepository.find({
+        where: { user: In(userIds) },
+        relations: ["user", "activeChat"],
+      });
+    }
   }
 }
