@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Profile } from '../login/profile.interface';
 import { HttpClient, HttpResponse, HttpErrorResponse } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import {BehaviorSubject, Observable, throwError, timeout} from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
 import { User } from './search-users.interface';
 import { GameService } from './game.service';
@@ -48,8 +48,10 @@ export class UserService {
   }
 
   updatePicTimestamp() {
-    const d = new Date();
-    this.user.avatarImgName += '?' + d.getTime().toString();
+    setTimeout(() => {
+      const d = new Date();
+      this.user.avatarImgName += '?' + d.getTime().toString();
+    }, 250);
   }
 
   setUserName(username: string): Observable<HttpResponse<any>> {
