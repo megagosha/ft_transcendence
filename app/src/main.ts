@@ -42,6 +42,6 @@ async function bootstrap() {
 
   app.useGlobalFilters(new GlobalExceptionFilter(app.get(HttpAdapterHost)));
 
-  await app.listen(3000);
+	await app.listen(process.env.NESTJS_CONTAINER_PORT, '0.0.0.0');
 }
 bootstrap();

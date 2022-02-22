@@ -17,7 +17,7 @@ export const jwtConstants = {
 
 export const renderPath = '/static/';
 
-export const rootPath = join(process.cwd(), "..", "static");
+export const rootPath = join(process.cwd(), "static");
 export const chatAvatarsPath = join(rootPath, "files", "chat");
 export const userAvatarsPath = join(rootPath, "files", "user");
 

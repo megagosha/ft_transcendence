@@ -1,43 +1,71 @@
 version: '3.7'
 
 services:
-  main:
-    build:
-      context: .
-      target: development
-#    volumes:
-#      - ./app/:/usr/src/app
-#      - ./usr/src/app/node_modules
-    env_file:
-      - .env
-    ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
-      - 9229:9229
-    command: npm run start
-#    networks:
-#      - webnet
-    depends_on:
-      - postgres
-    links:
-      - postgres:postgres
   postgres:
+    container_name: postgres-container
     image: postgres:alpine
     restart: always
     environment:
-      POSTGRES_DB: ${DB_DATABASE_NAME}
+      POSTGRES_DB: ${DB_NAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
       PG_DATA: /var/lib/postgresql/data
-#    ports:
-#      - 5432:5432
-    volumes:
+    ports: 
+      - "${DB_HOST_PORT}:${DB_CONTAINER_PORT}"
+    volumes: 
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+  
+  nestjs:
+    container_name: nestjs-container
+    build:
+      context: ./app
+      dockerfile: Dockerfile 
+    volumes:
+      - ./app/:/usr/src/app
+    env_file: 
+      - .env 
+    ports:
+      - "${NESTJS_HOST_PORT}:${NESTJS_CONTAINER_PORT}" 
+    depends_on:
+      - postgres
+    restart: always
+    networks:
+      - backend
+      - frontend
+  
+  angular:
+    container_name: angular-container
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    command: sh -c "npm start"
+    restart: always
+    env_file: 
+      - .env
+    volumes:
+      - ./front:/app
+    ports:
+      - "${ANGULAR_HOST_PORT}:${ANGULAR_CONTAINER_PORT}"
+    networks:
+      - frontend
+
   adminer:
+    container_name: adminer-container
     image: adminer
     restart: always
     ports:
-      - 8080:8080
-#networks:
-#  webnet:
+      - "${ADMINER_HOST_PORT}:${ADMINER_CONTAINER_PORT}"
+    networks:
+      - backend
+      - frontend
+
 volumes:
   pgdata:
+
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge

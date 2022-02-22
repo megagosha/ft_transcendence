@@ -45,6 +45,7 @@ export class LoginComponent implements OnInit {
   title = "Transcendence 21 project";
 
   onLogin() {
+    
     window.open("/auth/ft", "_self");
     // console.log('onLogin executed');
     // console.log(this._authService.login());

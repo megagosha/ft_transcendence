@@ -48,7 +48,7 @@ export class UsersServiceSupport {
         return user.avatarImgName;
       }
       return `http://localhost:3000/files/user/${user.avatarImgName}`;
-    }
+	}
     return `http://localhost:3000/files/user/default.png`;
   }
 }
