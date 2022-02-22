@@ -14,12 +14,13 @@ import { User }                                                     from "./sear
 import { HttpClient }                                               from "@angular/common/http";
 import { LadderDto }                                                from "../game/ladder.dto";
 import { OpponentDto }                                              from "../game/opponent.dto";
+import {Error} from "./chat.service";
+
 
 @Injectable({
   providedIn: "root"
 })
 export class GameService {
-  public apiUrl: string = global.apiUrl;
   public userService: UserService | undefined;
   private socket: Socket | undefined;
   public snackBar: MatSnackBar;
@@ -46,8 +47,9 @@ export class GameService {
     if (!token)
       token = "";
     console.log(token);
-    this.socket = io("http://localhost:3000/game_sock", { transports: ["websocket"], auth: { token: token } });
+    this.socket = io('/game_sock', { transports: ['websocket'], auth: { token: token }, reconnectionAttempts: 2 });
     console.log(this.socket);
+    this.listenError();
     this.getNewGameEvent();
   }
 
@@ -179,9 +181,10 @@ export class GameService {
       });
   }
 
-  getGameResult( gameId: number ): Observable<GameStatsDto> {
-    console.log("get game resuilts init with id :" + gameId);
-    return this.http.get<GameStatsDto>(this.apiUrl + "game/result", {
+
+  getGameResult(gameId: number): Observable<GameStatsDto> {
+    console.log('get game resuilts init with id :' + gameId);
+    return this.http.get<GameStatsDto>('/api/game/result', {
       params: {
         id: gameId
       }
@@ -209,6 +212,7 @@ export class GameService {
 
   getPersonalHistory( userId: number, take: number, skip: number ): Observable<GameStatsDto[]> {
     return this.http.get<GameStatsDto[]>(this.apiUrl + "game/personal_history", {
+
       params: {
         userId: userId,
         take: take,
@@ -216,5 +220,16 @@ export class GameService {
       }
     });
   }
-}
 
+  private listenError(): void {
+    this.socket?.on('/error', (error: Error) => {
+      this.snackBar.open(error.error, "OK", {duration: 3000});
+    });
+    this.socket?.on("disconnect", () => {
+      this.snackBar.open("Cannot connect to server", "OK", {duration: 3000});
+    });
+    this.socket?.on("connect_error", reason => {
+      this.snackBar.open("Cannot connect to server", "OK", {duration: 3000});
+    });
+  }
+}

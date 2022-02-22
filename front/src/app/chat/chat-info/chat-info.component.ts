@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, Inject, Input, OnInit} from '@angular/core';
 import {Chat, ChatDetails, ChatService, ChatType, UserChatRole, UserChatStatus} from "../../services/chat.service";
 import {UserService} from "../../services/user.service";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {ChatHeaderEditComponent} from "./chat-header-edit/chat-header-edit.component";
@@ -10,7 +10,6 @@ import {ChatParticipantsEditComponent} from "./chat-participants-edit/chat-parti
 import {ChatParticipantsAddComponent} from "./chat-participants-add/chat-participants-add.component";
 import {ConfirmFormComponent} from "../../confirm-form/confirm-form.component";
 import {FormControl} from "@angular/forms";
-import {timeout} from "rxjs";
 
 @Component({
   selector: 'app-chat-info',
@@ -24,7 +23,6 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
 
   constructor(private readonly userService: UserService,
               private readonly http: HttpClient,
-              private readonly snackBar: MatSnackBar,
               @Inject(MAT_DIALOG_DATA) data: Chat,
               private readonly dialog: MatDialog,
               private readonly currentDialog: MatDialogRef<ChatInfoComponent>,
@@ -38,12 +36,7 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
         this.chatDetails = chat;
         this.chatDetails.dateTimePasswordChange = new Date(chat.dateTimePasswordChange);
         this.chatDetails.dateTimeCreate = new Date(chat.dateTimeCreate);
-      },
-      (error) => {
-        this.snackBar.open(error.error.message, "OK", {duration: 5000});
-      },
-      () => {
-
+        this.chatService.setChatDetails(this.chatDetails);
       });
   }
 
@@ -76,11 +69,7 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
               this.chatService.setChat(null, null);
             }
             this.chatBrief.verified = false;
-            this.currentDialog.close({reload: false});
-          }, error => {
-            this.snackBar.open(error.error.message, "OK", {duration: 5000});
-          }, () => {
-            console.log("Complete user delete");
+            this.currentDialog.close();
           });
       }
     });
@@ -94,13 +83,9 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
 
   uploadAvatar(event: any) {
     const file: File = event.target.files[0];
-    this.chatService.uploadAvatar(this.chatBrief.id, file).subscribe(() => {
-        // console.log(avatar);
-        // this.chatDetails.avatar = avatar;
-        // this.chatBrief.avatar = avatar;
-      },
+    this.chatService.uploadAvatar(this.chatBrief.id, file).subscribe(() => {},
       error => {
-        this.snackBar.open(error.error.message, "OK", {duration: 5000});
+        throw new HttpErrorResponse(error);
       }, () => {
         setTimeout(() => {
           const avatar = this.chatDetails.avatar.split("?")[0] + `?${(new Date()).getTime().toString()}`;
@@ -117,13 +102,12 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
   canUpdateInfo() {
     return this.chatBrief.userChatRole != UserChatRole.PARTICIPANT
       && this.chatBrief.verified
-      && this.chatBrief.userChatStatus == UserChatStatus.ACTIVE;
+      && this.chatBrief.userChatStatus != UserChatStatus.BANNED;
   }
 
   canUpdateAccess() {
     return this.chatBrief.userChatRole == UserChatRole.OWNER
-      && this.chatBrief.verified
-      && this.chatBrief.userChatStatus == UserChatStatus.ACTIVE;
+      && this.chatBrief.verified;
   }
 
   canEditParticipants() {
@@ -132,6 +116,6 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
 
   joinInChat() {
     document.getElementById("joinInChat")?.click();
-    this.currentDialog.close({reload: false});
+    this.currentDialog.close();
   }
 }

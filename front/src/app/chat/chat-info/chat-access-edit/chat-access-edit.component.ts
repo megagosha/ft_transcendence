@@ -3,6 +3,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Chat, ChatDetails, ChatService, ChatType} from "../../../services/chat.service";
 import {FormControl} from "@angular/forms";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {HttpErrorResponse, HttpStatusCode} from "@angular/common/http";
 
 @Component({
   selector: 'app-chat-password-edit',
@@ -22,8 +23,7 @@ export class ChatAccessEditComponent implements OnInit {
 
   constructor(@Inject(MAT_DIALOG_DATA) data: any,
               private readonly dialogRef: MatDialogRef<ChatAccessEditComponent>,
-              private readonly chatService: ChatService,
-              private readonly snackbar: MatSnackBar) {
+              private readonly chatService: ChatService) {
     this.details = data.details;
     this.brief = data.brief;
     this.type = this.details.type;
@@ -60,12 +60,16 @@ export class ChatAccessEditComponent implements OnInit {
         this.brief.type = this.type;
         this.dialogRef.close();
       }, (error) => {
-        const message: string = error.error.message.toString();
+        if (error.status == HttpStatusCode.BadRequest) {
+          const message: string = error.error.message.toString();
 
-        if (message.toLowerCase().includes("пароль")) {
-          this.password.setErrors({'validation': message})
+          if (message.toLowerCase().includes("пароль")) {
+            this.password.setErrors({'validation': message})
+          } else {
+            throw new HttpErrorResponse(error);
+          }
         } else {
-          this.snackbar.open(message, "OK", {duration: 5000});
+          throw new HttpErrorResponse(error);
         }
       })
   }

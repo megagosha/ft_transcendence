@@ -79,8 +79,4 @@ export class Chat {
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: "owner_user_id", referencedColumnName: "id" })
   ownerUser: User;
-
-  /** Время последнего действия в чате */
-  @Column({ name: "datetime_last_message", nullable: false })
-  dateTimeLastAction: Date;
 }

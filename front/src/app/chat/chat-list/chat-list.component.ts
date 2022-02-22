@@ -2,7 +2,7 @@ import {AfterViewInit, Component, EventEmitter, OnInit, Output} from '@angular/c
 import {Chat, ChatPage, ChatService, ChatType, UserChatRole, UserChatStatus} from "../../services/chat.service";
 import {Profile} from "../../login/profile.interface";
 import {UserService} from "../../services/user.service";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {FormControl} from "@angular/forms";
 import {debounceTime, distinctUntilChanged, map} from "rxjs";
 import {MatDialog} from "@angular/material/dialog";
@@ -30,14 +30,15 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   global: boolean = false;
 
   user: Profile;
-  pageSize: number = 50;
+  pageSize: number = 100;
 
   constructor(private readonly userService: UserService,
               private readonly chatService: ChatService,
               private readonly http: HttpClient,
-              private readonly dialog: MatDialog,
-              private readonly snackbar: MatSnackBar) {
+              private readonly dialog: MatDialog) {
     this.user = userService.user;
+    this.selectedChat = chatService.getChat();
+    this.chatService.setChats(this.chats);
   }
 
   ngOnInit(): void {
@@ -74,12 +75,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   nextPage() {
     this.chatService.findChats(this.name, this.global, this.pageSize, this.chats.length)
       .subscribe((page: ChatPage) => {
-        console.log(page);
         page.chats.forEach(chat => this.insertChat(this.chats, chat))
-      }, error => {
-        this.snackbar.open(error.error.message, "OK", {duration: 5000});
-      }, () => {
-        console.log("Complete");
       });
   }
 
@@ -96,14 +92,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   }
 
   addChat() {
-    const dialogRef = this.dialog.open(ChatCreateNewComponent, {width: '450px', height: '575px', backdropClass: "backdrop-dialog"});
-    dialogRef.afterClosed().subscribe((chat: Chat) => {
-      if (this.allChats != null) {
-        this.allChats.unshift(chat);
-      } else {
-        this.chats.unshift(chat);
-      }
-    })
+    this.dialog.open(ChatCreateNewComponent, {width: '450px', height: '575px', backdropClass: "backdrop-dialog"});
   }
 
   changeSearch() {
@@ -119,20 +108,25 @@ export class ChatListComponent implements OnInit, AfterViewInit {
     return this.global ? "Global search by name ..." : "Local search by name ...";
   }
 
-  joinInChat(chat: Chat) {
+  joinInChat(chat: Chat | null) {
+    if (chat == null) {
+      return;
+    }
+
     if (chat.type == ChatType.PROTECTED) {
       const dialogRef = this.dialog.open(EnterPasswordComponent, {width: '300px', data: {chatId: chat.id}});
       dialogRef.afterClosed().subscribe((success: boolean) => {
         if (success) {
-          this.enterChat(chat)
+          chat.verified = true;
+          if (chat.userChatStatus == null) {
+            chat.userChatStatus = UserChatStatus.ACTIVE;
+            chat.userChatRole = UserChatRole.PARTICIPANT;
+          }
+          this.onSelect(chat);
         }
       });
     } else {
-      this.chatService.joinChat(chat.id, null).subscribe(
-        () => this.enterChat(chat),
-        error => {
-          this.snackbar.open(error.error.message, "OK", {duration: 5000});
-        })
+      this.chatService.joinChat(chat.id, null).subscribe(() => this.onSelect(chat));
     }
   }
 
@@ -141,20 +135,6 @@ export class ChatListComponent implements OnInit, AfterViewInit {
       return `Status: banned before '${this.chatService.getTimeBlockExpire(chat.dateTimeBlockExpire)}'`;
     }
     return `Status: muted before '${this.chatService.getTimeBlockExpire(chat.dateTimeBlockExpire)}'`;
-  }
-
-  private enterChat(chat: Chat) {
-    chat.verified = true;
-    if (chat.userChatStatus == null) {
-      chat.userChatStatus = UserChatStatus.ACTIVE;
-      chat.userChatRole = UserChatRole.PARTICIPANT;
-    }
-    if (this.return && this.allChats != null) {
-      this.insertChat(this.allChats, chat, false);
-    } else {
-      this.insertChat(this.chats, chat, false);
-    }
-    this.onSelect(chat);
   }
 
   private insertChat(chats: Chat[], chat: Chat, back = true) {
@@ -167,5 +147,21 @@ export class ChatListComponent implements OnInit, AfterViewInit {
     } else {
       chats.unshift(chat);
     }
+  }
+
+  getColor(chat: Chat) {
+    return !(chat.id == this.selectedChat?.id || chat.userChatRole != UserChatRole.OWNER);
+  }
+
+  showChip(chat: Chat) {
+    if (!chat.verified || (chat.type == ChatType.DIRECT)) {
+      return false;
+    }
+
+    if (chat.userChatStatus != UserChatStatus.ACTIVE) {
+      return true;
+    }
+
+    return chat.userChatRole == UserChatRole.OWNER || this.global;
   }
 }

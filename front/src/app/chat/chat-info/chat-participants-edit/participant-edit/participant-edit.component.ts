@@ -29,8 +29,7 @@ export class ParticipantEditComponent implements OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) data: any,
               private readonly chatService: ChatService,
               private readonly userService: UserService,
-              private readonly dialogRef: MatDialogRef<ParticipantEditComponent>,
-              private readonly snackbar: MatSnackBar) {
+              private readonly dialogRef: MatDialogRef<ParticipantEditComponent>) {
     this.participant = data.participant;
     this.chat = <Chat>chatService.getChat();
     this.role = this.participant.userChatRole;
@@ -51,10 +50,6 @@ export class ParticipantEditComponent implements OnInit {
       return true;
     }
 
-    if (this.status != UserChatStatus.ACTIVE && role != UserChatRole.PARTICIPANT) {
-      return true;
-    }
-
     if (this.chat.userChatRole != UserChatRole.OWNER) {
       return true;
     }
@@ -66,7 +61,9 @@ export class ParticipantEditComponent implements OnInit {
     if (this.participant.userChatStatus != this.status
       || this.participant.userChatRole != this.role
       || this.participant.dateTimeBlockExpire != this.date) {
-      this.date.setHours(23, 59, 59);
+      if (this.date != null) {
+        this.date.setHours(23, 59, 59);
+      }
       this.chatService.updateChatUser(this.chat.id, this.participant.id, {
         role: this.role,
         status: this.status,
@@ -77,9 +74,6 @@ export class ParticipantEditComponent implements OnInit {
           this.participant.userChatStatus = this.status;
           this.participant.dateTimeBlockExpire = this.date;
           this.dialogRef.close();
-        }, (error) => {
-          const message: string = error.error.message.toString();
-          this.snackbar.open(message, "OK", {duration: 5000});
         })
     } else {
       this.dialogRef.close();
@@ -98,10 +92,6 @@ export class ParticipantEditComponent implements OnInit {
     if (this.chat.userChatRole == UserChatRole.PARTICIPANT
       || this.participant.userChatRole == UserChatRole.OWNER
       || (this.participant.userChatRole == UserChatRole.ADMIN && this.chat.userChatRole != UserChatRole.OWNER)) {
-      return true;
-    }
-
-    if (this.role != UserChatRole.PARTICIPANT && status != UserChatStatus.ACTIVE) {
       return true;
     }
 

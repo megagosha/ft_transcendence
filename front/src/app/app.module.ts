@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import {ErrorHandler, NgModule} from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -74,6 +74,8 @@ import {MatTooltipModule}                                        from "@angular/
 import { MatchMakingComponent }                                  from './match-making/match-making.component';
 import { ColorPickerModule }                                     from "ngx-color-picker";
 import { MatExpansionModule }                                    from "@angular/material/expansion";
+import {GlobalErrorHandler} from "./services/global.error-handler";
+
 
 export function token(): any {
   return localStorage.getItem("token");
@@ -164,8 +166,9 @@ export function token(): any {
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
     { provide: MAT_DATE_LOCALE, useValue: 'ru-RU'},
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
   AuthGuard,
   UserService,
-  ChatService],
+  ChatService,],
   bootstrap: [AppComponent]})
 export class AppModule { }

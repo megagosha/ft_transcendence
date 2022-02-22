@@ -14,10 +14,11 @@ import { UserSocket } from "./model/user-socket.entity";
 import { SocketValidationPipe } from "./socket.validation-pipe";
 import { MessageServiceSupport } from "./message.service-support";
 import { SchedulerService } from "./scheduler.service";
+import { ChatChange } from "./model/chat-change.entity";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Chat, UserChatLink, Message, UserSocket]),
+    TypeOrmModule.forFeature([Chat, UserChatLink, Message, UserSocket, ChatChange]),
     forwardRef(() => UserModule),
     forwardRef(() => AuthModule),
   ],

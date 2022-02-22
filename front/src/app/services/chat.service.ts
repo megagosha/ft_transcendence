@@ -4,7 +4,9 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {io, Socket} from "socket.io-client";
 import {token} from "../app.module";
 import {Router} from "@angular/router";
-import {BehaviorSubject} from "rxjs";
+import {UserService} from "./user.service";
+import {MatDialog} from "@angular/material/dialog";
+import {EnterPasswordComponent} from "../chat/enter-password/enter-password.component";
 
 export enum ChatType {
   PROTECTED = "PROTECTED",
@@ -35,6 +37,26 @@ export enum SubscriptionStatus {
   NONACTIVE = "NONACTIVE",
 }
 
+export enum ActionType {
+  ADD = "ADD",
+  REMOVE = "REMOVE",
+  REFRESH = "REFRESH",
+}
+
+export enum ChangeType {
+  CREATION = "CREATION",
+  ADD_PARTICIPANT = "ADD_PARTICIPANT",
+  REMOVE_PARTICIPANT = "REMOVE_PARTICIPANT",
+  UPDATE_NAME = "UPDATE_NAME",
+  UPDATE_DESCRIPTION = "UPDATE_DESCRIPTION",
+  UPDATE_AVATAR = "UPDATE_AVATAR",
+  JOIN_CHAT = "JOIN_CHAT",
+  LEAVE_CHAT = "LEAVE_CHAT",
+  LEAVE_PRIVATE_CHAT = "LEAVE_PRIVATE_CHAT",
+  UPDATE_CHAT_USER = "UPDATE_CHAT_USER",
+  UPDATE_ACCESS = "UPDATE_ACCESS",
+}
+
 export interface Error {
   error: string;
 }
@@ -50,15 +72,23 @@ export interface ChatDetails {
   dateTimePasswordChange: Date;
 }
 
+export interface ChatChange {
+  changeType: ChangeType;
+  changerUserId: number;
+  targetUserId: number;
+}
+
 export interface Chat {
   id: number;
   name: string;
   type: ChatType;
   userChatStatus: UserChatStatus;
-  dateTimeBlockExpire: Date;
+  dateTimeBlockExpire: Date | null;
   userChatRole: UserChatRole;
   avatar: string;
   verified: boolean;
+  secondUserId: number | null;
+  change: ChatChange | null;
 }
 
 export interface ChatUpdate {
@@ -148,14 +178,19 @@ export interface ChatCreate {
 export class ChatService {
 
   private currentChat: Chat | null = null;
+  private currentChatDetails: ChatDetails | null = null;
   private currentChatView: ViewContainerRef | null = null;
+  private chats: Chat[] = [];
   private readonly socket: Socket;
-  private chatObserve = new BehaviorSubject(this.currentChat);
 
   constructor(private readonly http: HttpClient,
               private readonly snackBar: MatSnackBar,
-              private readonly router: Router) {
-    this.socket = io("http://localhost:3000/chat", {transports: ['websocket'], auth: {token : token()}});
+              private readonly router: Router,
+              private readonly userService: UserService,
+              private readonly dialog: MatDialog) {
+    this.socket = io("/chat", {transports: ['websocket'], auth: {token : token()}, reconnectionAttempts: 2});
+    this.listenError();
+    this.listenChatsUpdate();
   }
 
   getChat() {
@@ -167,8 +202,89 @@ export class ChatService {
     if (this.currentChat == null) {
       this.currentChatView?.clear();
       this.currentChatView = null;
+      this.currentChatDetails = null;
     } else {
       this.currentChatView = chatView;
+    }
+  }
+
+  setChats(chats: Chat[]) {
+    this.chats = chats;
+  }
+
+  setChatDetails(chatDetails: ChatDetails) {
+    this.currentChatDetails = chatDetails;
+  }
+
+  treatChat(chat: Chat) {
+    if (chat.change != null) {
+      const change: ChatChange = chat.change;
+      switch (change.changeType) {
+        case ChangeType.CREATION:
+          this.insertChat(chat);
+          break;
+        case ChangeType.UPDATE_NAME:
+        case ChangeType.UPDATE_DESCRIPTION:
+        case ChangeType.UPDATE_AVATAR:
+        case ChangeType.ADD_PARTICIPANT:
+        case ChangeType.JOIN_CHAT:
+          if (chat.verified) {
+            this.refreshChat(chat);
+            this.insertChat(chat);
+          }
+          break;
+        case ChangeType.LEAVE_PRIVATE_CHAT:
+          if (change.changerUserId == this.userService.user.id) {
+            this.closeCurrentChat();
+            this.removeChat(chat);
+          } else if (chat.verified) {
+            this.insertChat(chat);
+          }
+          break;
+        case ChangeType.LEAVE_CHAT:
+          if (change.changerUserId == this.userService.user.id) {
+            this.removeChat(chat);
+          } else if (chat.verified) {
+            this.insertChat(chat);
+          }
+          break;
+        case ChangeType.REMOVE_PARTICIPANT:
+          if (change.targetUserId == this.userService.user.id) {
+            this.closeCurrentChat();
+            this.removeChat(chat);
+            this.snackBar.open(`You have been removed from chat: ${chat.name}`, "", {duration: 3000});
+          } else if (chat.verified) {
+            this.insertChat(chat);
+          }
+          break;
+        case ChangeType.UPDATE_CHAT_USER:
+          if (change.targetUserId == this.userService.user.id && chat.id == this.currentChat?.id) {
+            if (chat.userChatStatus == UserChatStatus.BANNED) {
+              this.closeCurrentChat();
+              this.snackBar.open(`You have been banned before: ${this.getTimeBlockExpire(chat.dateTimeBlockExpire)}`, "OK", {duration: 5000});
+            } else if (chat.userChatStatus == UserChatStatus.MUTED && this.currentChat.userChatStatus != UserChatStatus.MUTED) {
+              this.snackBar.open(`You have been muted before: ${this.getTimeBlockExpire(chat.dateTimeBlockExpire)}`, "OK", {duration: 5000});
+            }
+          }
+          this.refreshChat(chat);
+          break;
+        case ChangeType.UPDATE_ACCESS:
+          if (this.currentChat?.id == chat.id && chat.type == ChatType.PROTECTED && !chat.verified) {
+            const dialogRef = this.dialog.open(EnterPasswordComponent, {width: '300px', data: {chatId: chat.id}});
+            this.snackBar.open(`Password was changed or reset`, "OK", {duration: 3000});
+            dialogRef.afterClosed().subscribe((success: boolean) => {
+              if (success == null || !success) {
+                this.closeCurrentChat();
+                this.removeChat(chat);
+              }
+            });
+          } else {
+            this.refreshChat(chat);
+          }
+          break;
+      }
+    } else if (chat.verified) {
+      this.insertChat(chat);
     }
   }
 
@@ -240,6 +356,92 @@ export class ChatService {
   }
 
   routeToProfile(id: number) {
-    this.router.navigateByUrl('/profile', {state: {"id": id}});
+    if (id == this.userService.user.id) {
+      this.router.navigateByUrl('/profile');
+    } else {
+      this.router.navigate(['/user', { id: id }]);
+    }
+  }
+
+  directChat(userId: number) {
+    return this.http.post<Chat>(`/api/chat/direct/user/${userId}`, null);
+  }
+
+  blockUser(userId: number, block: boolean) {
+    return this.http.put(`/api/chat/user/${userId}/block`, {block: block});
+  }
+
+  removeChat(chat: Chat) {
+    const chatInd: number = this.chats.findIndex(c => c.id == chat.id);
+    if (chatInd >= 0) {
+      this.chats.splice(chatInd, 1);
+    }
+  }
+
+  closeCurrentChat() {
+    this.dialog.closeAll();
+    this.setChat(null, null);
+  }
+
+  private listenChatsUpdate() {
+    this.socket.on('/chat/receive', (chat: Chat) => {
+      this.treatChat(chat);
+    });
+  }
+
+  private listenError(): void {
+    this.socket.on('/error', (error: Error) => {
+      this.snackBar.open(error.error, "OK", {duration: 3000});
+    });
+    this.socket.on("disconnect", () => {
+      this.snackBar.open("Cannot connect to server", "OK", {duration: 3000});
+    });
+    this.socket.on("connect_error", reason => {
+      this.snackBar.open("Cannot connect to server", "OK", {duration: 3000});
+    });
+  }
+
+  private insertChat(chat: Chat, back = false) {
+    const chatInd: number = this.chats.findIndex(c => c.id == chat.id);
+    const updatedChat = chatInd >= 0 ? this.chats[chatInd] : chat;
+
+    if (chatInd >= 0) {
+      this.chats.splice(chatInd, 1);
+    }
+    if (back) {
+      this.chats.push(updatedChat);
+    } else {
+      this.chats.unshift(updatedChat);
+    }
+  }
+
+  private refreshChat(newChat: Chat) {
+    newChat.dateTimeBlockExpire = newChat.dateTimeBlockExpire != null ? new Date(newChat.dateTimeBlockExpire) : null;
+    const avatar = newChat.avatar.split("?")[0] + `?${(new Date()).getTime().toString()}`;
+    const chatInd: number = this.chats.findIndex(c => c.id == newChat.id);
+    if (chatInd >= 0) {
+      const oldChat: Chat = this.chats[chatInd];
+      oldChat.name = newChat.name;
+      oldChat.type = newChat.type;
+      oldChat.userChatStatus = newChat.userChatStatus;
+      oldChat.userChatRole = newChat.userChatRole;
+      oldChat.dateTimeBlockExpire = newChat.dateTimeBlockExpire;
+      oldChat.verified = newChat.verified;
+      oldChat.avatar = avatar;
+    } else if (this.currentChat?.id == newChat.id) {
+      this.currentChat.name = newChat.name;
+      this.currentChat.type = newChat.type;
+      this.currentChat.userChatStatus = newChat.userChatStatus;
+      this.currentChat.userChatRole = newChat.userChatRole;
+      this.currentChat.dateTimeBlockExpire = newChat.dateTimeBlockExpire;
+      this.currentChat.verified = newChat.verified;
+      this.currentChat.avatar = avatar;
+    }
+
+    if (this.currentChatDetails?.id == newChat.id) {
+      this.currentChatDetails.type = newChat.type;
+      this.currentChatDetails.name = newChat.name;
+      this.currentChatDetails.avatar = avatar;
+    }
   }
 }

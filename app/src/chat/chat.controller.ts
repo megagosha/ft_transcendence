@@ -35,6 +35,7 @@ import {ChatUserOutDto} from "./dto/chat-user-out.dto";
 import {UserBriefPageOutDto} from "./dto/user-brief-page-out-dto";
 import {ChatUserPageOutDto} from "./dto/chat-user-page-out-dto";
 import { FileInterceptor } from "@nestjs/platform-express";
+import {ChatBriefOutDto} from "./dto/chat-brief-out.dto";
 
 @ApiTags("chat")
 @Controller("/api/chat")
@@ -53,14 +54,25 @@ export class ChatController {
     return await this.chatService.createChat(dto, userId);
   }
 
-  @ApiOperation({ description: "Создать приватный чат" })
-  @ApiResponse({ description: "Id чата", status: HttpStatus.CREATED, type: ChatCreateOutDto })
-  @Post("private/user/:targetUserId")
-  async createPrivateChat(
-    @Param(":targetUserId", ParseIntPipe) targetUserId: number,
+  @ApiOperation({ description: "Получить личный чат. Создать при необходимости" })
+  @ApiResponse({ description: "Личный чат", status: HttpStatus.OK, type: ChatBriefOutDto })
+  @Post("direct/user/:secondUserId")
+  async getOrCreateDirectChat(
+    @Param("secondUserId", ParseIntPipe) secondUserId: number,
     @CurrentUserId() userId: number
-  ): Promise<ChatCreateOutDto> {
-    return this.chatService.createDirectChat(userId, targetUserId);
+  ): Promise<ChatBriefOutDto> {
+    return this.chatService.getOrCreateDirectChat(userId, secondUserId);
+  }
+
+  @ApiOperation({ description: "Заблокировать сообщения от пользователя" })
+  @ApiResponse({ description: "Личный чат", status: HttpStatus.OK, type: ChatBriefOutDto })
+  @Put("user/:targetUserId/block")
+  async blockUserMessages(
+    @Param("targetUserId", ParseIntPipe) targetUserId: number,
+    @Body("block", ParseBoolPipe) block: boolean,
+    @CurrentUserId() userId: number
+  ) {
+    this.chatService.blockUserMessages(userId, targetUserId, block);
   }
 
   @ApiOperation({ description: "Получить пользователей не являющихся участниками чата" })
@@ -122,20 +134,6 @@ export class ChatController {
     @CurrentUserId() userId: number
   ): Promise<void> {
     await this.chatService.updateAccess(userId, chatId, dto);
-  }
-
-  @ApiOperation({ description: "Изменить роль участника чате" })
-  @ApiParam({ name: "chatId", description: "Id чата", example: 1, required: true })
-  @ApiParam({ name: "participantId", description: "Id участника", example: 1, required: true })
-  @ApiBody({ description: "Роль пользователя в чате", type: ChatUserRoleUpdateInDto })
-  @Put(":chatId/participant/:participantId/role")
-  async updateUserChatRole(
-    @Param("chatId", ParseIntPipe) chatId: number,
-    @Param("participantId", ParseIntPipe) participantId: number,
-    @Body() dto: ChatUserRoleUpdateInDto,
-    @CurrentUserId() userId: number
-  ): Promise<void> {
-    await this.chatService.updateUserChatRole(userId, chatId, participantId, dto);
   }
 
   @ApiOperation({ description: "Изменить участника чата" })

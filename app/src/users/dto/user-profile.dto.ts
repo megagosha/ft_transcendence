@@ -8,7 +8,7 @@ import { UserService } from '../user.service';
 import {UsersServiceSupport} from "../users.service-support";
 
 export class UserProfileDto {
-  constructor(user: User) {
+  constructor(user: User, blocked = false) {
     this.id = user.id;
     this.username = user.username;
     this.email = user.email;
@@ -20,6 +20,8 @@ export class UserProfileDto {
     this.invitorFriendships = user.invitorFriendships;
     this.avatarImgName = user.avatarImgName;
     this.isTwoAuth = user.twoAuth != null;
+    this.blocked = blocked;
+    Logger.log('Avatar is set to ' + this.avatarImgName);
   }
   id: number;
   username: string;
@@ -32,4 +34,5 @@ export class UserProfileDto {
   // statistic: GameStatistic = new GameStatistic();
   invitorFriendships: Friendship[];
   invitedFriendships: Friendship[];
+  blocked: boolean;
 }

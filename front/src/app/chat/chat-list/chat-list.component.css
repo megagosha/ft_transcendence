@@ -84,8 +84,10 @@
 }
 
 .chat-chip {
-    text-align-all: center;
-    margin: 0;
-    width: 32px;
-    font-size: 7pt;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+    font-size: 8pt;
 }

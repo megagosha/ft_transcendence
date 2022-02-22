@@ -53,10 +53,6 @@ export class ChatComponent implements OnInit, AfterViewInit {
     const containerRef: ViewContainerRef = this.chatRoom.containerRef;
     this.chatService.setChat(chat, containerRef);
     containerRef.createComponent<ChatRoomComponent>(ChatRoomComponent);
-
-    if (chat.userChatStatus == UserChatStatus.MUTED) {
-      this.snackBar.open(`You have been muted before: ${this.chatService.getTimeBlockExpire(chat.dateTimeBlockExpire)}`, "OK", {duration: 5000});
-    }
   }
 
   ngAfterViewInit() {

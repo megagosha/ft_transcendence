@@ -11,6 +11,7 @@ import {
 import {MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar, MatSnackBarRef, TextOnlySnackBar} from "@angular/material/snack-bar";
 import {ErrorUtil} from "../../util/ErrorUtil";
+import {HttpErrorResponse, HttpStatusCode} from "@angular/common/http";
 
 @Component({
   selector: 'app-chat-create-new',
@@ -65,26 +66,26 @@ export class ChatCreateNewComponent implements OnInit {
       name: this.name.value,
       description: this.description.value,
     }).subscribe((chat: Chat) => {
-      chat.type = this.type;
-      chat.userChatRole = UserChatRole.OWNER;
-      chat.userChatStatus = UserChatStatus.ACTIVE;
-      chat.name = this.name.value;
-      chat.verified = true;
-      this.dialogRef.close(chat);
+      this.dialogRef.close();
     }, error => {
-      const messages: string [] = ErrorUtil.toMessages(error.error.message);
+      if (error.status == HttpStatusCode.BadRequest && error.error != null) {
+        const messages: string [] = ErrorUtil.toMessages(error.error.message);
 
-      messages.forEach(message => {
-        if (message.toLowerCase().includes("пароль")) {
-          this.password.setErrors({'validation': message});
-        } else if (message.toLowerCase().includes("название")) {
-          this.name.setErrors({'validation': message})
-        } else if (message.toLowerCase().includes("описание")) {
-          this.description.setErrors({'validation': message})
-        } else {
-           this.snackbar.open(message, "OK", {duration: 5000});
-        }
-      })
+        messages.forEach(message => {
+          if (message.toLowerCase().includes("пароль")) {
+            this.password.setErrors({'validation': message});
+          } else if (message.toLowerCase().includes("название")) {
+            this.name.setErrors({'validation': message})
+          } else if (message.toLowerCase().includes("описание")) {
+            this.description.setErrors({'validation': message})
+          } else {
+            throw new HttpErrorResponse(error);
+          }
+        })
+
+      } else {
+        throw new HttpErrorResponse(error);
+      }
     });
   }
 }

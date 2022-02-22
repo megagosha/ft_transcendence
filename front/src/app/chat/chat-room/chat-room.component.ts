@@ -16,6 +16,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatDialog} from "@angular/material/dialog";
 import {ChatInfoComponent} from "../chat-info/chat-info.component";
 import {Socket} from "socket.io-client";
+import {GameService} from "../../services/game.service";
 
 @Component({
   selector: 'app-chat-room',
@@ -35,8 +36,8 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
 
   constructor(private readonly userService: UserService,
               private readonly chatService: ChatService,
-              private snackBar: MatSnackBar,
-              private dialog: MatDialog) {
+              private dialog: MatDialog,
+              private readonly gameService: GameService) {
     this.chat = <Chat>chatService.getChat();
     this.socket = chatService.getSocket();
   }
@@ -53,13 +54,12 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
   listenChatSocket() {
     this.listenMessageReceive();
     this.listenMessagePageReceive();
-    this.listenError();
     this.socket.emit('/enter', this.chat.id);
   }
 
   nextPage() {
     const nextPage: Page = {
-      take: 50,
+      take: 100,
       skip: this.messages.length
     };
     this.socket.emit('/message/page', nextPage);
@@ -75,10 +75,12 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
 
   private listenMessageReceive(): void {
     this.socket.on('/message/receive', (message: Message) => {
+      const chat: Chat = message.targetChat;
       if (message && message.targetChat.id == this.chat.id && !this.messages.some(m => m.id == message.id)) {
         message.dateTimeSend = new Date(message.dateTimeSend);
         this.messages.push(message);
       }
+      this.chatService.treatChat(chat);
     });
   }
 
@@ -90,12 +92,6 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
           this.messages.unshift(message);
         }
       });
-    });
-  }
-
-  private listenError(): void {
-    this.socket.on('/error', (error: Error) => {
-      this.snackBar.open(error.error, "OK", {duration: 5000});
     });
   }
 
@@ -114,12 +110,7 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
   }
 
   openChatInfo() {
-    const ref = this.dialog.open(ChatInfoComponent, {width: '400px', backdropClass: "backdrop-dialog", height: '560px', data: this.chat});
-    ref.afterClosed().subscribe(answer => {
-      if (answer.reload != null && answer.reload) {
-        this.openChatInfo();
-      }
-    })
+    this.dialog.open(ChatInfoComponent, {width: '400px', backdropClass: "backdrop-dialog", height: '560px', data: this.chat});
   }
 
   getMessageBlockHeight() {
@@ -133,7 +124,19 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
     document.getElementById("joinInChat")?.click();
   }
 
-  goToProfile(authorUser: ChatUser) {
-    this.chatService.routeToProfile(authorUser.id);
+  goToProfile(userId: number | null) {
+    if (userId != null) {
+      this.chatService.routeToProfile(userId);
+    }
+  }
+
+  availableToMatch(user: ChatUser) {
+    return this.user.id != user.id;
+  }
+
+  inviteToGame(authorUser: ChatUser) {
+    if (this.user.id != authorUser.id) {
+      this.gameService.inviteToPlay(authorUser.id);
+    }
   }
 }

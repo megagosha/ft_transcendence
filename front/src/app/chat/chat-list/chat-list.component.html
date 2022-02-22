@@ -37,21 +37,19 @@
 					<img class="chat-avatar" src="{{chat.avatar}}" alt="AV">
 					<div class="chat-name">{{chat.name}}</div>
 					<div class="user-status-role">
-						<mat-chip-list *ngIf="chat.verified; else nonVerified">
+						<mat-chip-list *ngIf="showChip(chat); else withoutChip">
 							<mat-chip [matTooltip]="getTimeBlockExpire(chat)" class="chat-chip" *ngIf="chat.userChatStatus == 'BANNED'" color="warn" selected>B</mat-chip>
 							<mat-chip [matTooltip]="getTimeBlockExpire(chat)" class="chat-chip" *ngIf="chat.userChatStatus == 'MUTED'" color="accent" selected>M</mat-chip>
-							<mat-chip [matTooltip]="'Role: ' + chat.userChatRole.toLowerCase()" class="chat-chip" *ngIf="chat.userChatStatus == 'ACTIVE'">{{chat.userChatRole.slice(0,1)}}</mat-chip>
+							<mat-chip [matTooltip]="'Role: ' + chat.userChatRole.toLowerCase()"
+									  class="chat-chip" *ngIf="chat.userChatStatus == 'ACTIVE'"
+									  color="primary" [selected]="getColor(chat)">{{chat.userChatRole.slice(0,1)}}</mat-chip>
 						</mat-chip-list>
-						<ng-template #nonVerified>
-							<mat-chip-list>
-								<mat-chip matTooltip="Join to chat"
-										  [style]="'background-color: inherit;'"
-										  class="chat-chip">
-								</mat-chip>
-							</mat-chip-list>
+						<ng-template #withoutChip>
+							<div class="chat-chip"></div>
 						</ng-template>
 					</div>
 				</button>
 			</div>
 	</div>
 </div>
+<div id="joinInChat" (click)="joinInChat(selectedChat)" hidden></div>

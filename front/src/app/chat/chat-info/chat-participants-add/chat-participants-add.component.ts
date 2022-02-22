@@ -22,8 +22,7 @@ export class ChatParticipantsAddComponent implements OnInit {
 
   constructor(private readonly dialogRef: MatDialogRef<ChatParticipantsAddComponent>,
               @Inject(MAT_DIALOG_DATA) data: any,
-              private chatService: ChatService,
-              private snackbar: MatSnackBar) {
+              private chatService: ChatService) {
     this.searchName = new FormControl('');
     this.details = data.details;
     this.brief = data.brief;
@@ -49,15 +48,10 @@ export class ChatParticipantsAddComponent implements OnInit {
             this.users.push(user);
           }
         })
-      }, error => {
-        this.snackbar.open(error.error.message, "OK", {duration: 5000});
-      }, () => {
-        console.log("Complete");
       });
   }
 
   onSelect(user: NotParticipant) {
-    console.log(80);
     if (!this.selectedUserIds.has(user.id)) {
       this.selectedUserIds.add(user.id);
     } else {
@@ -100,9 +94,6 @@ export class ChatParticipantsAddComponent implements OnInit {
         .subscribe(() => {
           this.details.userCount += ids.length;
           this.dialogRef.close();
-        }, (error) => {
-          const message: string = error.error.message.toString();
-          this.snackbar.open(message, "OK", {duration: 5000});
         })
     } else {
       this.dialogRef.close();
