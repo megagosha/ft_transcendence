@@ -35,6 +35,7 @@ import {log} from "util";
 @UseFilters(new SocketExceptionFilter())
 @WebSocketGateway({
   namespace: "/chat",
+  transports: "websocket",
   cors: {
     origin: ["http://localhost:3000", "http://localhost:4200"],
   },
@@ -53,6 +54,7 @@ export class ChatGateway
     private readonly userSocketServiceSupport: UserSocketServiceSupport,
     private readonly chatServiceSupport: ChatServiceSupport,
     private readonly messageServiceSupport: MessageServiceSupport,
+
     @InjectRepository(UserSocket) private readonly socketRepository: Repository<UserSocket>,
     @InjectRepository(UserChatLink) private readonly userChatLinkRepository: Repository<UserChatLink>
   ) {}
@@ -62,8 +64,13 @@ export class ChatGateway
   }
 
   async handleConnection(client: Socket): Promise<void> {
-    const userId: number = this.getCurrentUserId(client);
-    const user: User = await this.usersServiceSupport.getCurrentUser(userId);
+    let user: User;
+    try {
+      const userId: number = this.getCurrentUserId(client);
+      user = await this.usersServiceSupport.getCurrentUser(userId);
+    } catch (e) {
+      return;
+    }
     await this.userSocketServiceSupport.addUserSocket(user, client.id);
   }
 
@@ -79,7 +86,8 @@ export class ChatGateway
     const userId: number = this.getCurrentUserId(client);
     const user: User = await this.usersServiceSupport.getCurrentUser(userId);
     const chat: Chat = await this.chatServiceSupport.findChatById(chatId);
-    let userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, chat, false);
+    let userChatLink: UserChatLink =
+      await this.chatServiceSupport.findUserChatLink(user, chat, false);
 
     if (userChatLink == null) {
       userChatLink = new UserChatLink();
@@ -88,9 +96,12 @@ export class ChatGateway
 
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.ENTER_CHAT);
 
-    const socket: UserSocket = await this.userSocketServiceSupport.findSocket(client.id);
+    const socket: UserSocket = await this.userSocketServiceSupport.findSocket(
+      client.id
+    );
     socket.activeChat = chat;
     await this.socketRepository.save(socket);
+
 
     const messagePage: MessagePageOutDto = await this.getMessagePage(chat, user, 20, 0);
     client.emit("/message/page-receive", messagePage);
@@ -103,9 +114,10 @@ export class ChatGateway
   ): Promise<void> {
     const userId: number = this.getCurrentUserId(client);
     const user: User = await this.usersServiceSupport.getCurrentUser(userId);
-    const socket: UserSocket = await this.userSocketServiceSupport.findSocket(client.id);
+    const socket: UserSocket = await this.userSocketServiceSupport.findSocket(
+      client.id
+    );
     const activeChat: Chat = socket.activeChat;
-
     const userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, activeChat);
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.SEND_MESSAGE);
 
@@ -119,14 +131,17 @@ export class ChatGateway
   ): Promise<void> {
     const userId: number = this.getCurrentUserId(client);
     const user: User = await this.usersServiceSupport.getCurrentUser(userId);
-    const socket: UserSocket = await this.userSocketServiceSupport.findSocket(client.id);
+    const socket: UserSocket = await this.userSocketServiceSupport.findSocket(
+      client.id
+    );
     const activeChat: Chat = socket.activeChat;
 
     if (activeChat == null) {
       throw new WsException("Необходимо присоединиться к чату");
     }
 
-    let userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, activeChat, false);
+    let userChatLink: UserChatLink =
+      await this.chatServiceSupport.findUserChatLink(user, activeChat, false);
     if (userChatLink == null) {
       userChatLink = new UserChatLink();
       userChatLink.chat = activeChat;
@@ -165,7 +180,9 @@ export class ChatGateway
   }
 
   private getCurrentUserId(client: Socket): number {
-    const user: User = this.authService.decodeJwtToken(client.handshake.auth.token);
+    const user: User = this.authService.decodeJwtToken(
+      client.handshake.auth.token
+    );
     if (!user) {
       this.disconnect(client);
     }

@@ -60,7 +60,6 @@ export class FindFriendComponent implements OnInit {
     if (event) {
       this._userService.addFriend(event.option.value.id).subscribe(res => {
           if (res && res.body != null) {
-            console.log(res.body);
             // this._userService.appendFriend(res.body);
             this.dialogRef.close({data: res.body});
           }

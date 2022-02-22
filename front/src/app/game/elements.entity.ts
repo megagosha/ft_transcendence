@@ -1,13 +1,15 @@
+import { GameState, GameTopInfoPart } from "./game.dto";
+
 export class Coordinates {
 
-  constructor(public x: number, public y: number) {
+  constructor( public x: number, public y: number ) {
     this.x = x;
     this.y = y;
   }
 }
 
 export class AxisSpeed {
-  constructor(public xSpeed: number, public ySpeed: number) {
+  constructor( public xSpeed: number, public ySpeed: number ) {
   }
 }
 
@@ -19,16 +21,17 @@ export interface Bounds {
 }
 
 export abstract class GameObject {
-  constructor(public height: number, public width: number, protected maxSpeed: number, public cords: Coordinates) {
+  public color = "orange";
+
+  constructor( public height: number, public width: number, protected maxSpeed: number, public cords: Coordinates ) {
   }
 
-  update(speed: AxisSpeed) {
+  update( speed: AxisSpeed ) {
     this.cords.x += this.maxSpeed * speed.xSpeed;
     this.cords.y += this.maxSpeed * speed.ySpeed;
   }
 
-  public setPos(x:number, y: number)
-  {
+  public setPos( x: number, y: number ) {
     this.cords.x = x;
     this.cords.y = y;
   }
@@ -48,60 +51,58 @@ export abstract class GameObject {
 }
 
 export class Ball extends GameObject {
-  private axisSpeed: AxisSpeed;
-
-  constructor(height: number, width: number, maxSpeed: number, cords: Coordinates, axisSpeed: AxisSpeed) {
-    super(height, width, maxSpeed, cords);
-    this.axisSpeed = axisSpeed;
+  constructor( gameHeight: number, gameWidth: number, color: string ) {
+    super(gameHeight * 0.02, gameWidth * 0.02, 2, { x: gameWidth / 2, y: gameHeight / 2 });
+    this.color = color;
   }
 
-  bounceX(): void {
-    this.axisSpeed.xSpeed = -this.axisSpeed.xSpeed;
+  updateDimensions(gameWidth: number, gameHeight: number, left: boolean ) {
+    this.height = 0.02 * gameHeight;
+    this.width = 0.02 * gameWidth;
   }
-
-  bounceY(): void {
-    this.axisSpeed.ySpeed = -this.axisSpeed.ySpeed;
-  }
-
-  setVSpeed(s: number) {
-    this.axisSpeed.ySpeed = s;
-  }
-
-  override update() {
-    super.update(this.axisSpeed);
-  }
+  // bounceX(): void {
+  //   this.axisSpeed.xSpeed = -this.axisSpeed.xSpeed;
+  // }
+  //
+  // bounceY(): void {
+  //   this.axisSpeed.ySpeed = -this.axisSpeed.ySpeed;
+  // }
+  //
+  // setVSpeed( s: number ) {
+  //   this.axisSpeed.ySpeed = s;
+  // }
+  //
+  // override update() {
+  //   super.update(this.axisSpeed);
+  // }
 }
 
 export class Paddle extends GameObject {
   private axisSpeed: AxisSpeed;
   public score: number = 0;
-  public username: string = "";
 
-  constructor(height: number, width: number, maxSpeed: number, cords: Coordinates, axisSpeed: AxisSpeed) {
-    super(height, width, maxSpeed, cords);
-    this.axisSpeed = axisSpeed;
+  // public username: string = "";
+
+  constructor( gameWidth: number, gameHeight: number, left: boolean, color: string) {
+    super(0, 0, 10, { x: 0, y: 0 });
+    this.axisSpeed = {xSpeed: 0, ySpeed: 0 }
+    this.height = gameHeight * 0.15;
+    this.width = gameWidth * 0.02;
+    this.cords.x = left ? gameWidth * 0.1 : gameWidth * 0.90;
+    this.cords.y = gameHeight / 2;
+    this.color = color;
   }
-  accelerate(minY: number, up: boolean) {
-    // if (ratioChange < 0 || ratioChange > 1) return;
-    // this.axisSpeed.ySpeed = Math.max(-3, this.axisSpeed.ySpeed - ratioChange);
-    // this.cords.y += 1.5 * this.axisSpeed.ySpeed;
-    // if ((this.cords.y -= 20) < minX )
-    //   this.cords.y = 0;
-    // else
-    //   this.cords.y -= 20;
 
+
+  accelerate( minY: number, up: boolean ) {
     if (minY < 0 || minY > 1) return;
     if (up) {
       this.axisSpeed.ySpeed = Math.max(-1, this.axisSpeed.ySpeed - minY);
-
-      console.log('up');
-    }
-    else
+    } else
       this.axisSpeed.ySpeed = Math.min(1, this.axisSpeed.ySpeed + minY);
-
   }
 
-  slowDown(minY: number) {
+  slowDown( minY: number ) {
     if (this.axisSpeed.ySpeed < 0) {
       this.axisSpeed.ySpeed = Math.min(this.axisSpeed.ySpeed + minY, 0);
     }
@@ -113,30 +114,45 @@ export class Paddle extends GameObject {
     this.cords.x += this.maxSpeed * this.axisSpeed.xSpeed;
     this.cords.y += this.maxSpeed * this.axisSpeed.ySpeed;
   }
+
+  updateDimensions(gameWidth: number, gameHeight: number, left: boolean ) {
+    this.height = 0.15 * gameHeight;
+    this.width = 0.01 * gameWidth;
+    this.cords.x = left ? gameWidth * 0.1 : gameWidth* 0.90;
+  }
 }
 
 export class Game {
   public ball: Ball;
-  public players: { [userId: number]: Paddle } = {} ;
-  public playerA: Paddle;
-  public playerB: Paddle;
+  public players: { [userId: number]: Paddle } = {};
   public width: number;
   public height: number;
 
-  constructor(width: number, height: number) {
+  constructor( width: number, height: number, gameState: GameState ) {
     this.width = width;
     this.height = height;
-    this.ball = new Ball(0.02*this.height, 0.02 * this.width, 2, { x: this.width / 2, y: this.height / 2 }, { xSpeed: 1, ySpeed: 1 });
-    this.playerA = new Paddle(this.height * 0.15, this.width * 0.01, 10, { x: this.width * 0.1, y: this.height / 2 }, { xSpeed: 0, ySpeed: 0 });
-    this.playerB = new Paddle(this.height * 0.15, this.width * 0.01, 10, { x: this.width * 0.9, y: this.height / 2 }, { xSpeed: 0, ySpeed: 0 });
+    this.ball = new Ball(width, height, gameState.game.ball.color);
+    this.players[gameState.left.id] = new Paddle(this.width, this.height, true, gameState.game.players[gameState.left.id].color);
+    this.players[gameState.right.id] = new Paddle(this.width, this.height, false, gameState.game.players[gameState.right.id].color);
   }
 
-  setPlayers(userAId: number, userAUsername: string, userBId: number, userBUsername: string, left: boolean) {
-    let leftX = this.width * 0.1;
-    let rightX = this.width * 0.9;
-    this.players[userAId] = new Paddle(this.height * 0.15, this.width * 0.01, 10, { x:left ? leftX : rightX , y: this.height / 2 }, { xSpeed: 0, ySpeed: 0 });
-    this.players[userBId] = new Paddle(this.height * 0.15, this.width * 0.01, 10, { x: left ? rightX : leftX, y: this.height / 2 }, { xSpeed: 0, ySpeed: 0 });
-    this.players[userAId].username = userAUsername;
-    this.players[userBId].username = userBUsername;
+  updateDimensions( width: number, height: number ) {
+    for (let player in this.players) {
+      if (this.players[player].cords.x < this.width * 0.12)
+        this.players[player].updateDimensions(width, height, true);
+      else
+        this.players[player].updateDimensions(width, height, false);
+    }
+    this.width = width;
+    this.height = height;
   }
+
+  // setPlayers(userAId: number, userAUsername: string, userBId: number, userBUsername: string, left: boolean) {
+  //   let leftX = this.width * 0.1;
+  //   let rightX = this.width * 0.9;
+  //   this.players[userAId] = new Paddle(this.height * 0.15, this.width * 0.01, 10, { x:left ? leftX : rightX , y: this.height / 2 }, { xSpeed: 0, ySpeed: 0 });
+  //   this.players[userBId] = new Paddle(this.height * 0.15, this.width * 0.01, 10, { x: left ? rightX : leftX, y: this.height / 2 }, { xSpeed: 0, ySpeed: 0 });
+  //   // this.players[userAId].username = userAUsername;
+  //   // this.players[userBId].username = userBUsername;
+  // }
 }

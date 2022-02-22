@@ -1,46 +1,64 @@
-import { Component, OnInit } from '@angular/core';
-import { DataSource } from '@angular/cdk/collections';
+import { Component, OnInit }           from '@angular/core';
+import { DataSource }                  from '@angular/cdk/collections';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { GameService }                 from "../services/game.service";
+import { LadderDto }                   from "../game/ladder.dto";
 
 export interface PeriodicElement {
-  position: number;
-  player:  {username: string, avatarImg: string};
-  games_played: number;
-  games_won: number;
+    position: number;
+    player: { username: string, avatarImg: string };
+    games_won: number;
 }
-const ELEMENT_DATA: PeriodicElement[] = [
-  {position: 1, player: {username: 'ivan', avatarImg: "http://localhost:3000/default.png"}, games_played: 10, games_won: 5},
-  {position: 1, player: {username: 'george', avatarImg: "http://localhost:3000/default.png"}, games_played: 20, games_won: 5},
-  {position: 1, player: {username: 'peter', avatarImg: "http://localhost:3000/default.png"}, games_played: 30, games_won: 5},
-  {position: 1, player: {username: 'katya', avatarImg: "http://localhost:3000/default.png"}, games_played: 50, games_won: 5},
-  {position: 1, player: {username: 'vasya', avatarImg: "http://localhost:3000/default.png"}, games_played: 10, games_won: 5},
+
+const template: LadderDto[] = [
+    {position: 1, username: '', avatarImgName: "http://localhost:3000/default.png", games_won: 0},
+
 ];
 
 @Component({
-  selector: 'app-ladder',
-  templateUrl: './ladder.component.html',
-  styleUrls: ['./ladder.component.css']
+    selector: 'app-ladder',
+    templateUrl: './ladder.component.html',
+    styleUrls: ['./ladder.component.css']
 })
 export class LadderComponent implements OnInit {
 
-  ladderColumns: string[] = ['position', 'player', 'games_played', 'games_won'];
-  dataSource: PeriodicElement[] = ELEMENT_DATA;
-  constructor() { }
+    ladderColumns: string[] = ['position', 'player', 'games_won'];
+    dataSource: LadderDataSource;
 
-  ngOnInit(): void {
+    constructor( private gameService: GameService ) {
+      this.dataSource = new LadderDataSource(this.gameService);
+    }
 
-  }
+    ngOnInit(): void {
+      this.dataSource.update();
+    }
 
 }
 
-export class ExampleDataSource extends DataSource<PeriodicElement> {
-  /** Stream of data that is provided to the table. */
-  data = new BehaviorSubject<PeriodicElement[]>(ELEMENT_DATA);
+export class LadderDataSource extends DataSource<LadderDto> {
+    /** Stream of data that is provided to the table. */
+    private data = new BehaviorSubject<LadderDto[]>([]);
+    private loadingData = new BehaviorSubject<boolean>(false);
+    public loading = this.loadingData.asObservable();
 
-  /** Connect function called by the table to retrieve one stream containing the data to render. */
-  connect(): Observable<PeriodicElement[]> {
-    return this.data;
-  }
+    constructor( private gameService: GameService ) {
+        super();
+    }
 
-  disconnect() {}
+    /** Connect function called by the table to retrieve one stream containing the data to render. */
+    connect(): Observable<LadderDto[]> {
+        return this.gameService.getLadder();
+    }
+
+    disconnect() {
+        this.data.complete();
+        this.loadingData.complete();
+    }
+
+    update() {
+        this.loadingData.next(true);
+        this.gameService.getLadder().subscribe(res => {
+            this.data.next(res);
+        })
+    }
 }

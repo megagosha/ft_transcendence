@@ -13,6 +13,7 @@ export class SearchUsersResultsDto {
     this.id = user.id;
     this.username = user.username;
     this.status = user.status;
-    this.avatarImgName = UsersServiceSupport.getUserAvatarPath(user);
+    this.avatarImgName = user.avatarImgName;
+    //UsersServiceSupport.getUserAvatarPath(user);
   }
 }

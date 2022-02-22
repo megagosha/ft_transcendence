@@ -141,8 +141,10 @@ export class UserController {
   ): Promise<SearchUsersResultsDto> {
     Logger.log(friend_id);
     if (!friend_id) throw new BadRequestException('Friend should be specified');
-    if (friend_id.friend_id == req.user.id)
+    if (friend_id.friend_id == req.user.id) {
+      Logger.log('123');
       throw new ConflictException('You can`t befriend yourself');
+    }
     return new SearchUsersResultsDto(
       await this.userService.addFriend(req.user.id, friend_id.friend_id),
     );
