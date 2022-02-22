@@ -7,6 +7,7 @@ export class Profile {
   lastLoginDate: string;
   status: string;
   isTwoAuth: boolean;
+  blocked: boolean;
 
   constructor() {
     this.id = 0;
@@ -17,5 +18,6 @@ export class Profile {
     this.lastLoginDate = "";
     this.status = "";
     this.isTwoAuth = false;
+    this.blocked = false;
   }
 }

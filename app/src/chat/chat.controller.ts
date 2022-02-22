@@ -64,6 +64,17 @@ export class ChatController {
     return this.chatService.getOrCreateDirectChat(userId, secondUserId);
   }
 
+  @ApiOperation({ description: "Заблокировать сообщения от пользователя" })
+  @ApiResponse({ description: "Личный чат", status: HttpStatus.OK, type: ChatBriefOutDto })
+  @Put("user/:targetUserId/block")
+  async blockUserMessages(
+    @Param("targetUserId", ParseIntPipe) targetUserId: number,
+    @Body("block", ParseBoolPipe) block: boolean,
+    @CurrentUserId() userId: number
+  ) {
+    this.chatService.blockUserMessages(userId, targetUserId, block);
+  }
+
   @ApiOperation({ description: "Получить пользователей не являющихся участниками чата" })
   @ApiResponse({ description: "Страница пользователей", status: HttpStatus.OK, type: UserBriefPageOutDto })
   @Get(":chatId/not-participants")

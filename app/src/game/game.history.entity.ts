@@ -7,15 +7,18 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
-import { User } from '../users/user.entity';
+} from "typeorm";
+import { User } from "../users/user.entity";
 
 /** Статисктика и достижения пользователя */
-@Entity('ft_game_history')
+@Entity("ft_game_history")
 export class GameStatistic {
   /** Id */
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ nullable: true })
+  userLostId: number;
 
   @ManyToOne(() => User)
   userLost: User;
@@ -29,7 +32,7 @@ export class GameStatistic {
   userWon: User;
 
   /** Количество выигранных игр */
-  @Column({ type: 'simple-array' })
+  @Column({ type: "simple-array" })
   score: number[];
 
   /** Количество проигранных игр */

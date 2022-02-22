@@ -45,10 +45,6 @@ export class Message {
   @JoinColumn({ name: "author_user_id", referencedColumnName: "id" })
   authorUser: User;
 
-  /** Показывать сообщение в чате */
-  @Column({ name: "visible", nullable: false, default: true })
-  visible: boolean;
-
   /** Чат, в который было отправлено соообщение */
   @ManyToOne(() => Chat, { nullable: false })
   @JoinColumn({ name: "target_chat_id", referencedColumnName: "id" })

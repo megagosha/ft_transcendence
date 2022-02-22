@@ -12,11 +12,12 @@
       <button mat-menu-item (click)="watchGame(selectedUser)">Watch game</button>
     </mat-menu>
   </div>
-  <mat-selection-list class="list" #friends [multiple]="false" [color]="'primary'" (selectionChange)="onListClick($event.options[0].value)" >
-
-    <mat-list-option *ngFor="let friend of friendList " [value]="friend">
-      <img style="width: 45px; height: 45px; border-radius: 23px" src="{{friend.avatarImgName }}">
-      {{friend.username}}
+  <mat-selection-list class="list" #friends [multiple]="false" [color]="'primary'" (selectionChange)="onListClick($event.options[0].value)">
+    <mat-list-option class="list-element" *ngFor="let friend of friendList " [value]="friend">
+      <img matListAvatar style="width: 45px; height: 45px; border-radius: 23px" src="{{friend.avatarImgName }}">
+       <p matLine> {{friend.username}} &nbsp;
+         <span class="dot" [ngStyle]="{'background-color': friend.status == 'ONLINE' ? 'green': 'transparent'}"></span>
+       </p>
     </mat-list-option>
   </mat-selection-list>
   <button class="fub-button" mat-fab color="primary" aria-label="Add new friend" (click)="addFriendDialogOpener()">

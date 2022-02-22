@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -19,6 +20,7 @@ import { Friendship } from './friendlist.entity';
 import { use } from 'passport';
 import { stringify } from 'querystring';
 import { json } from 'express';
+import {ChatServiceSupport} from "../chat/chat.service-support";
 
 // This should be a real class/interface representing a user entity
 // export type User = any;
@@ -30,6 +32,7 @@ export class UserService {
     private userRepo: Repository<User>,
     @InjectRepository(Friendship)
     private friendlistRepo: Repository<Friendship>,
+    private readonly chatServiceSupport: ChatServiceSupport,
   ) {}
 
   async saveUser(user: User) {
@@ -148,12 +151,14 @@ export class UserService {
 
   async addFriend(user_id: number, friend_id: number): Promise<User> {
     const check = await this.findFriend(user_id, friend_id);
-    if (check && check.invitedUser) return check.invitedUser;
+    if (check && check.invitedUser)
+      throw new ConflictException('Friend already added!');
     const friend = new Friendship();
     friend.invitorUser = await this.findUser(user_id);
     friend.invitedUser = await this.findUser(friend_id);
-    if (!friend.invitedUser || !friend.invitorUser)
-      throw new ConflictException('Friend can not be added');
+    if (!friend.invitedUser || !friend.invitorUser) {
+      throw new BadRequestException('Friend can not be added. No such user!');
+    }
     return (
       await this.friendlistRepo.save(friend).catch((err: any) => {
         throw new ConflictException('Friend can not be added');
@@ -186,23 +191,23 @@ export class UserService {
     callback(null, true);
   };
 
-  static getAvatarUrlById(userId: number) {
-    let avatarImgName;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-
-    try {
-      Logger.log('res ' + `${rootPath}${userId}/${userId}.png`);
-      if (fs.existsSync(`${rootPath}${userId}/${userId}.png`)) {
-        avatarImgName = `/${userId}/${userId}.png`;
-      } else {
-        avatarImgName = `/default.png`;
-      }
-    } catch (err) {
-      avatarImgName = `/default.png`;
-    }
-    return avatarImgName;
-  }
+  // static getAvatarUrlById(userId: number) {
+  //   let avatarImgName;
+  //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //   // @ts-ignore
+  //
+  //   try {
+  //     Logger.log('res ' + `${rootPath}${userId}/${userId}.png`);
+  //     if (fs.existsSync(`${rootPath}${userId}/${userId}.png`)) {
+  //       avatarImgName = `/${userId}/${userId}.png`;
+  //     } else {
+  //       avatarImgName = `/default.png`;
+  //     }
+  //   } catch (err) {
+  //     avatarImgName = `/default.png`;
+  //   }
+  //   return avatarImgName;
+  // }
 
   async removeFriend(user_id: number, friend_id: number): Promise<boolean> {
     const res = await this.friendlistRepo
@@ -246,5 +251,9 @@ export class UserService {
     return this.userRepo.update(userId, {
       twoAuth: null,
     });
+  }
+
+  async isBlockedUser(user: User, targetUser: User) {
+    return this.chatServiceSupport.isBlockedUser(user, targetUser);
   }
 }

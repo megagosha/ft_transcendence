@@ -15,8 +15,8 @@ export class GameCardComponent implements OnInit {
     this.info = {
       id: 0,
       score: [20, 50],
-      userLost: { avatarImgName: 'http://localhost:3000/1/1.png', id: 1, status: '', username: 'very long long name'},
-      userWon: { avatarImgName: 'http://localhost:3000/1/1.png', id: 2, status: '', username: 'Hi' },
+      userLost: { avatarImgName: 'https://cdn.intra.42.fr/users/default.png', id: 1, status: '', username: 'very long long name'},
+      userWon: { avatarImgName: 'https://cdn.intra.42.fr/users/default.png', id: 2, status: '', username: 'Hi' },
       timeEnd: new Date()
     };
   }

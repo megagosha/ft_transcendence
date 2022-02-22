@@ -51,6 +51,7 @@ export class UserProfileComponent implements OnInit {
       this.profile.lastLoginDate = formatDate(data.lastLoginDate, 'short', 'en-US');
       this.profile.registerDate = formatDate(data.registerDate, 'shortDate', 'en-US');
       this.profile.status = data.status;
+      this.profile.blocked = data.blocked;
     });
   }
 
@@ -67,5 +68,14 @@ export class UserProfileComponent implements OnInit {
       }, () => {
         this._router.navigateByUrl("/chat");
       })
+  }
+
+  blockUser() {
+    const block = !this.profile.blocked;
+    this.chatServise.blockUser(this.userId, block).subscribe(() => {
+      this.profile.blocked = block
+    }, (error => {
+      this.snackbar.open(error.error.message, "OK", {duration: 5000});
+    }));
   }
 }

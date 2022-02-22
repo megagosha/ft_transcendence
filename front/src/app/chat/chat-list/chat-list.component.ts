@@ -2,7 +2,7 @@ import {AfterViewInit, Component, EventEmitter, OnInit, Output} from '@angular/c
 import {Chat, ChatPage, ChatService, ChatType, UserChatRole, UserChatStatus} from "../../services/chat.service";
 import {Profile} from "../../login/profile.interface";
 import {UserService} from "../../services/user.service";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {FormControl} from "@angular/forms";
 import {debounceTime, distinctUntilChanged, map} from "rxjs";
 import {MatDialog} from "@angular/material/dialog";
@@ -35,8 +35,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   constructor(private readonly userService: UserService,
               private readonly chatService: ChatService,
               private readonly http: HttpClient,
-              private readonly dialog: MatDialog,
-              private readonly snackbar: MatSnackBar) {
+              private readonly dialog: MatDialog) {
     this.user = userService.user;
     this.selectedChat = chatService.getChat();
     this.chatService.setChats(this.chats);
@@ -77,10 +76,6 @@ export class ChatListComponent implements OnInit, AfterViewInit {
     this.chatService.findChats(this.name, this.global, this.pageSize, this.chats.length)
       .subscribe((page: ChatPage) => {
         page.chats.forEach(chat => this.insertChat(this.chats, chat))
-      }, error => {
-        this.snackbar.open(error.error.message, "OK", {duration: 5000});
-      }, () => {
-        console.log("Complete");
       });
   }
 
@@ -131,11 +126,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
         }
       });
     } else {
-      this.chatService.joinChat(chat.id, null).subscribe(
-        () => this.onSelect(chat),
-        error => {
-          this.snackbar.open(error.error.message, "OK", {duration: 5000});
-        })
+      this.chatService.joinChat(chat.id, null).subscribe(() => this.onSelect(chat));
     }
   }
 
@@ -163,7 +154,7 @@ export class ChatListComponent implements OnInit, AfterViewInit {
   }
 
   showChip(chat: Chat) {
-    if (!chat.verified || chat.type == ChatType.DIRECT) {
+    if (!chat.verified || (chat.type == ChatType.DIRECT)) {
       return false;
     }
 

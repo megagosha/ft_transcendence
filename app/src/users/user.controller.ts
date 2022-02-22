@@ -40,7 +40,7 @@ import {CurrentUserId} from "../util/user.decarator";
 import {writeFile} from "fs";
 // import { fileTypeFromFile } from 'file-type';
 
-@Controller('user')
+@Controller('/api/user')
 export class UserController {
   constructor(
     private authService: AuthService,
@@ -102,10 +102,15 @@ export class UserController {
 
   @Get('user')
   @UseGuards(JwtAuthGuard)
-  async userInfo(@Query() data: { userId: number }): Promise<UserProfileDto> {
-    const res = await this.userService.findUser(data.userId);
-    if (!res) throw new NotFoundException();
-    return new UserProfileDto(res);
+  async userInfo(
+    @Query() data: { userId: number },
+    @CurrentUserId() userId: number
+  ): Promise<UserProfileDto> {
+    const user = await this.userService.findUser(userId);
+    const targetUser = await this.userService.findUser(data.userId);
+    if (!user || !targetUser) throw new NotFoundException();
+    const blocked: boolean = await this.userService.isBlockedUser(user, targetUser);
+    return new UserProfileDto(targetUser, blocked);
   }
 
   @Get('search')
@@ -136,8 +141,10 @@ export class UserController {
   ): Promise<SearchUsersResultsDto> {
     Logger.log(friend_id);
     if (!friend_id) throw new BadRequestException('Friend should be specified');
-    if (friend_id.friend_id == req.user.id)
+    if (friend_id.friend_id == req.user.id) {
+      Logger.log('123');
       throw new ConflictException('You can`t befriend yourself');
+    }
     return new SearchUsersResultsDto(
       await this.userService.addFriend(req.user.id, friend_id.friend_id),
     );

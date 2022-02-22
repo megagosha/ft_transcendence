@@ -1,8 +1,7 @@
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "./user.entity";
-import {In, Like, Not, Repository} from "typeorm";
+import { In, Like, Not, Repository } from "typeorm";
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { WsException } from "@nestjs/websockets";
 
 @Injectable()
 export class UsersServiceSupport {

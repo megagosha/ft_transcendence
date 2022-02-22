@@ -11,7 +11,6 @@ import {UsersServiceSupport} from "../users/users.service-support";
 import {ChatAction, ChatServiceSupport} from "./chat.service-support";
 import {ChatAccessUpdateInDto} from "./dto/chat-access-update-in.dto";
 import {ChatUserUpdateInDto} from "./dto/chat-user-update-in.dto";
-import {ChatUserRoleUpdateInDto} from "./dto/chat-user-role-update-in.dto";
 import {plainToClass} from "class-transformer";
 import {ChatBriefOutDto} from "./dto/chat-brief-out.dto";
 import {ChatPageOutDto} from "./dto/chat-page-out.dto";
@@ -50,7 +49,6 @@ export class ChatService {
     chat.ownerUser = user;
     chat.name = dto.name;
     chat.description = dto.description;
-    chat.dateTimeLastAction = new Date();
     this.setTypeAndPassword(chat, dto.password, dto.type);
     await this.chatRepository.save(chat);
     Logger.log(`Chat [id=${chat.id}] was created`);
@@ -60,7 +58,7 @@ export class ChatService {
     Logger.log(`Link for user[id=${userId}] and chat[id=${chat.id}] was created`);
 
     const chatChange: ChatChange = this.mapToChatChange(chat, user, ChangeType.CREATION, null);
-    this.chatGateway.sendSpecificMessages([chatChange], chat);
+    this.chatGateway.sendSpecificMessages([chatChange], chat, [userChatLink]);
 
     return new ChatCreateOutDto(chat.id, this.chatServiceSupport.getChatAvatarPath(chat));
   }
@@ -69,23 +67,7 @@ export class ChatService {
     const user: User = await this.userServiceSupport.getCurrentUser(userId);
     const secondUser: User = await this.userServiceSupport.findById(secondUserId);
 
-    let directChatLink: UserChatLink = await this.chatServiceSupport.findDirectChatLink(user, secondUser);
-    if (directChatLink == null) {
-      const chat: Chat = new Chat();
-      chat.ownerUser = user;
-      chat.name = uuid();
-      chat.type = ChatType.DIRECT;
-      await this.chatRepository.save(chat);
-      Logger.log(`Direct chat [id=${chat.id}] was created`);
-
-      const userChatLink = this.createUserChatLink(chat, user, UserChatRole.ADMIN, secondUser);
-      const targetUserChatLink = this.createUserChatLink(chat, secondUser, UserChatRole.ADMIN, user);
-      await this.userChatLinkRepository.save([userChatLink, targetUserChatLink]);
-      Logger.log(`Links for users [${userId}, ${secondUser.id}] and direct chat[id=${chat.id}] was created`);
-
-      directChatLink = userChatLink;
-    }
-
+    let directChatLink: UserChatLink = await this.getOrCreateDirectChatLink(user, secondUser);
     return this.chatServiceSupport.mapToChatBriefDto(directChatLink);
   }
 
@@ -125,9 +107,6 @@ export class ChatService {
     });
     await this.userChatLinkRepository.save(userChatLinks);
 
-    chat.dateTimeLastAction = new Date();
-    await this.chatServiceSupport.updateChat(chat);
-
     notLinkedUsers.forEach(user => Logger.log(`Participant [id=${user.id}] was added to chat[id=${chatId}]`));
 
     const users: User[] = [...existLinks.map(link => link.user), ...notLinkedUsers];
@@ -135,7 +114,7 @@ export class ChatService {
       return this.mapToChatChange(chat, user, ChangeType.ADD_PARTICIPANT, targetUser);
     });
 
-    this.chatGateway.sendSpecificMessages(chatChanges, chat);
+    this.chatGateway.sendSpecificMessages(chatChanges, chat, userChatLinks);
   }
 
   async deleteParticipant(userId: number, chatId: number, participantId: number): Promise<void> {
@@ -206,6 +185,27 @@ export class ChatService {
     this.chatGateway.sendSpecificMessages(chatChanges, chat);
   }
 
+  async blockUserMessages(
+    userId: number,
+    targetUserId: number,
+    block: boolean,
+  ) {
+    const user: User = await this.userServiceSupport.getCurrentUser(userId);
+    const targetUser: User = await this.userServiceSupport.findById(targetUserId);
+
+    let directChatLink: UserChatLink = await this.getOrCreateDirectChatLink(targetUser, user);
+    if ((directChatLink.userStatus == UserChatStatus.ACTIVE && block)
+      || (directChatLink.userStatus == UserChatStatus.MUTED && !block)) {
+
+      directChatLink.userStatus = block ? UserChatStatus.MUTED : UserChatStatus.ACTIVE;
+      this.userChatLinkRepository.save(directChatLink);
+      Logger.log(`User[${user.username}] block=${block} user[${targetUser.username}]`);
+
+      const chatChange = this.mapToChatChange(directChatLink.chat, user, ChangeType.UPDATE_CHAT_USER, targetUser);
+      this.chatGateway.refreshChat(directChatLink.chat, chatChange, directChatLink);
+    }
+  }
+
   async updateUserChat(
     userId: number,
     chatId: number,
@@ -227,6 +227,11 @@ export class ChatService {
 
     const user: User = await this.userServiceSupport.getCurrentUser(userId);
     const chat: Chat = await this.chatServiceSupport.findChatById(chatId);
+
+    if (chat.type == ChatType.DIRECT) {
+      throw new BadRequestException("Invalid action for direct chats");
+    }
+
     const userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, chat);
 
     const participant: User = await this.userServiceSupport.findById(participantId, "Участник чата не найден");
@@ -241,20 +246,14 @@ export class ChatService {
       return;
     }
 
-    if (chat.type == ChatType.DIRECT) {
-      userChatLink.userStatus = dto.status != UserChatStatus.ACTIVE ? UserChatStatus.MUTED : dto.status;
-      await this.userChatLinkRepository.save(userChatLink);
-      Logger.log(`User[id=${userId}] blocked user[id=${participantId}]`);
-    } else {
-      participantChatLink.userStatus = dto.status;
-      participantChatLink.userRole = dto.role;
-      participantChatLink.dateTimeBlockExpire = dateTimeBlockExpire;
-      await this.userChatLinkRepository.save(participantChatLink);
-      Logger.log(`Participant [id=${participantId}] was updated [status=${dto.status}, role=${dto.role}] in chat[id=${chat.id}]`);
-    }
+    participantChatLink.userStatus = dto.status;
+    participantChatLink.userRole = dto.role;
+    participantChatLink.dateTimeBlockExpire = dateTimeBlockExpire;
+    await this.userChatLinkRepository.save(participantChatLink);
+    Logger.log(`Participant [id=${participantId}] was updated [status=${dto.status}, role=${dto.role}] in chat[id=${chat.id}]`);
 
     const chatChange = this.mapToChatChange(chat, user, ChangeType.UPDATE_CHAT_USER, participant);
-    this.chatGateway.refreshChat(chat, chatChange);
+    this.chatGateway.refreshChat(chat, chatChange, participantChatLink);
   }
 
   async joinChat(userId: number, chatId: number, password: string) {
@@ -274,30 +273,22 @@ export class ChatService {
       }
     }
 
-    let changed = false;
+    let userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, chat, false);
+    if (chat.type == ChatType.PRIVATE && (userChatLink == null || !userChatLink.verified)) {
+      throw new BadRequestException("Вступить в приватный чат нельзя");
+    }
 
-    let userChatLink: UserChatLink = await this.userChatLinkRepository.findOne({chat: chat, user: user});
     if (userChatLink == null) {
-      if (chat.type == ChatType.PRIVATE) {
-        throw new BadRequestException("Вступить в приватный чат нельзя");
-      }
       userChatLink = this.createUserChatLink(chat, user);
-      chat.dateTimeLastAction = new Date();
-      await this.chatServiceSupport.updateChat(chat);
-      changed = true;
-    } else if (!userChatLink.verified) {
-      changed = true;
+    } else if (userChatLink.verified) {
+      return;
     }
     userChatLink.verified = true;
-
     await this.userChatLinkRepository.save(userChatLink);
-
     Logger.log(`User [id=${userId}] joined in chat[id=${chat.id}]`);
 
-    if (changed) {
-      const chatChange: ChatChange = this.mapToChatChange(chat, user, ChangeType.JOIN_CHAT, null);
-      this.chatGateway.sendSpecificMessages([chatChange], chat);
-    }
+    const chatChange: ChatChange = this.mapToChatChange(chat, user, ChangeType.JOIN_CHAT, null);
+    this.chatGateway.sendSpecificMessages([chatChange], chat, [userChatLink]);
   }
 
   async leaveChat(userId: number, chatId: number) {
@@ -505,4 +496,24 @@ export class ChatService {
     return chatChange;
   }
 
+  private async getOrCreateDirectChatLink(user: User, secondUser: User): Promise<UserChatLink> {
+    let directChatLink: UserChatLink = await this.chatServiceSupport.findDirectChatLink(user, secondUser);
+    if (directChatLink == null) {
+      const chat: Chat = new Chat();
+      chat.ownerUser = user;
+      chat.name = uuid();
+      chat.type = ChatType.DIRECT;
+      await this.chatRepository.save(chat);
+      Logger.log(`Direct chat [id=${chat.id}] was created`);
+
+      const userChatLink = this.createUserChatLink(chat, user, UserChatRole.ADMIN, secondUser);
+      const secondUserChatLink = this.createUserChatLink(chat, secondUser, UserChatRole.ADMIN, user);
+      await this.userChatLinkRepository.save([userChatLink, secondUserChatLink]);
+      Logger.log(`Links for users [${user.id}, ${secondUser.id}] and direct chat[id=${chat.id}] was created`);
+
+      directChatLink = userChatLink;
+    }
+
+    return directChatLink;
+  }
 }

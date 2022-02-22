@@ -26,7 +26,7 @@ export class User {
   public static readonly USERNAME_LENGTH: number = 120;
   public static readonly PASSWORD_LENGTH: number = 65;
   public static readonly USER_STATUS_LENGTH: number = 15;
-  public static readonly AVATAR_IMG_NAME_LENGTH: number = 100;
+  public static readonly AVATAR_IMG_NAME_LENGTH: number = 200;
 
   /** Id */
   @PrimaryGeneratedColumn()
@@ -90,7 +90,7 @@ export class User {
   status: UserStatus;
 
   /** Наименование изоброжения аватарки */
-  @Column({ length: User.AVATAR_IMG_NAME_LENGTH, nullable: true })
+  @Column({ length: User.AVATAR_IMG_NAME_LENGTH, nullable: false })
   avatarImgName: string;
 
   /** Статисктика и достижения пользователя в играх */

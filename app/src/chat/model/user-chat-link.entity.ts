@@ -75,4 +75,8 @@ export class UserChatLink {
   /** Верификация */
   @Column({ name: "verified", nullable: false })
   verified: boolean;
+
+  /** Время последнего сообщения видимого в чате. Для сортировки личных чатов */
+  @Column({ name: "datetime_last_visible_message", nullable: true })
+  dateTimeLastVisibleMessage: Date;
 }

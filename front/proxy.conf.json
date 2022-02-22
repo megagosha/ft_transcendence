@@ -6,5 +6,21 @@
     "pathRewrite": {
       "^/posts": ""
     }
+  },
+
+  "/auth": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/posts": ""
+    }
+  },
+
+  "/sock": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "changeOrigin": true,
+    "ws": true
   }
 }
