@@ -8,31 +8,31 @@ import {
   WebSocketServer,
   WsException,
 } from "@nestjs/websockets";
-import {Server, Socket} from "socket.io";
-import {OnModuleInit, ParseIntPipe, UseFilters} from "@nestjs/common";
-import {AuthService} from "../auth/auth.service";
-import {User} from "../users/user.entity";
-import {UsersServiceSupport} from "../users/users.service-support";
-import {UserSocketServiceSupport} from "./user-socket.service-support";
-import {SocketExceptionFilter} from "./socket.exception-filter";
-import {UserSocket} from "./model/user-socket.entity";
-import {UserChatLink, UserChatStatus} from "./model/user-chat-link.entity";
-import {Chat, ChatType} from "./model/chat.entity";
-import {ChatAction, ChatServiceSupport} from "./chat.service-support";
-import {Message} from "./model/message.entity";
-import {MessageServiceSupport} from "./message.service-support";
-import {MessageOutDto} from "./dto/message-out.dto";
-import {plainToClass} from "class-transformer";
-import {Repository} from "typeorm";
-import {InjectRepository} from "@nestjs/typeorm";
-import {SocketValidationPipe} from "./socket.validation-pipe";
-import {PageDto} from "./dto/page.dto";
-import {MessagePageOutDto} from "./dto/message-page-out.dto";
+import { Server, Socket } from "socket.io";
+import { OnModuleInit, ParseIntPipe, UseFilters } from "@nestjs/common";
+import { AuthService } from "../auth/auth.service";
+import { User } from "../users/user.entity";
+import { UsersServiceSupport } from "../users/users.service-support";
+import { UserSocketServiceSupport } from "./user-socket.service-support";
+import { SocketExceptionFilter } from "./socket.exception-filter";
+import { UserSocket } from "./model/user-socket.entity";
+import { UserChatLink, UserChatStatus } from "./model/user-chat-link.entity";
+import { Chat, ChatType } from "./model/chat.entity";
+import { ChatAction, ChatServiceSupport } from "./chat.service-support";
+import { Message } from "./model/message.entity";
+import { MessageServiceSupport } from "./message.service-support";
+import { MessageOutDto } from "./dto/message-out.dto";
+import { plainToClass } from "class-transformer";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { SocketValidationPipe } from "./socket.validation-pipe";
+import { PageDto } from "./dto/page.dto";
+import { MessagePageOutDto } from "./dto/message-page-out.dto";
 
 @UseFilters(SocketExceptionFilter)
 @WebSocketGateway({
   namespace: "/chat",
-  transports: 'websocket',
+  transports: "websocket",
   cors: {
     origin: ["http://localhost:3000", "http://localhost:4200"],
   },
@@ -49,7 +49,8 @@ export class ChatGateway
     private readonly userSocketServiceSupport: UserSocketServiceSupport,
     private readonly chatServiceSupport: ChatServiceSupport,
     private readonly messageServiceSupport: MessageServiceSupport,
-    @InjectRepository(UserSocket) private readonly socketRepository: Repository<UserSocket>
+    @InjectRepository(UserSocket)
+    private readonly socketRepository: Repository<UserSocket>
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -79,7 +80,8 @@ export class ChatGateway
     const userId: number = this.getCurrentUserId(client);
     const user: User = await this.usersServiceSupport.getCurrentUser(userId);
     const chat: Chat = await this.chatServiceSupport.findChatById(chatId);
-    let userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, chat, false);
+    let userChatLink: UserChatLink =
+      await this.chatServiceSupport.findUserChatLink(user, chat, false);
 
     if (userChatLink == null) {
       userChatLink = new UserChatLink();
@@ -88,11 +90,17 @@ export class ChatGateway
 
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.ENTER_CHAT);
 
-    const socket: UserSocket = await this.userSocketServiceSupport.findSocket(client.id);
+    const socket: UserSocket = await this.userSocketServiceSupport.findSocket(
+      client.id
+    );
     socket.activeChat = chat;
     await this.socketRepository.save(socket);
 
-    const messagePage: MessagePageOutDto = await this.getMessagePage(chat, 20, 0);
+    const messagePage: MessagePageOutDto = await this.getMessagePage(
+      chat,
+      20,
+      0
+    );
     client.emit("/message/page-receive", messagePage);
   }
 
@@ -103,19 +111,23 @@ export class ChatGateway
   ): Promise<void> {
     const userId: number = this.getCurrentUserId(client);
     const user: User = await this.usersServiceSupport.getCurrentUser(userId);
-    const socket: UserSocket = await this.userSocketServiceSupport.findSocket(client.id);
+    const socket: UserSocket = await this.userSocketServiceSupport.findSocket(
+      client.id
+    );
     const activeChat: Chat = socket.activeChat;
 
     if (activeChat == null) {
       throw new WsException("Необходимо присоединиться к чату");
     }
 
-    const userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, activeChat);
+    const userChatLink: UserChatLink =
+      await this.chatServiceSupport.findUserChatLink(user, activeChat);
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.SEND_MESSAGE);
 
     let visible: boolean;
     if (activeChat.type == ChatType.DIRECT) {
-      const secondUserChatLink: UserChatLink = await this.chatServiceSupport.findSecondChatLink(user, activeChat);
+      const secondUserChatLink: UserChatLink =
+        await this.chatServiceSupport.findSecondChatLink(user, activeChat);
       if (secondUserChatLink.userStatus == UserChatStatus.MUTED) {
         visible = false;
       }
@@ -123,15 +135,25 @@ export class ChatGateway
       visible = true;
     }
 
-    const message: Message = await this.messageServiceSupport.addMessage(user, activeChat, text, visible);
+    const message: Message = await this.messageServiceSupport.addMessage(
+      user,
+      activeChat,
+      text,
+      visible
+    );
     activeChat.dateTimeLastAction = new Date();
     await this.chatServiceSupport.updateChat(activeChat);
 
-    const messageDto: MessageOutDto = plainToClass(MessageOutDto, message, { excludeExtraneousValues: true });
-    messageDto.authorUser.avatar = UsersServiceSupport.getUserAvatarPath(message.authorUser);
-    const sockets: UserSocket[] = await this.userSocketServiceSupport.findSockets(activeChat);
+    const messageDto: MessageOutDto = plainToClass(MessageOutDto, message, {
+      excludeExtraneousValues: true,
+    });
+    messageDto.authorUser.avatar = UsersServiceSupport.getUserAvatarPath(
+      message.authorUser
+    );
+    const sockets: UserSocket[] =
+      await this.userSocketServiceSupport.findSockets(activeChat);
     sockets.forEach((socket) => {
-      this.server.to(socket.id).emit("/message/receive", messageDto)
+      this.server.to(socket.id).emit("/message/receive", messageDto);
     });
   }
 
@@ -142,14 +164,17 @@ export class ChatGateway
   ): Promise<void> {
     const userId: number = this.getCurrentUserId(client);
     const user: User = await this.usersServiceSupport.getCurrentUser(userId);
-    const socket: UserSocket = await this.userSocketServiceSupport.findSocket(client.id);
+    const socket: UserSocket = await this.userSocketServiceSupport.findSocket(
+      client.id
+    );
     const activeChat: Chat = socket.activeChat;
 
     if (activeChat == null) {
       throw new WsException("Необходимо присоединиться к чату");
     }
 
-    let userChatLink: UserChatLink = await this.chatServiceSupport.findUserChatLink(user, activeChat, false);
+    let userChatLink: UserChatLink =
+      await this.chatServiceSupport.findUserChatLink(user, activeChat, false);
     if (userChatLink == null) {
       userChatLink = new UserChatLink();
       userChatLink.chat = activeChat;
@@ -157,7 +182,11 @@ export class ChatGateway
 
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.RECEIVE_MESSAGE);
 
-    const messagePage: MessagePageOutDto = await this.getMessagePage(activeChat, page.take, page.skip);
+    const messagePage: MessagePageOutDto = await this.getMessagePage(
+      activeChat,
+      page.take,
+      page.skip
+    );
     client.emit("/message/page-receive", messagePage);
   }
 
@@ -175,11 +204,23 @@ export class ChatGateway
     throw new WsException("Неавтиризованный пользователь");
   }
 
-  private async getMessagePage(chat: Chat, take: number, skip: number): Promise<MessagePageOutDto> {
-    const messages: Message[] = await this.messageServiceSupport.findMessages(chat, take, skip);
+  private async getMessagePage(
+    chat: Chat,
+    take: number,
+    skip: number
+  ): Promise<MessagePageOutDto> {
+    const messages: Message[] = await this.messageServiceSupport.findMessages(
+      chat,
+      take,
+      skip
+    );
     const messageDtos: MessageOutDto[] = messages.map((message) => {
-      const dto: MessageOutDto = plainToClass(MessageOutDto, message, {excludeExtraneousValues: true});
-      dto.authorUser.avatar = UsersServiceSupport.getUserAvatarPath(message.authorUser);
+      const dto: MessageOutDto = plainToClass(MessageOutDto, message, {
+        excludeExtraneousValues: true,
+      });
+      dto.authorUser.avatar = UsersServiceSupport.getUserAvatarPath(
+        message.authorUser
+      );
       return dto;
     });
     return new MessagePageOutDto(messageDtos, take, skip);

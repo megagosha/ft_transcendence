@@ -2,6 +2,8 @@ import { Logger } from "@nestjs/common";
 import { stringify } from "querystring";
 import { Server, Socket } from "socket.io";
 import { User } from "../users/user.entity";
+import { PlayerMatchDto } from "./dto/player-match.dto";
+import { GameState } from "./dto/startGame.dto";
 
 export class Bounds {
   top: number;
@@ -41,10 +43,10 @@ export class Player extends GameObject {
   color: string;
   score: number;
 
-  constructor(x: number, y: number, w: number, h: number) {
+  constructor(x: number, y: number, w: number, h: number, color: string) {
     super(x, y, w, h);
     this.height = h;
-    this.color = "red";
+    this.color = color;
     this.score = 0;
   }
 
@@ -94,8 +96,8 @@ export class Game {
   ball: Ball;
 
   constructor(userA: number, userB: number) {
-    this.players[userA] = new Player(4, 50, 3, 15);
-    this.players[userB] = new Player(96, 50, 3, 15);
+    this.players[userA] = new Player(10, 50, 2, 100 * 0.15, "orange");
+    this.players[userB] = new Player(90, 50, 2, 15, "orange");
   }
 
   collision(player: Player, bounds: Bounds) {
@@ -106,9 +108,9 @@ export class Game {
     let vsr = -(this.ball.y - player.y) / (bounds.top - player.y);
     // Max vsr is 1
     vsr = Math.min(vsr, 1);
-    Logger.log(Logger.getTimestamp() + " vsr " + vsr);
+    // Logger.log(Logger.getTimestamp() + " vsr " + vsr);
     this.ball.speedY = vsr;
-    console.log(this.ball.speedY);
+    // console.log(this.ball.speedY);
   }
 
   gameOver(userA: number, userB: number): void {
@@ -155,8 +157,9 @@ export class Game {
 }
 
 export class GameStorage {
-  games: Map<string, Game>; //roomId -> game obj
+  games: Map<string, GameState>; //roomId -> game obj
   players: Map<number, { gameRoom: string; playerSocket: string }>; //user_id -> game socket id;
+  matchMaking: Map<number, PlayerMatchDto>;
   waitingForAccept: Map<number, number>;
   intervals: Map<string, NodeJS.Timer>;
 
@@ -164,10 +167,11 @@ export class GameStorage {
     this.games = new Map();
     this.players = new Map();
     this.waitingForAccept = new Map();
+    this.matchMaking = new Map();
     this.intervals = new Map();
   }
 
-  findGame(id: string): Game {
+  findGame(id: string): GameState {
     return this.games.get(id);
   }
 
@@ -184,8 +188,8 @@ export class GameStorage {
 
   endGameByRoomId(roomId: string) {
     const game = this.games.get(roomId);
-    if (game && game.players) {
-      for (const player in game.players) {
+    if (game && game.game.players) {
+      for (const player in game.game.players) {
         this.players.get(Number(player)).gameRoom = "";
       }
     }
@@ -223,9 +227,9 @@ export class GameStorage {
   //   return roomName;
   // }
 
-  saveGame(roomId: string, game: Game) {
-    this.games.set(roomId, game);
-  }
+  // saveGame(roomId: string, game: Game) {
+  //   this.games.set(roomId, game);
+  // }
 
   registerInterval(roomId: string, timer: NodeJS.Timer) {
     this.intervals.set(roomId, timer);
@@ -235,6 +239,7 @@ export class GameStorage {
     clearInterval(this.intervals.get(roomId));
     this.intervals.delete(roomId);
   }
+
   // //@todo delete after use
   // dumpIntervals() {
   //   console.log("Printing intervals in game: ");
@@ -264,10 +269,14 @@ export class GameStorage {
     const res = this.players.get(userId);
     if (!res || !res.gameRoom) return 0;
     const game = this.games.get(res.gameRoom);
-    if (!game || !game.players) return 0;
-    const players = Object.keys(game.players);
+    if (!game || !game.game.players) return 0;
+    const players = Object.keys(game.game.players);
     if (Number(players[0]) != userId) return Number(players[0]);
     else return Number(players[1]);
     return 0;
+  }
+
+  addPlayerToMatchMaking(data: PlayerMatchDto) {
+    this.matchMaking.set(data.userId, data);
   }
 }

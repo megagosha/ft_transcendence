@@ -19,6 +19,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { GameService } from "./game.service";
 import { UserService } from "../users/user.service";
+import { PlayerMatchDto } from "./dto/player-match.dto";
+import { GameState } from "./dto/startGame.dto";
 
 @WebSocketGateway({
   namespace: "/game_sock",
@@ -67,8 +69,8 @@ export class GameGateway
   }
 
   /*
-   1.
-   */
+     1.
+     */
   async handleDisconnect(client: Socket): Promise<any> {
     if (!client.data.userId) return client.disconnect();
     await this.gameService.endGame(client.data.userId, this.server);
@@ -106,6 +108,23 @@ export class GameGateway
     Logger.log("invite from user " + data.userId + " declined");
   }
 
+  @SubscribeMessage("random_opponent")
+  addPlayerToMatchMakingSystem(
+    @MessageBody()
+    data: PlayerMatchDto,
+    @ConnectedSocket() client: Socket
+  ) {
+    if (client.data.userId != data.userId) throw new WsException("Forbidden");
+    if (this.gameService.isPlayerInGame(client.data.userId))
+      throw new WsException("Player already in game!");
+    const res = this.gameService.addUserToMatchMaking(data);
+    if (res.ready) {
+      this.gameService.startGame(data, res.data, this.server);
+    } else {
+      return "ok";
+    }
+  }
+
   @SubscribeMessage("accept_invite")
   async acceptInvite(
     @MessageBody() data: { userId: number },
@@ -113,53 +132,11 @@ export class GameGateway
   ): Promise<WsResponse<boolean>> {
     if (!this.gameService.acceptInvite(data.userId, client.data.userId))
       return { event: "accept_invite", data: false };
-    const gameRoom =
-      data.userId.toString() + "x" + client.data.userId.toString();
-    const opponent_id = this.gameService.game.players.get(
-      data.userId
-    ).playerSocket;
-
-    client.rooms.clear();
-    (await this.server.in(opponent_id).fetchSockets()).pop().rooms.clear();
-    client.join(gameRoom);
-    this.server.in(opponent_id).socketsJoin(gameRoom);
-    // this.server
-    //   .in(opponent_id)
-    //   .emit('game_ready', { opponentId: client.data.userId });
-    // this.server.in(client.id).emit('game_ready', { opponentId: data.userId });
-    const game = this.gameService.createNewGame(
-      gameRoom,
-      data.userId,
-      client.data.userId
-    );
-    const left = game.players[data.userId].x < 10;
-    let username: string = (await this.userService.findUser(data.userId))
-      .username;
-    //
-    client.emit("game_ready", data.userId, username, left);
-    username = (await this.userService.findUser(client.data.userId)).username;
-    this.server
-      .in(opponent_id)
-      .emit("game_ready", client.data.userId, username, !left);
-    let userA, userB: number;
-    if (left) {
-      userA = data.userId;
-      userB = client.data.userId;
-    } else {
-      userA = client.data.userId;
-      userB = data.userId;
-    }
-
-    const interval = setInterval(() => {
-      // this.gameService.game.findGame(gameRoom).players[data.userId].x += 1;
+    await this.gameService.startGame(
+      new PlayerMatchDto(data.userId),
+      new PlayerMatchDto(client.data.userId),
       this.server
-        .to(gameRoom)
-        .emit(
-          "game_update",
-          this.gameService.getGameUpdate(gameRoom, userA, userB)
-        );
-    }, 16);
-    this.gameService.game.registerInterval(gameRoom, interval);
+    );
     return { event: "accept_invite", data: true };
   }
 
@@ -167,25 +144,13 @@ export class GameGateway
   async watch(
     @MessageBody() data: { userId: number },
     @ConnectedSocket() client: Socket
-  ): Promise<{
-    status: boolean;
-    reason: string;
-    userAId?: number;
-    userAUsername?: string;
-    userBId?: number;
-    userBUsername?: string;
-  }> {
+  ): Promise<GameState> {
     if (client.data.userId == data.userId) return;
     const gameRoom = this.gameService.game.getPlayer(data.userId);
-    Logger.log(gameRoom);
-    if (!gameRoom || !gameRoom.gameRoom)
-      return {
-        status: false,
-        reason: "Game not found",
-      };
-    const res = await this.gameService.getPlayersInfo(gameRoom.gameRoom);
-    if (res.status == true) client.join(gameRoom.gameRoom);
-    return res;
+    const gameState = this.gameService.game.findGame(gameRoom.gameRoom);
+    if (!gameState) throw new WsException("Game not found!");
+    client.join(gameRoom.gameRoom);
+    return gameState;
   }
 
   @SubscribeMessage("game_move")
@@ -199,8 +164,8 @@ export class GameGateway
     const game = this.gameService.game.findGame(room);
     // console.log(game.ball.x);
     // console.log(game.players[client.data.userId]);
-    if (!game || !game.players[client.data.userId]) return;
-    game.players[client.data.userId].y = cords.y > 100 ? 100 : cords.y;
+    if (!game || !game.game.players[client.data.userId]) return;
+    game.game.players[client.data.userId].y = cords.y > 100 ? 100 : cords.y;
     // console.log('result: ' + game.players[client.data.userId].y);
   }
 

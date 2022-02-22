@@ -1,4 +1,6 @@
-import { Component, OnInit }                        from '@angular/core';
+import { Component, OnInit }    from '@angular/core';
+import { GameService }          from "../services/game.service";
+import { ColorPickerComponent } from "ngx-color-picker";
 
 @Component({
   selector: 'app-match-making',
@@ -7,12 +9,15 @@ import { Component, OnInit }                        from '@angular/core';
 })
 export class MatchMakingComponent implements OnInit {
 
-  paddleColor: any;
-  ballColor: any;
+  paddleColor: string = "orange";
+  ballColor: string = "orange";
 
-  constructor() { }
+  constructor(private gameService: GameService) { }
 
   ngOnInit(): void {
   }
 
+  startMatch() {
+    this.gameService.matchMaking(this.paddleColor, this.ballColor);
+  }
 }

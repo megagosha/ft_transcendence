@@ -9,7 +9,9 @@ import { number } from "joi";
 import { SearchUsersResultsDto } from "../users/dto/search-users-results.dto";
 import { LadderDto } from "./dto/ladder.dto";
 import { Server, Socket } from "socket.io";
-
+import { PlayerMatchDto } from "./dto/player-match.dto";
+import { OpponentDto } from "./dto/opponent.dto";
+import { GameState } from "./dto/startGame.dto";
 @Injectable()
 export class GameService {
   game: GameStorage;
@@ -45,65 +47,98 @@ export class GameService {
     return true;
   }
 
-  createNewGame(roomId: string, userAId: number, userBId: number): Game {
-    const game = new Game(userAId, userBId);
+  isPlayerInGame(userId: number): boolean {
+    const player = this.game.players.get(userId);
+    if (!player || !player.gameRoom) return false;
+    const game = this.game.games.get(player.gameRoom);
+    if (!game || !game.game.players) return false;
+    return true;
+  }
+
+  getRandomIntInclusive(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1) + min); //The maximum is inclusive and the minimum is inclusive
+  }
+
+  selectRandomColor(bOne: string, bTwo: string) {
+    if (bOne == "orange" || bTwo == "oragne") {
+      if (bOne == "orange") return bTwo;
+      return bTwo;
+    }
+    if (this.getRandomIntInclusive(0, 1)) return bOne;
+    return bTwo;
+  }
+
+  createNewGame(
+    roomId: string,
+    pOne: PlayerMatchDto,
+    pTwo: PlayerMatchDto
+  ): Game {
+    const game = new Game(pOne.userId, pTwo.userId);
     game.players = {};
     game.ball = new Ball(50, 50, 2, 2);
-    game.players[userAId] = new Player(10, 50, 1, 15);
-    game.players[userBId] = new Player(90, 50, 1, 15);
-    this.game.saveGame(roomId, game);
-    this.game.setGameRoom(userAId, roomId);
-    this.game.setGameRoom(userBId, roomId);
-    this.userService.setStatus(userAId, UserStatus.ACTIVE);
-    this.userService.setStatus(userBId, UserStatus.ACTIVE);
+
+    game.ball.color = this.selectRandomColor(pOne.ballColor, pTwo.ballColor);
+    console.log(pOne.paddleColor);
+    console.log(pTwo.paddleColor);
+    game.players[pOne.userId] = new Player(10, 50, 1, 15, pOne.paddleColor);
+    game.players[pTwo.userId] = new Player(90, 50, 1, 15, pTwo.paddleColor);
+    this.game.setGameRoom(pOne.userId, roomId);
+    this.game.setGameRoom(pTwo.userId, roomId);
+    this.userService.setStatus(pOne.userId, UserStatus.ACTIVE);
+    this.userService.setStatus(pTwo.userId, UserStatus.ACTIVE);
     return game;
   }
 
   getGameUpdate(gameRoom: string, userAId: number, userBId: number) {
     const game = this.game.findGame(gameRoom);
-    game.ball.move();
-    game.checkCollisions(userAId, userBId);
-    game.gameOver(userAId, userBId);
-    return this.game.findGame(gameRoom);
+    game.game.ball.move();
+    game.game.checkCollisions(userAId, userBId);
+    game.game.gameOver(userAId, userBId);
+    return this.game.findGame(gameRoom).game;
   }
 
-  async getPlayersInfo(gameRoom: string) {
-    const game = this.game.findGame(gameRoom);
-    Logger.log("service ");
-    Logger.log(game);
-    console.log(game.players);
-    if (!game || !game.players)
-      return {
-        status: false,
-        reason: "Game not found",
-      };
-    const data = {
-      status: false,
-      reason: "internal error",
-      userAId: 0,
-      userAUsername: "",
-      userBId: 0,
-      userBUsername: "",
-    };
-    const players = Object.keys(game.players);
-    if (game.players[players[0]].x > 10) {
-      const tmp = players[1];
-      players[1] = players[0];
-      players[0] = tmp;
-    }
-    data.userAId = Number(players[0]);
-    data.userAUsername = (
-      await this.userService.findUser(data.userAId)
-    ).username;
-    data.userBId = Number(players[1]);
-    data.userBUsername = (
-      await this.userService.findUser(data.userBId)
-    ).username;
-    if (data.userAUsername && data.userBUsername) {
-      data.status = true;
-      data.reason = "ok";
-    }
-    return data;
+  async clearRoom(roomOne: string, roomTwo: string, server: Server) {
+    (await server.in(roomOne).fetchSockets()).pop().rooms.clear();
+    (await server.in(roomTwo).fetchSockets()).pop().rooms.clear();
+  }
+
+  async joinRoom(sOne: string, sTwo: string, roomName: string, server: Server) {
+    server.in(sOne).socketsJoin(roomName);
+    server.in(sTwo).socketsJoin(roomName);
+  }
+
+  async startGame(pOne: PlayerMatchDto, pTwo: PlayerMatchDto, server: Server) {
+    const gameRoom = pOne.userId.toString() + "x" + pTwo.userId.toString();
+    const pOneSock = this.game.players.get(pOne.userId).playerSocket;
+    const pTwoSock = this.game.players.get(pTwo.userId).playerSocket;
+    this.clearRoom(pOneSock, pTwoSock, server);
+    this.joinRoom(pOneSock, pTwoSock, gameRoom, server);
+
+    const gameObj = this.createNewGame(gameRoom, pOne, pTwo);
+    const userOne = await this.userService.findUser(pOne.userId);
+    const userTwo = await this.userService.findUser(pTwo.userId);
+    const gameState = new GameState(gameObj, userOne, userTwo);
+    if (!userOne || !userTwo) return;
+
+    server.in(pTwoSock).emit("game_ready", {
+      game: gameState,
+    });
+    server.in(pOneSock).emit("game_ready", {
+      game: gameState,
+    });
+
+    this.game.games.set(gameRoom, gameState);
+    const interval = setInterval(() => {
+      server
+        .to(gameRoom)
+        .emit(
+          "game_update",
+          this.getGameUpdate(gameRoom, userOne.id, userTwo.id)
+        );
+    }, 16); //16
+    this.game.registerInterval(gameRoom, interval);
   }
 
   async endGame(userId: number, server: Server) {
@@ -132,7 +167,7 @@ export class GameService {
     const res = new GameStatistic();
     let winner: number;
     let loser: number;
-    if (game.players[userA].score > game.players[userB].score) {
+    if (game.game.players[userA].score > game.game.players[userB].score) {
       winner = userA;
       loser = userB;
     } else {
@@ -142,8 +177,8 @@ export class GameService {
     res.userWon = await this.userService.findUser(winner);
     res.userLost = await this.userService.findUser(loser);
     res.score = [];
-    res.score.push(game.players[loser].score);
-    res.score.push(game.players[winner].score);
+    res.score.push(game.game.players[loser].score);
+    res.score.push(game.game.players[winner].score);
     const db_res = await this.gameStatRepo.save(res);
     return db_res;
   }
@@ -226,5 +261,27 @@ export class GameService {
     ).map((obj, ix) => new LadderDto(obj, ix));
     console.log(res);
     return res;
+  }
+
+  addUserToMatchMaking(data: PlayerMatchDto): {
+    ready: boolean;
+    data?: PlayerMatchDto;
+  } {
+    if (this.game.matchMaking.get(data.userId) != null)
+      return { ready: false, data: undefined };
+    if (this.game.matchMaking.size > 0) {
+      const key = this.game.matchMaking.keys();
+      const opponentId = key.next().value;
+      const game = this.game.matchMaking.get(opponentId);
+      this.game.matchMaking.delete(opponentId);
+      this.game.matchMaking.delete(data.userId);
+      return { ready: true, data: game };
+    } else {
+      this.game.addPlayerToMatchMaking(data);
+      return {
+        ready: false,
+        data: undefined,
+      };
+    }
   }
 }
