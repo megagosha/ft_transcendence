@@ -22,7 +22,7 @@ import { SearchUsersDto } from "../users/dto/search-users.dto";
 import { GameStatistic } from "./game.history.entity";
 
 @ApiTags("game")
-@Controller("game")
+@Controller("/api/game")
 @UseGuards(JwtAuthGuard)
 export class GameController {
   constructor(private readonly gameService: GameService) {}

@@ -1,5 +1,4 @@
 import { Injectable }                                               from "@angular/core";
-import * as global                                                  from "../globals";
 import { BehaviorSubject, EMPTY, map, Observable, tap, throwError } from "rxjs";
 import { UserService }                                              from "./user.service";
 import { io, Socket }                                               from "socket.io-client";
@@ -192,7 +191,7 @@ export class GameService {
   }
 
   getLadder(): Observable<LadderDto[]> {
-    return this.http.get<LadderDto[]>(this.apiUrl + "game/ladder");
+    return this.http.get<LadderDto[]>( "/api/game/ladder");
   }
 
   gameStop() {
@@ -211,7 +210,7 @@ export class GameService {
   }
 
   getPersonalHistory( userId: number, take: number, skip: number ): Observable<GameStatsDto[]> {
-    return this.http.get<GameStatsDto[]>(this.apiUrl + "game/personal_history", {
+    return this.http.get<GameStatsDto[]>("/api/game/personal_history", {
 
       params: {
         userId: userId,
