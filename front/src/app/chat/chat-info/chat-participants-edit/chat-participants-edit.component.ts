@@ -28,7 +28,6 @@ export class ChatParticipantsEditComponent implements OnInit {
   constructor(private readonly dialogRef: MatDialogRef<ChatParticipantsEditComponent>,
               @Inject(MAT_DIALOG_DATA) data: any,
               private chatService: ChatService,
-              private snackbar: MatSnackBar,
               private userService: UserService,
               private dialog: MatDialog,
               private gameService: GameService) {
@@ -77,10 +76,6 @@ export class ChatParticipantsEditComponent implements OnInit {
             this.users.push(user);
           }
         })
-      }, error => {
-        this.snackbar.open(error.error.message, "OK", {duration: 5000});
-      }, () => {
-        console.log("Complete page get");
       });
   }
 
@@ -109,10 +104,6 @@ export class ChatParticipantsEditComponent implements OnInit {
             if (this.return) {
               this.searchName.setValue('');
             }
-          }, error => {
-            this.snackbar.open(error.error.message, "OK", {duration: 5000});
-          }, () => {
-            console.log("Complete user delete");
           });
       }
     });

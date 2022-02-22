@@ -36,7 +36,6 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
 
   constructor(private readonly userService: UserService,
               private readonly chatService: ChatService,
-              private snackBar: MatSnackBar,
               private dialog: MatDialog,
               private readonly gameService: GameService) {
     this.chat = <Chat>chatService.getChat();
@@ -55,7 +54,6 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
   listenChatSocket() {
     this.listenMessageReceive();
     this.listenMessagePageReceive();
-    this.listenError();
     this.socket.emit('/enter', this.chat.id);
   }
 
@@ -94,12 +92,6 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
           this.messages.unshift(message);
         }
       });
-    });
-  }
-
-  private listenError(): void {
-    this.socket.on('/error', (error: Error) => {
-      this.snackBar.open(error.error, "OK", {duration: 5000});
     });
   }
 

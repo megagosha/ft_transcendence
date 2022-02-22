@@ -29,8 +29,7 @@ export class ParticipantEditComponent implements OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) data: any,
               private readonly chatService: ChatService,
               private readonly userService: UserService,
-              private readonly dialogRef: MatDialogRef<ParticipantEditComponent>,
-              private readonly snackbar: MatSnackBar) {
+              private readonly dialogRef: MatDialogRef<ParticipantEditComponent>) {
     this.participant = data.participant;
     this.chat = <Chat>chatService.getChat();
     this.role = this.participant.userChatRole;
@@ -75,9 +74,6 @@ export class ParticipantEditComponent implements OnInit {
           this.participant.userChatStatus = this.status;
           this.participant.dateTimeBlockExpire = this.date;
           this.dialogRef.close();
-        }, (error) => {
-          const message: string = error.error.message.toString();
-          this.snackbar.open(message, "OK", {duration: 5000});
         })
     } else {
       this.dialogRef.close();
