@@ -11,6 +11,7 @@ import {
 import {MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar, MatSnackBarRef, TextOnlySnackBar} from "@angular/material/snack-bar";
 import {ErrorUtil} from "../../util/ErrorUtil";
+import {HttpErrorResponse, HttpStatusCode} from "@angular/common/http";
 
 @Component({
   selector: 'app-chat-create-new',
@@ -67,19 +68,24 @@ export class ChatCreateNewComponent implements OnInit {
     }).subscribe((chat: Chat) => {
       this.dialogRef.close();
     }, error => {
-      const messages: string [] = ErrorUtil.toMessages(error.error.message);
+      if (error.status == HttpStatusCode.BadRequest && error.error != null) {
+        const messages: string [] = ErrorUtil.toMessages(error.error.message);
 
-      messages.forEach(message => {
-        if (message.toLowerCase().includes("пароль")) {
-          this.password.setErrors({'validation': message});
-        } else if (message.toLowerCase().includes("название")) {
-          this.name.setErrors({'validation': message})
-        } else if (message.toLowerCase().includes("описание")) {
-          this.description.setErrors({'validation': message})
-        } else {
-           this.snackbar.open(message, "OK", {duration: 5000});
-        }
-      })
+        messages.forEach(message => {
+          if (message.toLowerCase().includes("пароль")) {
+            this.password.setErrors({'validation': message});
+          } else if (message.toLowerCase().includes("название")) {
+            this.name.setErrors({'validation': message})
+          } else if (message.toLowerCase().includes("описание")) {
+            this.description.setErrors({'validation': message})
+          } else {
+            throw new HttpErrorResponse(error);
+          }
+        })
+
+      } else {
+        throw new HttpErrorResponse(error);
+      }
     });
   }
 }

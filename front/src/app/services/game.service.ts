@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { GameDto, GameStatsDto } from '../game/game.dto';
 import { Coordinates, Game } from '../game/elements.entity';
 import { HttpClient } from '@angular/common/http';
+import {Error} from "./chat.service";
 
 @Injectable({
   providedIn: 'root'
@@ -40,8 +41,9 @@ export class GameService {
     if (!token)
       token = '';
     console.log(token);
-    this.socket = io('/game_sock', { transports: ['websocket'], auth: { token: token } });
+    this.socket = io('/game_sock', { transports: ['websocket'], auth: { token: token }, reconnectionAttempts: 2 });
     console.log(this.socket);
+    this.listenError();
     this.getNewGameEvent();
   }
 
@@ -178,5 +180,16 @@ export class GameService {
       }
     });
   }
-}
 
+  private listenError(): void {
+    this.socket?.on('/error', (error: Error) => {
+      this.snackBar.open(error.error, "OK", {duration: 3000});
+    });
+    this.socket?.on("disconnect", () => {
+      this.snackBar.open("Cannot connect to server", "OK", {duration: 3000});
+    });
+    this.socket?.on("connect_error", reason => {
+      this.snackBar.open("Cannot connect to server", "OK", {duration: 3000});
+    });
+  }
+}

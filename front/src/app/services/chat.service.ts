@@ -188,7 +188,8 @@ export class ChatService {
               private readonly router: Router,
               private readonly userService: UserService,
               private readonly dialog: MatDialog) {
-    this.socket = io("/chat", {transports: ['websocket'], auth: {token : token()}});
+    this.socket = io("/chat", {transports: ['websocket'], auth: {token : token()}, reconnectionAttempts: 2});
+    this.listenError();
     this.listenChatsUpdate();
   }
 
@@ -388,6 +389,18 @@ export class ChatService {
     });
   }
 
+  private listenError(): void {
+    this.socket.on('/error', (error: Error) => {
+      this.snackBar.open(error.error, "OK", {duration: 3000});
+    });
+    this.socket.on("disconnect", () => {
+      this.snackBar.open("Cannot connect to server", "OK", {duration: 3000});
+    });
+    this.socket.on("connect_error", reason => {
+      this.snackBar.open("Cannot connect to server", "OK", {duration: 3000});
+    });
+  }
+
   private insertChat(chat: Chat, back = false) {
     const chatInd: number = this.chats.findIndex(c => c.id == chat.id);
     const updatedChat = chatInd >= 0 ? this.chats[chatInd] : chat;
@@ -431,24 +444,4 @@ export class ChatService {
       this.currentChatDetails.avatar = avatar;
     }
   }
-
-  // private refreshCurrentChats(newChat: Chat) {
-  //   const avatar = newChat.avatar.split("?")[0] + `?${(new Date()).getTime().toString()}`;
-  //
-  //   if (this.currentChat?.id == newChat.id) {
-  //     this.currentChat.name = newChat.name;
-  //     this.currentChat.type = newChat.type;
-  //     this.currentChat.userChatStatus = newChat.userChatStatus;
-  //     this.currentChat.userChatRole = newChat.userChatRole;
-  //     this.currentChat.dateTimeBlockExpire = newChat.dateTimeBlockExpire;
-  //     this.currentChat.verified = newChat.verified;
-  //     this.currentChat.avatar = avatar;
-  //   }
-  //
-  //   if (this.currentChatDetails?.id == newChat.id) {
-  //     this.currentChatDetails.type = newChat.type;
-  //     this.currentChatDetails.name = newChat.name;
-  //     this.currentChatDetails.avatar = avatar;
-  //   }
-  // }
 }

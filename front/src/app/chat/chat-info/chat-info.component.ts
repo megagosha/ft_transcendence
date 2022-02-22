@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, Inject, Input, OnInit} from '@angular/core';
 import {Chat, ChatDetails, ChatService, ChatType, UserChatRole, UserChatStatus} from "../../services/chat.service";
 import {UserService} from "../../services/user.service";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {ChatHeaderEditComponent} from "./chat-header-edit/chat-header-edit.component";
@@ -23,7 +23,6 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
 
   constructor(private readonly userService: UserService,
               private readonly http: HttpClient,
-              private readonly snackBar: MatSnackBar,
               @Inject(MAT_DIALOG_DATA) data: Chat,
               private readonly dialog: MatDialog,
               private readonly currentDialog: MatDialogRef<ChatInfoComponent>,
@@ -38,12 +37,6 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
         this.chatDetails.dateTimePasswordChange = new Date(chat.dateTimePasswordChange);
         this.chatDetails.dateTimeCreate = new Date(chat.dateTimeCreate);
         this.chatService.setChatDetails(this.chatDetails);
-      },
-      (error) => {
-        this.snackBar.open(error.error.message, "OK", {duration: 5000});
-      },
-      () => {
-
       });
   }
 
@@ -77,10 +70,6 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
             }
             this.chatBrief.verified = false;
             this.currentDialog.close();
-          }, error => {
-            this.snackBar.open(error.error.message, "OK", {duration: 5000});
-          }, () => {
-            console.log("Complete user delete");
           });
       }
     });
@@ -96,7 +85,7 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
     const file: File = event.target.files[0];
     this.chatService.uploadAvatar(this.chatBrief.id, file).subscribe(() => {},
       error => {
-        this.snackBar.open(error.error.message, "OK", {duration: 5000});
+        throw new HttpErrorResponse(error);
       }, () => {
         setTimeout(() => {
           const avatar = this.chatDetails.avatar.split("?")[0] + `?${(new Date()).getTime().toString()}`;

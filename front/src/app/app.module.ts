@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import {ErrorHandler, NgModule} from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -71,6 +71,7 @@ import { LadderComponent } from './ladder/ladder.component';
 import {ChangeUsernameDialog} from "./personal-profile/change-username-dialog.component";
 import {ChangeUserAvatarDialog} from "./personal-profile/change-useravatar-dialog.component";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {GlobalErrorHandler} from "./services/global.error-handler";
 
 export function token(): any {
   return localStorage.getItem("token");
@@ -157,8 +158,9 @@ export function token(): any {
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
     { provide: MAT_DATE_LOCALE, useValue: 'ru-RU'},
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
   AuthGuard,
   UserService,
-  ChatService],
+  ChatService,],
   bootstrap: [AppComponent]})
 export class AppModule { }

@@ -173,13 +173,12 @@ export class ChatGateway
   }
 
   private disconnect(client: Socket): void {
-    throw new WsException("Неавтиризованный пользователь");
+    throw new WsException("Connection was broken");
   }
 
   private async getMessagePage(chat: Chat, user: User, take: number, skip: number): Promise<MessagePageOutDto> {
     const blockedUsers: User[] = await this.getBlokedUsers(user);
     const messages: Message[] = await this.messageServiceSupport.findMessages(chat, blockedUsers, take, skip);
-    console.log(messages);
 
     const messageDtos: MessageOutDto[] = messages.map((message) => {
       const dto: MessageOutDto = plainToClass(MessageOutDto, message, {excludeExtraneousValues: true});
