@@ -1,4 +1,5 @@
 import { GameStatistic } from './game.history.entity';
+import {UsersServiceSupport} from "../users/users.service-support";
 
 export class GameStatsDto {
   id: number;
@@ -22,13 +23,13 @@ export class GameStatsDto {
     this.userLost = {
       id: res.userLost.id,
       username: res.userLost.username,
-      avatarImgName: res.userLost.avatarImgName,
+      avatarImgName: UsersServiceSupport.getUserAvatarPath(res.userLost),
       status: res.userLost.status,
     };
     this.userWon = {
       id: res.userWon.id,
       username: res.userWon.username,
-      avatarImgName: res.userWon.avatarImgName,
+      avatarImgName: UsersServiceSupport.getUserAvatarPath(res.userWon),
       status: res.userWon.status,
     };
     this.score = res.score;

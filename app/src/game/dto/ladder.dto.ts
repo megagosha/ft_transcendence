@@ -1,12 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
+import {UsersServiceSupport} from "../../users/users.service-support";
 
 export class LadderDto {
   constructor(obj: any, ix: number) {
     this.position = ix + 1;
     this.username = obj.user_username;
     this.games_won = obj.count;
-    this.avatarImgName = obj.user_avatarImgName;
+    this.avatarImgName = UsersServiceSupport.getUserAvatarPathByImgName(obj.user_avatarImgName);
   }
 
   @Expose()

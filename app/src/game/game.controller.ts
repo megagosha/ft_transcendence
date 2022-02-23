@@ -59,11 +59,11 @@ export class GameController {
     @Query() data: { userId: number; take: number; skip: number }
   ): Promise<GameStatsDto[]> {
     if (!data.userId || !data.take || !data.skip) throw new NotFoundException();
-    return await this.gameService.getPersonalHistory(
+    return (await this.gameService.getPersonalHistory(
       data.userId,
       data.take,
       data.skip
-    );
+    )).map(stat => new GameStatsDto(stat));
   }
 
   @Get("ladder")

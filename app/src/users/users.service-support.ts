@@ -43,12 +43,16 @@ export class UsersServiceSupport {
   }
 
   static getUserAvatarPath(user: User) {
-    if (user.avatarImgName != null) {
-      if (user.avatarImgName.includes("http")) {
-        return user.avatarImgName;
+    return UsersServiceSupport.getUserAvatarPathByImgName(user.avatarImgName);
+  }
+
+  static getUserAvatarPathByImgName(avatar: string) {
+    if (avatar != null) {
+      if (avatar.includes("http")) {
+        return avatar;
       }
-      return `http://localhost:3000/files/user/${user.avatarImgName}`;
-	}
-    return `http://localhost:3000/files/user/default.png`;
+      return `/files/user/${avatar}`;
+    }
+    return `/files/user/default.png`;
   }
 }
