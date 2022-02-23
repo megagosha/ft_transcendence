@@ -18,7 +18,7 @@ export class UserProfileDto {
     // this.statistic = user.statistic;
     this.invitedFriendships = user.invitedFriendships;
     this.invitorFriendships = user.invitorFriendships;
-    this.avatarImgName = user.avatarImgName;
+    this.avatarImgName = UsersServiceSupport.getUserAvatarPath(user);
     this.isTwoAuth = user.twoAuth != null;
     this.blocked = blocked;
     Logger.log('Avatar is set to ' + this.avatarImgName);

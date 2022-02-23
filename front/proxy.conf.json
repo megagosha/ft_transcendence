@@ -1,6 +1,6 @@
 {
   "/api": {
-    "target": "http://nestjs:3000",
+    "target": "http://localhost:3000",
     "secure": false,
     "changeOrigin": true,
     "pathRewrite": {
@@ -9,6 +9,15 @@
   },
 
   "/auth": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/posts": ""
+    }
+  },
+
+  "/files": {
     "target": "http://localhost:3000",
     "secure": false,
     "changeOrigin": true,

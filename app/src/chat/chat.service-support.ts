@@ -239,9 +239,9 @@ export class ChatServiceSupport {
 
   getChatAvatarPath(chat: Chat) {
     if (chat.avatar != null) {
-      return `http://localhost:3000/files/chat/${chat.avatar}`;
+      return `/files/chat/${chat.avatar}`;
     }
-    return `http://localhost:3000/files/chat/default.png`;
+    return `/files/chat/default.png`;
   }
 
   async getBlockedUserDirectChatLinks(user: User) {
