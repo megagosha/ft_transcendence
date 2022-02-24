@@ -25,7 +25,6 @@ export class GameService {
   public snackBar: MatSnackBar;
   public oppenentId: number = 0;
   public watch: boolean = false;
-  // public opponentUsername: string = "";
   public startingPos: { x: number, y: number } = { x: 0, y: 0 };
 
   public game: BehaviorSubject<GameDto> = new BehaviorSubject<GameDto>({
@@ -63,49 +62,18 @@ export class GameService {
     });
     this.startGame();
   };
-// 1. if user leaves game page -> close all intervals. //turn off socket events exept for accept invite
-  //2. if user receives game end -> show stat page
-  // startGame = () => {
-  //     if (!this.socket)
-  //         return;
-  //     this.socket.on('game_ready', ( pl: Game ) => {
-  //         if (!this.userService || !this.socket) return;
-  //         this.socket.off('pending_invite');
-  //         this.gameEnded();
-  //         console.log('from game service: ');
-  //         this.oppenentId = pl.userId;
-  //         this.opponentUsername = pl.username;
-  //         this.left = pl.left;
-  //         console.log(this.oppenentId);
-  //         // this.startingPos.x = game.players[this.userService.user.id].x;
-  //         // this.startingPos.y = game.players[this.userService.user.id].y;
-  //         this.router.navigateByUrl('/game');
-  //     });
-  // };
-
   startGame = () => {
     if (!this.socket)
       return;
     this.socket.on("game_ready", ( data: { game: GameState } ) => {
       if (!this.userService || !this.socket) return;
       this.socket.off("pending_invite");
-      console.log("from game service: ");
       if (!data.game.left?.id || !data.game.right?.id)
         return;
       this.gameState = data.game;
-      console.log(this.gameState);
       this.gameEnded();
       this.gameUpdate();
       this.router.navigateByUrl("/game");
-
-      // this.router.navigateByUrl("/chat");
-
-      // this.oppenentId = pl.userId;
-      // this.opponentUsername = pl.username;
-      // this.left = pl.left;
-      // console.log(this.oppenentId);
-      // this.startingPos.x = game.players[this.userService.user.id].x;
-      // this.startingPos.y = game.players[this.userService.user.id].y;
     });
   };
 

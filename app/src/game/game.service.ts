@@ -91,8 +91,20 @@ export class GameService {
     return game;
   }
 
-  getGameUpdate(gameRoom: string, userAId: number, userBId: number) {
+  getGameUpdate(
+    gameRoom: string,
+    userAId: number,
+    userBId: number,
+    server: Server
+  ) {
     const game = this.game.findGame(gameRoom);
+    if (
+      game.game.players[userAId].score >= 10 ||
+      game.game.players[userBId].score >= 10
+    ) {
+      console.log("gamae should end");
+      this.endGame(userAId, server);
+    } else console.log(game.game.players[userAId].score);
     game.game.ball.move();
     game.game.checkCollisions(userAId, userBId);
     game.game.gameOver(userAId, userBId);
@@ -135,7 +147,7 @@ export class GameService {
         .to(gameRoom)
         .emit(
           "game_update",
-          this.getGameUpdate(gameRoom, userOne.id, userTwo.id)
+          this.getGameUpdate(gameRoom, userOne.id, userTwo.id, server)
         );
     }, 16); //16
     this.game.registerInterval(gameRoom, interval);

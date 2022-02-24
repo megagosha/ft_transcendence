@@ -41,14 +41,9 @@ export class GameComponent implements OnInit, OnDestroy {
       this.gameState = new GameState(); // should never execute
       router.navigateByUrl("/chat");
     }
-    // this.opponentId = gameService.oppenentId;
     this.adjustDimensions();
     this.opponentId = this.gameState.left.id == this.userService.user.id ? this.gameState.right.id : this.gameState.left.id;
-    console.log(this.opponentId);
     this.game = new Game(this.width, this.height, this.gameState);
-    console.log(this.width);
-    console.log(this.height)
-    console.log(this.game.players);
     if (this.gameService.gameState == undefined)
       this.router.navigate(["/chat"]);
 

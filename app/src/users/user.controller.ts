@@ -113,7 +113,7 @@ export class UserController {
     return new UserProfileDto(targetUser, blocked);
   }
 
-  @Get('search')
+  @Get('search_friend')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   async searchUser(
@@ -122,13 +122,13 @@ export class UserController {
   ): Promise<SearchUsersResultsDto[]> {
     if (params.filter_friends && params.filter_friends == 1) {
       const check = await this.userService.getFriendlist(req.user.id);
-      return (await this.userService.searchUsersByUsername(params))
+      return (await this.userService.searchFriendsToInvite(params, req.user.id))
         .filter((res) => {
           return check.findIndex((x) => x.invitedUser.id === res.id) == -1;
         })
         .map((user) => new SearchUsersResultsDto(user));
     }
-    return (await this.userService.searchUsersByUsername(params)).map(
+    return (await this.userService.searchFriendsToInvite(params, req.user.id)).map(
       (user) => new SearchUsersResultsDto(user),
     );
   }

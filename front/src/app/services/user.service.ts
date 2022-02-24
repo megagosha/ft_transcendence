@@ -70,7 +70,7 @@ export class UserService {
   }
 
   searchUserByUsername(username: string, filter: number = 0): Observable<User[]> {
-    return this.http.get<User[]>('/api/user/search', {
+    return this.http.get<User[]>('/api/user/search_friend', {
       params: {
         username: username,
         take: 10,

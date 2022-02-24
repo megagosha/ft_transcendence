@@ -7,9 +7,9 @@ import {
   PayloadTooLargeException,
   UnsupportedMediaTypeException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
-import { User, UserStatus } from './user.entity';
+import { InjectRepository }       from '@nestjs/typeorm';
+import { ILike, Not, Repository } from 'typeorm';
+import { User, UserStatus }       from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ChangeUsernameDto } from './dto/change-username.dto';
 import { SearchUsersDto } from './dto/search-users.dto';
@@ -99,11 +99,15 @@ export class UserService {
     return await this.userRepo.findOne({ where: { username: username } });
   }
 
-  async searchUsersByUsername(searchUsersDto: SearchUsersDto): Promise<User[]> {
+  async searchFriendsToInvite(
+    searchUsersDto: SearchUsersDto,
+    userId: number
+  ): Promise<User[]> {
     Logger.log(`Search ${searchUsersDto.username}`);
     return await this.userRepo.find({
       where: {
         username: ILike(searchUsersDto.username + '%'),
+        id: Not(userId),
       },
       order: {
         username: 'ASC',

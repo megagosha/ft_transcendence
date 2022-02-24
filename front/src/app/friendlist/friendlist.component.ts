@@ -25,6 +25,7 @@ export class FriendlistComponent implements OnInit {
     this.friendList = [];
     this.userService = uS;
     this.userService.getFriends().subscribe(data => {
+      // console.log(data[0]);
       this.friendList = data;
     }, err => {
       this.friendList = [];
