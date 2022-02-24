@@ -13,6 +13,7 @@ import { UserProfileComponent }     from './user-profile/user-profile.component'
 import { OtpComponent }             from './otp/otp.component';
 import { LadderComponent }          from './ladder/ladder.component';
 import { MatchMakingComponent }     from "./match-making/match-making.component";
+import { Profile }                  from "./login/profile.interface";
 
 const routes: Routes = [
   {path: '',  component: GameComponent, canActivate: [AuthGuard]},
@@ -27,8 +28,8 @@ const routes: Routes = [
   {path: 'user', component: UserProfileComponent},
   {path: 'login/otp', component: OtpComponent},
   {path: 'table', component: LadderComponent},
-  {path: 'match', component: MatchMakingComponent}
-  //{path: '**', component: LoginComponent}
+  {path: 'match', component: MatchMakingComponent},
+  {path: '**', component: UserProfileComponent}
 ];
 
 @NgModule({
