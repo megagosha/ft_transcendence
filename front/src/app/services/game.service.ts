@@ -45,9 +45,7 @@ export class GameService {
         let token = localStorage.getItem("token");
         if (!token)
             token = "";
-        console.log(token);
         this.socket = io('/game_sock', {transports: ['websocket'], auth: {token: token}, reconnectionAttempts: 2});
-        console.log(this.socket);
         this.listenError();
         this.getNewGameEvent();
     }
@@ -59,7 +57,6 @@ export class GameService {
             this._snackBar.openFromComponent(SnackbarActionsComponent, {
                 data: message
             });
-            console.log(message);
         });
         this.startGame();
     };
@@ -70,7 +67,6 @@ export class GameService {
         this.socket.on("game_ready", ( data: { game: GameState } ) => {
             if (!this.userService || !this.socket) return;
             this.pause = new BehaviorSubject<number>(data.game.paused);
-            console.log(data);
             this.getPauseEvenets();
             this.getUnPauseEvent();
             this.socket.off("pending_invite");
@@ -88,15 +84,12 @@ export class GameService {
             return;
         this.socket.on("game_ended", ( data: { id: number } ) => {
             this.router.navigate(["/results", {id: data.id}]);
-            console.log("game ended: ");
-            console.log(data.id);
         });
     };
 
     gameUpdate = () => {
         if (!this.socket)
             return this.game.asObservable();
-        console.log("game update created");
         this.socket.on("game_update", ( game: GameDto ) => {
             this.game.next(game);
         });
@@ -112,7 +105,6 @@ export class GameService {
     acceptInvite( userId: number ) {
         if (!this.socket)
             return;
-        console.log("accept invite from user " + userId);
         this.socket.emit("accept_invite", {userId: userId});
     }
 
@@ -156,12 +148,10 @@ export class GameService {
                     this.pause.next(response.paused);
                 this.getPauseEvenets();
                 this.router.navigate(["/game"]);
-                console.log(response);
             });
     }
 
     getGameResult( gameId: number ): Observable<GameStatsDto> {
-        console.log('get game resuilts init with id :' + gameId);
         return this.http.get<GameStatsDto>('/api/game/result', {
             params: {
                 id: gameId
@@ -218,7 +208,6 @@ export class GameService {
         this.socket.on("game_paused", ( data: { time: number }) => {
             if (data.time > 0) {
                 this.getUnPauseEvent();
-                console.log("game paused event triggered");
                 if (this.socket)
                     this.socket.off("game_update");
                 this.pause.next(data.time);
@@ -231,7 +220,6 @@ export class GameService {
             return;
         this.socket.on("game_unpaused", ( result: boolean ) => {
             if (result) {
-                console.log("game unpaused event triggered");
                 this.pause.next(0);
                 this.gameUpdate();
             }

@@ -33,7 +33,6 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, 'fortytwo') {
   }
 
   async validate(accessToken: string): Promise<any> {
-    console.log(accessToken);
     const { data } = await this.http
       .get('https://api.intra.42.fr/v2/me', {
         headers: { Authorization: `Bearer ${accessToken}` },

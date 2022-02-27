@@ -1,32 +1,39 @@
 import {
-  Body,
   Controller,
   Get,
-  HttpStatus,
   NotFoundException,
-  Param,
-  ParseArrayPipe,
-  ParseIntPipe,
-  Post,
-  Put,
   Query,
-  Req,
   UseGuards,
 } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from "@nestjs/swagger";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { GameService } from "./game.service";
-import { User } from "../users/user.entity";
 import { GameStatsDto } from "./gamestats.dto";
-import { SearchUsersDto } from "../users/dto/search-users.dto";
-import { GameStatistic } from "./game.history.entity";
-
+import { GetHistoryDto } from "./dto/get-history.dto";
+import { LadderDto } from "./dto/ladder.dto";
 @ApiTags("game")
 @Controller("/api/game")
 @UseGuards(JwtAuthGuard)
 export class GameController {
   constructor(private readonly gameService: GameService) {}
 
+  @ApiOperation({ description: "Получить результат матча" })
+  @ApiQuery({
+    name: "id",
+    description: "id игры",
+    example: 10,
+    required: true,
+  })
+  @ApiOkResponse({
+    description: "История матчей",
+    isArray: false,
+    type: GameStatsDto,
+  })
   @Get("result")
   @UseGuards(JwtAuthGuard)
   async gameResult(@Query() data: { id: number }): Promise<GameStatsDto> {
@@ -36,51 +43,39 @@ export class GameController {
     return new GameStatsDto(res);
   }
 
-  // @Get("one_on_one_history")
-  // @UseGuards(JwtAuthGuard)
-  // async getOneOnOne(
-  //   @Query() data: { userA: number; userB: number; take: number; skip: number }
-  // ): Promise<GameStatsDto[]> {
-  //   if (!data.userA || !data.userB || !data.take || !data.skip)
-  //     throw new NotFoundException();
-  //   const res = await this.gameService.getOneOnOneHistory(
-  //     data.userA,
-  //     data.userB,
-  //     data.take,
-  //     data.skip
-  //   );
-  //   if (!res) return null;
-  //   return res;
-  // }
-
+  @ApiOperation({ description: "Получить индивидуальную историю игрока" })
+  @ApiQuery({
+    name: "параметры",
+    type: GetHistoryDto,
+    required: true,
+  })
+  @ApiOkResponse({
+    description: "История матчей",
+    isArray: true,
+    type: GameStatsDto,
+  })
   @Get("personal_history")
   @UseGuards(JwtAuthGuard)
-  async getPersonal(
-    @Query() data: { userId: number; take: number; skip: number }
-  ): Promise<GameStatsDto[]> {
+  async getPersonal(@Query() data: GetHistoryDto): Promise<GameStatsDto[]> {
     if (!data.userId || !data.take || !data.skip) throw new NotFoundException();
-    return (await this.gameService.getPersonalHistory(
-      data.userId,
-      data.take,
-      data.skip
-    )).map(stat => new GameStatsDto(stat));
+    return (
+      await this.gameService.getPersonalHistory(
+        data.userId,
+        data.take,
+        data.skip
+      )
+    ).map((stat) => new GameStatsDto(stat));
   }
 
+  @ApiOperation({ description: "Получить турнирную таблицу" })
+  @ApiOkResponse({
+    description: "Список игроков в турнирной таблице",
+    isArray: true,
+    type: LadderDto,
+  })
   @Get("ladder")
   @UseGuards(JwtAuthGuard)
   async getGameLadder(): Promise<any> {
     return await this.gameService.getLadder();
   }
-
-  // @ApiOperation({ description: 'Создать игру' })
-  // @ApiBody({ description: 'Данные игры', type: ChatCreateInDto })
-  // @ApiResponse({
-  //   description: 'Id чата',
-  //   status: HttpStatus.CREATED,
-  //   type: ChatCreateOutDto,
-  // })
-  // @SubscribeMessage('create_game')
-  // async createGame(@MessageBody() data: string): Promise<any> {
-  //   return await this.gameService.createNewGame();
-  // }
 }

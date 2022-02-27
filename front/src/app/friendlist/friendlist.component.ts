@@ -25,7 +25,6 @@ export class FriendlistComponent implements OnInit {
     this.friendList = [];
     this.userService = uS;
     this.userService.getFriends().subscribe(data => {
-      // console.log(data[0]);
       this.friendList = data;
     }, err => {
       this.friendList = [];
@@ -69,7 +68,6 @@ export class FriendlistComponent implements OnInit {
   inviteToPlay(selectedUser: User | null) {
     if (!selectedUser)
       return;
-    console.log(selectedUser);
     this.gameService.inviteToPlay(selectedUser.id);
   }
 

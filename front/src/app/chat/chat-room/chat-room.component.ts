@@ -96,17 +96,6 @@ export class ChatRoomComponent implements OnInit, AfterViewInit {
   }
 
   onScroll() {
-    // console.log(this.scroller.nativeElement.scrollTop);
-    // console.log(this.scroller.nativeElement.scrollHeight);
-    // console.log(this.scrollService.previousScrollHeightMinusTop);
-    // console.log(document.body.scrollHeight,
-    //   document.body.offsetHeight,
-    //   document.body.clientHeight,
-    //   document.documentElement.scrollHeight,
-    //   document.documentElement.offsetHeight,
-    //   document.documentElement.clientHeight,
-    //   window.pageYOffset);
-    // console.log(this.scroller.nativeElement);
   }
 
   openChatInfo() {

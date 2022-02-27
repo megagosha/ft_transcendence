@@ -10,13 +10,7 @@ export class Bounds {
   right: number;
 }
 
-//height - width relation -> 100/150
 export class GameObject {
-  // x: number;
-  // y: number;
-  // speed: number;
-  // direction: number;
-
   constructor(
     public x: number,
     public y: number,
@@ -81,11 +75,6 @@ export class Ball extends GameObject {
   move() {
     this.x += this.maxSpeed * this.speedX;
     this.y += (this.maxSpeed + 0.2) * this.speedY;
-    // Logger.log('x + ' + this.x);
-    // Logger.log(this.y);
-    // Logger.log('max ' + this.maxSpeed);
-    // Logger.log(this.speedX);
-    // Logger.log(this.speedY);
   }
 }
 
@@ -100,15 +89,9 @@ export class Game {
 
   collision(player: Player, bounds: Bounds) {
     this.ball.bounceX();
-    // Set vertical speed ratio by taking ratio of
-    // dist(centerOfBall, centerOfPaddle) to dist(topOfPaddle, centerOfPaddle)
-    // Negate because pixels go up as we go down :)
     let vsr = -(this.ball.y - player.y) / (bounds.top - player.y);
-    // Max vsr is 1
     vsr = Math.min(vsr, 1);
-    // Logger.log(Logger.getTimestamp() + " vsr " + vsr);
     this.ball.speedY = vsr;
-    // console.log(this.ball.speedY);
   }
 
   gameOver(userA: number, userB: number): void {
@@ -134,12 +117,6 @@ export class Game {
     ) {
       this.collision(this.players[userA], paddleBounds);
     }
-    // Logger.log('ball:');
-    // Logger.log(ballBounds);
-    // // console.log(ballBounds);
-    // Logger.log('paddle');
-    // Logger.log(paddleBounds);
-    // console.log(paddleBounds);
     paddleBounds = this.players[userB].getBounds();
     if (
       ballBounds.right - 3 <= paddleBounds.left &&
@@ -147,8 +124,6 @@ export class Game {
       ballBounds.bottom >= paddleBounds.top &&
       ballBounds.top <= paddleBounds.bottom
     ) {
-      console.log(ballBounds);
-      console.log(paddleBounds);
       this.collision(this.players[userB], paddleBounds);
     }
   }
@@ -184,7 +159,6 @@ export class GameStorage {
   }
 
   userAinvitedB(userA: number, userB: number) {
-    Logger.log("UserA " + userA + " waiting for accept from " + userB);
     this.waitingForAccept.set(userA, userB);
   }
 
@@ -226,19 +200,6 @@ export class GameStorage {
     return this.players.get(userId);
   }
 
-  //
-  // createGame(userId: number, opponentId: number): string {
-  //   const roomName = userId.toString() + opponentId.toString();
-  //   this.games.set(roomName, new GameDto());
-  //   this.players.set(userId, roomName);
-  //   this.players.set(opponentId, roomName);
-  //   return roomName;
-  // }
-
-  // saveGame(roomId: string, game: Game) {
-  //   this.games.set(roomId, game);
-  // }
-
   registerInterval(roomId: string, timer: NodeJS.Timer) {
     this.intervals.set(roomId, timer);
   }
@@ -248,18 +209,8 @@ export class GameStorage {
     this.intervals.delete(roomId);
   }
 
-  // //@todo delete after use
-  // dumpIntervals() {
-  //   console.log("Printing intervals in game: ");
-  //   for (const [key, value] of this.intervals) {
-  //     console.log("room " + key + " val " + value);
-  //   }
-  //   console.log("Finished printing intervals");
-  // }
-
   addPlayer(userId: number, socketId: string) {
     this.players.set(userId, { playerSocket: socketId, gameRoom: "" });
-    // this.game.addPlayer(userId, roomId, socketId);
   }
 
   setGameRoom(userId: number, gameId: string) {

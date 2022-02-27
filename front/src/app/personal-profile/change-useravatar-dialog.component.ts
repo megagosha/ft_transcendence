@@ -42,7 +42,6 @@ export class ChangeUserAvatarDialog {
   }
 
   onSubmit() {
-    console.log(this.file);
     if (!this.file) {
       return;
     } else {

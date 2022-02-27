@@ -35,7 +35,6 @@ export class ChangeUsernameDialog {
         if (error instanceof HttpErrorResponse) {
           this.username.setErrors({ "conflict": "Username already taken!" });
         } else {
-          console.log("Unknown error");
         }
       }
     );

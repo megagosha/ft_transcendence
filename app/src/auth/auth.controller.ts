@@ -2,9 +2,7 @@ import {
   Body,
   Controller,
   Get,
-  Logger,
   Post,
-  Query,
   Req,
   Res,
   UnauthorizedException,
@@ -12,11 +10,16 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { AuthService } from "./auth.service";
-import { stringify } from "ts-jest/dist/utils/json";
 import { UserService } from "../users/user.service";
 import { CreateUserDto } from "../users/dto/create-user.dto";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { TmpAuthGuard } from "./tmp-auth.guard";
+import { ApiBody, ApiOkResponse, ApiOperation } from "@nestjs/swagger";
+import { TwoAuthCodeDto } from "./dto/twoAuth.dto";
+import { TokenDto } from "./dto/token.dto";
+import { CurrentUserId } from "../util/user.decarator";
+import { UserIdDto } from "./dto/userId.dto";
+import { UpdateResult } from "typeorm/query-builder/result/UpdateResult";
 
 @Controller("auth")
 export class AuthController {
@@ -25,25 +28,29 @@ export class AuthController {
     private userService: UserService
   ) {}
 
+  @ApiOperation({ description: "Начало для авторизации в 42" })
   @Get("ft")
   @UseGuards(AuthGuard("fortytwo"))
   async ftAuth(@Req() req) {
     return;
   }
 
+  @ApiOperation({ description: "Начало для авторизации в гугл" })
   @Get("google")
   @UseGuards(AuthGuard("google"))
   async googleAuth(@Req() req) {
     return;
   }
 
+  @ApiOperation({
+    description:
+      "После авторизация в 42 пользователь приходит на этот эндпоинт",
+  })
   @Get("ft/redirect")
   @UseGuards(AuthGuard("fortytwo"))
   async getUserFromFtLogin(@Req() req, @Res() res): Promise<any> {
-    Logger.log(stringify(req.user));
     let user = await this.userService.findFtUser(req.user.id, req.user.email);
     if (user == null) {
-      Logger.log("User not found in database! Creating new user...");
       const newUser = new CreateUserDto();
       newUser.email = req.user.email;
       newUser.username = req.user.username;
@@ -60,6 +67,10 @@ export class AuthController {
     return res.redirect("http://localhost:4200/login/success/?token=" + jwt);
   }
 
+  @ApiOperation({
+    description:
+      "После авторизация в гугл пользователь приходит на этот эндпоинт",
+  })
   @Get("google/redirect")
   @UseGuards(AuthGuard("google"))
   async getUserFromGoogleLogin(@Req() req, @Res() res): Promise<any> {
@@ -73,7 +84,6 @@ export class AuthController {
       else newUser.avatarImgName = req.user.image_url;
       user = await this.userService.createNewUser(newUser);
     } else if (user.twoAuth != null) {
-      console.log("here");
       const jwt = await this.authService.tmpLogin(user.id, user.username);
       return res.redirect("http://localhost:4200/login/otp/?token=" + jwt);
     }
@@ -81,33 +91,46 @@ export class AuthController {
     return res.redirect("http://localhost:4200/login/success/?token=" + jwt);
   }
 
+  @ApiOperation({ description: "Triggered if 2auth enabled" })
+  @ApiBody({
+    description: "Код двухфакторной авторизации",
+    type: TwoAuthCodeDto,
+  })
+  @ApiOkResponse({ description: "Токен для авторизации", type: TokenDto })
   @Post("2auth/login")
   @UseGuards(TmpAuthGuard)
-  async twoAuthLogin(@Req() req, @Body() code: { code: string }): Promise<any> {
+  async twoAuthLogin(
+    @Req() req,
+    @Body() code: TwoAuthCodeDto
+  ): Promise<TokenDto> {
     const user = await this.userService.findUser(req.user.id);
     const isCodeValid = this.authService.isTwoAuthValid(code.code, user);
-    console.log(isCodeValid);
     if (!isCodeValid) throw new UnauthorizedException("Wrong code");
     return { token: this.authService.jwtLogin(req.user.id, req.user.username) };
   }
 
+  @ApiOperation({
+    description: "Генерирует QR код для двухфакторной авторизации",
+  })
+  @ApiBody({ description: "Id usera", type: UserIdDto })
   @Post("2auth/generate")
   @UseGuards(JwtAuthGuard)
   async generate(
     @Res() response,
-    @Req() req,
-    @Body() data: { userId: number }
+    @CurrentUserId() userId: number,
+    @Body() data: UserIdDto
   ): Promise<any> {
-    console.log(req.user);
-    const user = await this.userService.findUser(req.user.id);
-    console.log(user);
+    const user = await this.userService.findUser(userId);
     const result = await this.authService.generateTwoAuthSecret(user);
     return this.authService.pipeQrCodeStream(response, result.otpauthUrl);
   }
 
+  @ApiOperation({
+    description: "Выключает двухфакторную афторизацию",
+  })
   @Get("2auth/disable")
   @UseGuards(JwtAuthGuard)
-  async disable(@Req() req): Promise<any> {
+  async disable(@Req() req): Promise<UpdateResult> {
     return await this.userService.removeTwoFactor(req.user.id);
   }
 }

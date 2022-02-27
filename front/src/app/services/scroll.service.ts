@@ -13,7 +13,6 @@ export class ScrollService {
 
   restore() {
     if(this.toReset) {
-      console.log("restore");
       if (this.readyFor === 'up') {
         this.node.scrollTop = this.node.scrollTopMax - this.previousScrollHeightMinusTop;
       }
@@ -23,7 +22,6 @@ export class ScrollService {
 
   down() {
     if (this.node) {
-      console.log(26)
       this.node.scrollTop = this.node.scrollTopMax;
     }
   }
