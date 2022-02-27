@@ -20,9 +20,11 @@ export class GameState {
   left: GameTopInfoPart;
   right: GameTopInfoPart;
   game: Game;
+  paused: number;
 
   constructor(game: Game, oneU: User, twoU: User) {
     this.game = game;
+    this.paused = 0;
     (this.left = {
       id: oneU.id,
       username: oneU.username,

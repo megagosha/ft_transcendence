@@ -62,7 +62,7 @@ export class GameService {
   }
 
   selectRandomColor(bOne: string, bTwo: string) {
-    if (bOne == "orange" || bTwo == "oragne") {
+    if (bOne == "orange" || bTwo == "orange") {
       if (bOne == "orange") return bTwo;
       return bTwo;
     }
@@ -80,8 +80,8 @@ export class GameService {
     game.ball = new Ball(50, 50, 2, 2);
 
     game.ball.color = this.selectRandomColor(pOne.ballColor, pTwo.ballColor);
-    console.log(pOne.paddleColor);
-    console.log(pTwo.paddleColor);
+    // console.log(pOne.paddleColor);
+    // console.log(pTwo.paddleColor);
     game.players[pOne.userId] = new Player(10, 50, 1, 15, pOne.paddleColor);
     game.players[pTwo.userId] = new Player(90, 50, 1, 15, pTwo.paddleColor);
     this.game.setGameRoom(pOne.userId, roomId);
@@ -102,9 +102,9 @@ export class GameService {
       game.game.players[userAId].score >= 10 ||
       game.game.players[userBId].score >= 10
     ) {
-      console.log("gamae should end");
+      // console.log("gamae should end");
       this.endGame(userAId, server);
-    } else console.log(game.game.players[userAId].score);
+    }
     game.game.ball.move();
     game.game.checkCollisions(userAId, userBId);
     game.game.gameOver(userAId, userBId);
@@ -171,7 +171,14 @@ export class GameService {
     this.userService.setStatus(userId, UserStatus.ONLINE);
     this.userService.setStatus(playerB, UserStatus.ONLINE);
     this.game.games.delete(playerA.gameRoom);
+    this.game.pause.delete(playerA.gameRoom);
     return res;
+  }
+
+  async endGameByRoomId(room: string, server: Server) {
+    const game = this.game.games.get(room);
+    const pOne = game.left.id;
+    this.endGame(pOne, server);
   }
 
   async saveGameStat(gameRoom: string, userA: number, userB: number) {
@@ -271,7 +278,7 @@ export class GameService {
         // .take(take)
         .getRawMany()
     ).map((obj, ix) => new LadderDto(obj, ix));
-    console.log(res);
+    // console.log(res);
     return res;
   }
 
@@ -295,5 +302,64 @@ export class GameService {
         data: undefined,
       };
     }
+  }
+
+  pauseGame(room: string, timeOut: number, server: Server) {
+    // console.log("clearing interval");
+    // console.log(this.game.intervals.get(room));
+    clearInterval(this.game.intervals.get(room));
+    this.game.removeInterval(room);
+    server.in(room).emit("game_paused", {
+      time: timeOut,
+    });
+    const timeout = setTimeout(async () => {
+      await this.endGameByRoomId(room, server);
+    }, timeOut * 1000); //16
+    console.log("timeout set");
+    console.log(timeout[Symbol.toPrimitive]);
+    this.game.setGamePaused(room, timeout);
+    return true;
+  }
+
+  unPauseGame(room: string, userId: number, server: Server) {
+    const res = this.game.unPausePlayer(room, userId);
+    if (res.result) {
+      const game = this.game.findGame(room);
+      if (!game) return;
+      game.paused = 0;
+      clearTimeout(res.timeOut);
+      console.log("timeout unset");
+      console.log(res.timeOut[Symbol.toPrimitive]);
+      this.game.pause.delete(room);
+      server.to(room).emit("game_unpaused", true);
+      const interval = setInterval(() => {
+        server
+          .to(room)
+          .emit(
+            "game_update",
+            this.getGameUpdate(room, game.left.id, game.right.id, server)
+          );
+      }, 16); //16
+      this.game.registerInterval(room, interval);
+    }
+  }
+
+  connectToPause(
+    userId: number,
+    room: string,
+    socketId: string,
+    server: Server
+  ) {
+    const player = this.game.players.get(userId);
+    player.gameRoom = room;
+    player.playerSocket = socketId;
+    server.in(socketId).socketsJoin(room);
+    const game = this.game.games.get(room);
+    const timeOut = this.game.pause.get(room);
+    game.paused =
+      30 - (new Date().getTime() - timeOut.timeSet.getTime()) / 1000;
+    server.in(socketId).emit("game_ready", {
+      game: this.game.games.get(room),
+    });
   }
 }

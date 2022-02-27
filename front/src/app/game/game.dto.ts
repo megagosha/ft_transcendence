@@ -31,8 +31,10 @@ export interface GameTopInfoPart {
 export class GameState {
   left: GameTopInfoPart;
   right: GameTopInfoPart;
+  paused: number;
   game: GameDto;
   constructor() {
+    this.paused = 0;
     this.left = { id: 0, username: "", avatar: "", score: 0 };
     this.right = { id: 0, username: "", avatar: "", score: 0 };
     this.game = { players: [], ball: { x: 50, y: 50, color: "orange" } };

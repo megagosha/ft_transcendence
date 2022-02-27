@@ -74,7 +74,8 @@ import {MatTooltipModule}                                        from "@angular/
 import { MatchMakingComponent }                                  from './match-making/match-making.component';
 import { ColorPickerModule }                                     from "ngx-color-picker";
 import { MatExpansionModule }                                    from "@angular/material/expansion";
-import {GlobalErrorHandler} from "./services/global.error-handler";
+import {GlobalErrorHandler}                                      from "./services/global.error-handler";
+import { CountdownModule }                                       from "ngx-countdown";
 
 
 export function token(): any {
@@ -116,6 +117,7 @@ export function token(): any {
     MatchMakingComponent,
   ],
     imports: [
+        CountdownModule,
         NgxMatFileInputModule,
         MatDialogModule,
         MatSliderModule,

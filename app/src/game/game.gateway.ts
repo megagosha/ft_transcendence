@@ -11,14 +11,13 @@ import {
   WsResponse,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
-import { Logger, OnModuleInit, UseFilters } from "@nestjs/common";
+import { Logger, UseFilters } from "@nestjs/common";
 import { AuthService } from "../auth/auth.service";
 import { User } from "../users/user.entity";
 import { SocketExceptionFilter } from "../chat/socket.exception-filter";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { GameService } from "./game.service";
-import { UserService } from "../users/user.service";
 import { PlayerMatchDto } from "./dto/player-match.dto";
 import { GameState } from "./dto/startGame.dto";
 
@@ -39,8 +38,7 @@ export class GameGateway
     private readonly authService: AuthService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    private readonly gameService: GameService,
-    private userService: UserService
+    private readonly gameService: GameService
   ) {
     Logger.log("socket constructor init");
   }
@@ -58,9 +56,19 @@ export class GameGateway
         client.emit("Unauthorized");
         this.handleDisconnect(client);
       } else {
-        this.gameService.newConnection(user.id, client.id);
         client.data.userId = user.id;
         client.data.username = user.username;
+        const room = this.gameService.game.findRoomId(user.id);
+        if (!room) {
+          this.gameService.newConnection(user.id, client.id);
+        } else {
+          this.gameService.connectToPause(
+            user.id,
+            room,
+            client.id,
+            this.server
+          );
+        }
       }
     } catch (err) {
       client.emit("Unauthorized");
@@ -72,9 +80,17 @@ export class GameGateway
      1.
      */
   async handleDisconnect(client: Socket): Promise<any> {
-    if (!client.data.userId) return client.disconnect();
-    await this.gameService.endGame(client.data.userId, this.server);
-    this.gameService.removePlayer(client.data.userId);
+    if (!client.data.userId) {
+      return client.disconnect();
+    }
+    const res = this.gameService.game.findRoomId(client.data.userId);
+    if (!res) {
+      this.gameService.removePlayer(client.data.userId);
+    } else {
+      if (!this.gameService.game.pause.get(res)) {
+        this.gameService.pauseGame(res, 30, this.server);
+      }
+    }
     client.disconnect();
     return;
   }
@@ -182,7 +198,31 @@ export class GameGateway
     } catch (e) {
       Logger.log(e);
     }
-    // this.server.to(room).emit("game_ended", { id: res });
-    // this.server.in(room).socketsLeave(room);
+  }
+
+  @SubscribeMessage("pause_game")
+  async pauseGame(
+    @MessageBody() data: { timeOut: number },
+    @ConnectedSocket() client: Socket
+  ): Promise<WsResponse<boolean>> {
+    if (data.timeOut > 30) data.timeOut = 30;
+    const room = this.gameService.game.findRoomId(client.data.userId);
+    if (data.timeOut < 2 || !room) return { event: "pause_game", data: false };
+    if (!this.gameService.pauseGame(room, data.timeOut, this.server))
+      return { event: "pause_game", data: false };
+    else return { event: "pause_game", data: true };
+  }
+
+  @SubscribeMessage("unpause_game")
+  async unPauseGame(
+    @MessageBody() data: { userId: number },
+    @ConnectedSocket() client: Socket
+  ): Promise<WsResponse<boolean>> {
+    if (data.userId != client.data.userId) throw new WsException("Forbidden");
+    const room = this.gameService.game.findRoomId(data.userId);
+    if (room) {
+      this.gameService.unPauseGame(room, data.userId, this.server);
+      return { event: "unpause_game", data: true };
+    } else return { event: "unpause_game", data: false };
   }
 }
