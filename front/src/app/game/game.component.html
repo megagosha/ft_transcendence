@@ -1,18 +1,27 @@
 <app-top-bar></app-top-bar>
 <meta name="viewport" #gameCanvas content="width=device-width, initial-scale=1">
 <div class="game-row">
-<div class="score-block">
-  <h3>{{this.gameState.left?.username}}</h3>
-  <h1>{{this.gameState.left?.score}}</h1>
-  <h1>{{this.gameState.right?.score}}</h1>
-  <h3>{{this.gameState.right?.username}}</h3>
-</div>
-<button class="back-btn" mat-mini-fab  color="warn" aria-label="Stop game" (click)="stopGame()">
-  <mat-icon>stop</mat-icon>
-</button>
+    <div class="score-block">
+        <h3>{{this.gameState.left?.username}}</h3>
+        <h1>{{this.gameState.left?.score}}</h1>
+        <h1>{{this.gameState.right?.score}}</h1>
+        <h3>{{this.gameState.right?.username}}</h3>
+    </div>
+    <button class="game-action-btn" *ngIf="this.gameService.watch != true" mat-mini-fab color="warn"
+            aria-label="Stop game"
+            (click)="stopGame()">
+        <mat-icon>stop</mat-icon>
+    </button>
+    <button class="game-action-btn" *ngIf="this.gameService.watch != true" mat-mini-fab color="primary"
+            aria-label="Pause game"
+            (click)="pauseGame()">
+        <mat-icon *ngIf="this.pause <= 0">pause</mat-icon>
+        <mat-icon *ngIf="this.pause > 0">play_arrow</mat-icon>
+    </button>
+    <countdown class="countdown" *ngIf="this.pause" [config]="this.cdConfig" >Timeout:</countdown>
 </div>
 <!--<button mat-button (click)="onClick()">new game</button>-->
-<div >
-  <canvas class="game-canvas" width="{{width}}" height="{{height}}" #canvasPoint>
-  </canvas>
+<div>
+    <canvas class="game-canvas" width="{{width}}" height="{{height}}" #canvasPoint>
+    </canvas>
 </div>

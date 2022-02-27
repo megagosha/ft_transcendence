@@ -25,6 +25,7 @@
     "ng-otp-input": "^1.8.1",
     "ng-qrcode": "^6.0.0",
     "ngx-color-picker": "^12.0.0",
+    "ngx-countdown": "^13.0.0",
     "ngx-infinite-scroll": "^10.0.1",
     "ngx-socketio2": "^0.1.0",
     "qrcode": "^1.5.0",

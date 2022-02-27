@@ -1,6 +1,4 @@
 import { Logger } from "@nestjs/common";
-import { stringify } from "querystring";
-import { Server, Socket } from "socket.io";
 import { User } from "../users/user.entity";
 import { PlayerMatchDto } from "./dto/player-match.dto";
 import { GameState } from "./dto/startGame.dto";
@@ -69,7 +67,7 @@ export class Ball extends GameObject {
     this.speedX = 0.5;
     this.speedY = 0.5;
     this.maxSpeed = 1;
-    this.color = "red";
+    this.color = "orange";
   }
 
   bounceX(): void {
@@ -162,6 +160,15 @@ export class GameStorage {
   matchMaking: Map<number, PlayerMatchDto>;
   waitingForAccept: Map<number, number>;
   intervals: Map<string, NodeJS.Timer>;
+  pause: Map<
+    string,
+    {
+      pOne: { id: number; ready: boolean };
+      pTwo: { id: number; ready: boolean };
+      timer: NodeJS.Timer;
+      timeSet: Date;
+    }
+  >;
 
   constructor() {
     this.games = new Map();
@@ -169,6 +176,7 @@ export class GameStorage {
     this.waitingForAccept = new Map();
     this.matchMaking = new Map();
     this.intervals = new Map();
+    this.pause = new Map();
   }
 
   findGame(id: string): GameState {
@@ -278,5 +286,35 @@ export class GameStorage {
 
   addPlayerToMatchMaking(data: PlayerMatchDto) {
     this.matchMaking.set(data.userId, data);
+  }
+
+  setGamePaused(room: string, timer: NodeJS.Timer): boolean {
+    const game = this.games.get(room);
+    if (!game) return false;
+    game.paused = 30;
+    this.pause.set(room, {
+      pOne: { id: game.left.id, ready: false },
+      pTwo: { id: game.right.id, ready: false },
+      timer: timer,
+      timeSet: new Date(),
+    });
+    return true;
+  }
+
+  unPausePlayer(
+    room: string,
+    userId: number
+  ): { result: boolean; timeOut: NodeJS.Timer } {
+    const res = this.pause.get(room);
+    if (!res) return { result: false, timeOut: null };
+    if (res.pOne.id == userId) res.pOne.ready = true;
+    else {
+      res.pTwo.ready = true;
+    }
+    if (res.pOne.ready && res.pTwo.ready) {
+      this.games.get(room).paused = 0;
+      return { result: true, timeOut: res.timer };
+    }
+    return { result: false, timeOut: null };
   }
 }
