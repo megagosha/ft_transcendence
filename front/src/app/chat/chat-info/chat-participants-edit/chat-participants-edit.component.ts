@@ -1,7 +1,6 @@
 import {Component, Inject, Input, OnInit} from '@angular/core';
-import {Chat, ChatDetails, ChatService, ChatUser, NotParticipant, UserChatStatus} from "../../../services/chat.service";
+import {Chat, ChatDetails, ChatService, ChatUser, UserChatStatus, UserStatus} from "../../../services/chat.service";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {MatSnackBar} from "@angular/material/snack-bar";
 import {Profile} from "../../../login/profile.interface";
 import {UserService} from "../../../services/user.service";
 import {FormControl} from "@angular/forms";
@@ -131,10 +130,18 @@ export class ChatParticipantsEditComponent implements OnInit {
   }
 
   availableToMatch(user: ChatUser) {
-    return this.currentUser.id != user.id;
+    return this.currentUser.id != user.id && user.status == UserStatus.ONLINE;
+  }
+
+  availableWatchGame(user: ChatUser) {
+    return this.currentUser.id != user.id && user.status == UserStatus.ACTIVE;
   }
 
   inviteToPlay(user: ChatUser) {
       this.gameService.inviteToPlay(user.id);
+  }
+
+  watchGame(user: ChatUser) {
+    this.gameService.watchGame(user.id);
   }
 }

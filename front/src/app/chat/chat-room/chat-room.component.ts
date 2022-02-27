@@ -12,7 +12,6 @@ import {
 import {Profile} from "../../login/profile.interface";
 import {UserService} from "../../services/user.service";
 import {ScrollService} from "../../services/scroll.service";
-import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatDialog} from "@angular/material/dialog";
 import {ChatInfoComponent} from "../chat-info/chat-info.component";
 import {Socket} from "socket.io-client";

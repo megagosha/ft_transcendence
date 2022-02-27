@@ -1,5 +1,6 @@
 import { Expose } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
+import {UserStatus} from "../../users/user.entity";
 
 export class UserBriefOutDto {
   @Expose()
@@ -16,6 +17,13 @@ export class UserBriefOutDto {
     example: new Date(),
   })
   lastLoginDate: Date;
+
+  @Expose()
+  @ApiProperty({
+    description: "Статус пользоваеля",
+    example: UserStatus.ACTIVE,
+  })
+  status: UserStatus;
 
   @ApiProperty({
     description: "Аватар",

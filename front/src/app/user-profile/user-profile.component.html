@@ -29,6 +29,12 @@
             color="primary">
       Invite to play
     </button>
+    <button *ngIf="profile.status == 'ACTIVE'"
+            (click)="watchGame()"
+            mat-flat-button
+            color="primary">
+      Watch game
+    </button>
     <button *ngIf="!profile.blocked"
             (click)="sendMessage()"
             mat-flat-button

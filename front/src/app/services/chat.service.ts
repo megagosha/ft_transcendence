@@ -28,6 +28,8 @@ export enum UserChatStatus {
 }
 
 export enum UserStatus {
+  ONLINE = 'ONLINE',
+  OFFLINE = 'OFFLINE',
   ACTIVE = 'ACTIVE',
   DISABLED = 'DISABLED',
 }
@@ -70,6 +72,7 @@ export interface ChatDetails {
   avatar: string;
   userCount: number;
   dateTimePasswordChange: Date;
+  user: ChatUser;
 }
 
 export interface ChatChange {

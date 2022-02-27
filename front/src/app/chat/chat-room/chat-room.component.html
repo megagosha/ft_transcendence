@@ -1,5 +1,5 @@
 <div class="chat-room">
-	<button (click)="chat.type != 'DIRECT' ? openChatInfo() : goToProfile(chat.secondUserId)" class="message-block-header">
+	<button (click)="chat.type != null ? openChatInfo() : goToProfile(chat.secondUserId)" class="message-block-header">
 		<p class="header-chat-name">{{chat.name}}</p>
 		<p class="header-chat-type">{{chat.type}}</p>
 	</button>
@@ -16,11 +16,11 @@
 				<div class="message-row" *ngIf="message.authorUser != null; else infoMessage">
 					<div style="display: flex; flex-direction: column; width: 35px">
 						<img (click)="goToProfile(message.authorUser.id)" class="profile-avatar" src="{{message.authorUser.avatar}}" alt="AV">
-						<mat-icon class="invite-game"
-								  *ngIf="availableToMatch(message.authorUser)"
-								  (click)="inviteToGame(message.authorUser)">
-							sports_esports
-						</mat-icon>
+<!--						<mat-icon class="invite-game"-->
+<!--								  *ngIf="availableToMatch(message.authorUser)"-->
+<!--								  (click)="inviteToGame(message.authorUser)">-->
+<!--							sports_esports-->
+<!--						</mat-icon>-->
 					</div>
 					<div class="message"
 						 [ngStyle]="{'background-color': message.authorUser.id == user.id ? '#e4e1fd' : '#ffffff'}">

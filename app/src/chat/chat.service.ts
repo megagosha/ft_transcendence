@@ -360,8 +360,16 @@ export class ChatService {
     ChatServiceSupport.verifyAction(userChatLink, ChatAction.CHAT_INFO);
 
     const chatDto: ChatOutDto = plainToClass(ChatOutDto, chat, { excludeExtraneousValues: true });
-    chatDto.avatar = this.chatServiceSupport.getChatAvatarPath(chat);
-    chatDto.userCount = await this.userChatLinkRepository.count({ chat: chat, verified: true });
+    if (chat.type == ChatType.DIRECT) {
+      chatDto.name = userChatLink.secondUser.username;
+      chatDto.avatar = UsersServiceSupport.getUserAvatarPath(userChatLink.secondUser);
+      chatDto.user = plainToClass(UserBriefOutDto, userChatLink.secondUser, { excludeExtraneousValues: true });
+      chatDto.user.avatar = chatDto.avatar;
+    } else {
+      chatDto.avatar = this.chatServiceSupport.getChatAvatarPath(chat);
+      chatDto.userCount = await this.userChatLinkRepository.count({ chat: chat, verified: true });
+    }
+
     return chatDto;
   }
 

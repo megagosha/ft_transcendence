@@ -50,7 +50,7 @@ export class ChatServiceSupport {
     ChatServiceSupport.STATUSES.set(ChatAction.SEND_MESSAGE, [UserChatStatus.ACTIVE]);
     ChatServiceSupport.STATUSES.set(ChatAction.ENTER_CHAT, [UserChatStatus.ACTIVE, UserChatStatus.MUTED, null, undefined]);
 
-    ChatServiceSupport.TYPES.set(ChatAction.CHAT_INFO, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
+    ChatServiceSupport.TYPES.set(ChatAction.CHAT_INFO, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE, ChatType.DIRECT]);
     ChatServiceSupport.TYPES.set(ChatAction.ADD_PARTICIPANT, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
     ChatServiceSupport.TYPES.set(ChatAction.UPDATE_CHAT_INFO, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE]);
     ChatServiceSupport.TYPES.set(ChatAction.UPDATE_STATUS, [ChatType.PUBLIC, ChatType.PROTECTED, ChatType.PRIVATE, ChatType.DIRECT]);

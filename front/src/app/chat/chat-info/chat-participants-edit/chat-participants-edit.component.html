@@ -42,14 +42,22 @@
 						style="font-size: 10pt; height: 35px; line-height: 35px">
 					User profile
 				</button>
-				<button mat-menu-item (click)="inviteToPlay(user)"
-						style="font-size: 10pt; height: 35px; line-height: 35px"
-						[disabled]="!availableToMatch(user)">
+				<button mat-menu-item
+						*ngIf="availableToMatch(user)"
+						(click)="inviteToPlay(user)"
+						style="font-size: 10pt; height: 35px; line-height: 35px">
 					Invite to play
 				</button>
-				<button mat-menu-item (click)="onDelete(user)"
-						style="font-size: 10pt; height: 35px; line-height: 35px"
-						[disabled]=!availableEdit(user)>
+				<button mat-menu-item
+						*ngIf="availableWatchGame(user)"
+						(click)="watchGame(user)"
+						style="font-size: 10pt; height: 35px; line-height: 35px">
+					Watch game
+				</button>
+				<button mat-menu-item
+						*ngIf="availableEdit(user)"
+						(click)="onDelete(user)"
+						style="font-size: 10pt; height: 35px; line-height: 35px">
 					Remove participant
 				</button>
 			</mat-menu>

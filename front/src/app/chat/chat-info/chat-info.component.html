@@ -13,7 +13,8 @@
 		</div>
 		<div class="chat-info-name-access">
 			<p class="chat-info-name text">{{chatDetails.name}}</p>
-			<p class="chat-info-date-create">Created: {{chatDetails.dateTimeCreate.toLocaleDateString()}}</p>
+			<p *ngIf="chatBrief.type != 'DIRECT'" class="chat-info-date-create">Created: {{chatDetails.dateTimeCreate.toLocaleDateString()}}</p>
+			<p *ngIf="chatBrief.type == 'DIRECT'" class="chat-info-date-create">Status: {{getStatus()}}</p>
 		</div>
 		<mat-icon style="margin-left: auto; color: #9f9f9f"
 				  *ngIf="canUpdateInfo()"
@@ -22,7 +23,7 @@
 			edit
 		</mat-icon>
 	</div>
-	<div class="chat-info-part">
+	<div *ngIf="chatBrief.type != 'DIRECT'" class="chat-info-part">
 		<div class="chat-info-part-header">
 			<p style="padding: 0; margin: 0">DESCRIPTION</p>
 			<mat-icon *ngIf="canUpdateInfo()"
@@ -32,7 +33,7 @@
 			{{chatDetails.description != null ? chatDetails.description : 'Not set'}}
 		</p>
 	</div>
-	<div class="chat-info-part">
+	<div *ngIf="chatBrief.type != 'DIRECT'" class="chat-info-part">
 		<div class="chat-info-part-header">
 			<p style="padding: 0; margin: 0">ACCESS</p>
 			<mat-icon *ngIf="canUpdateAccess()"
@@ -44,7 +45,7 @@
 			{{chatDetails.type == 'PROTECTED' ? 'PROTECTED. Password set: ' + chatDetails.dateTimePasswordChange.toLocaleDateString() : chatDetails.type}}
 		</p>
 	</div>
-	<div class="chat-info-part">
+	<div *ngIf="chatBrief.type != 'DIRECT'" class="chat-info-part">
 		<div class="chat-info-part-header">
 			<p style="padding: 0; margin: 0">PARTICIPANTS</p>
 			<div class="adjust-container" *ngIf="canEditParticipants()">
@@ -64,8 +65,16 @@
 		<p style="font-size: 12px; line-height: 1; margin: 0">Participants number: {{chatDetails.userCount}}</p>
 	</div>
 </div>
-<div style="width: 100%; display: flex; justify-content: space-around" mat-dialog-actions>
+<div *ngIf="chatBrief.type != 'DIRECT'; else directChat"
+	 style="width: 100%; display: flex; justify-content: space-around" mat-dialog-actions>
 	<button mat-button [mat-dialog-close]="false">Close</button>
 	<button mat-button *ngIf="chatBrief.verified" (click)="leaveChat()" type="submit" color="warn" value="submit">Leave chat</button>
 	<button mat-button *ngIf="!chatBrief.verified" (click)="joinInChat()" type="submit" color="primary" value="submit" cdkFocusInitial>Join in chat</button>
 </div>
+<ng-template #directChat>
+	<div style="width: 100%; display: flex; justify-content: space-around" mat-dialog-actions>
+		<button mat-button *ngIf="chatDetails.user.status == 'ONLINE'" (click)="inviteToGame()" type="submit" color="primary" value="submit">Invite to play</button>
+		<button mat-button *ngIf="chatDetails.user.status == 'ACTIVE'" (click)="watchGame()" type="submit" color="primary" value="submit" cdkFocusInitial>Watch game</button>
+		<button mat-button [mat-dialog-close]="false">Close</button>
+	</div>
+</ng-template>

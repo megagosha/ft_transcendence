@@ -1,8 +1,15 @@
 import {AfterViewInit, Component, Inject, Input, OnInit} from '@angular/core';
-import {Chat, ChatDetails, ChatService, ChatType, UserChatRole, UserChatStatus} from "../../services/chat.service";
+import {
+  Chat,
+  ChatDetails,
+  ChatService,
+  ChatType,
+  UserChatRole,
+  UserChatStatus,
+  UserStatus
+} from "../../services/chat.service";
 import {UserService} from "../../services/user.service";
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
-import {MatSnackBar} from "@angular/material/snack-bar";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {ChatHeaderEditComponent} from "./chat-header-edit/chat-header-edit.component";
 import {ChatAccessEditComponent} from "./chat-access-edit/chat-access-edit.component";
@@ -10,6 +17,7 @@ import {ChatParticipantsEditComponent} from "./chat-participants-edit/chat-parti
 import {ChatParticipantsAddComponent} from "./chat-participants-add/chat-participants-add.component";
 import {ConfirmFormComponent} from "../../confirm-form/confirm-form.component";
 import {FormControl} from "@angular/forms";
+import {GameService} from "../../services/game.service";
 
 @Component({
   selector: 'app-chat-info',
@@ -26,7 +34,8 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
               @Inject(MAT_DIALOG_DATA) data: Chat,
               private readonly dialog: MatDialog,
               private readonly currentDialog: MatDialogRef<ChatInfoComponent>,
-              private readonly chatService: ChatService) {
+              private readonly chatService: ChatService,
+              private readonly gameService: GameService) {
     this.chatBrief = data;
     this.avatar = new FormControl();
   }
@@ -100,13 +109,15 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
   }
 
   canUpdateInfo() {
-    return this.chatBrief.userChatRole != UserChatRole.PARTICIPANT
+    return this.chatBrief.type != ChatType.DIRECT
+      && this.chatBrief.userChatRole != UserChatRole.PARTICIPANT
       && this.chatBrief.verified
       && this.chatBrief.userChatStatus != UserChatStatus.BANNED;
   }
 
   canUpdateAccess() {
-    return this.chatBrief.userChatRole == UserChatRole.OWNER
+    return this.chatBrief.type != ChatType.DIRECT
+      && this.chatBrief.userChatRole == UserChatRole.OWNER
       && this.chatBrief.verified;
   }
 
@@ -117,5 +128,19 @@ export class ChatInfoComponent implements OnInit, AfterViewInit {
   joinInChat() {
     document.getElementById("joinInChat")?.click();
     this.currentDialog.close();
+  }
+
+  inviteToGame() {
+    this.gameService.inviteToPlay(this.chatDetails.user.id);
+  }
+
+  watchGame() {
+    this.gameService.watchGame(this.chatDetails.user.id);
+  }
+
+  getStatus() {
+    return this.chatDetails.user.status == UserStatus.ACTIVE
+      ? "PLAY"
+      : this.chatDetails.user.status;
   }
 }

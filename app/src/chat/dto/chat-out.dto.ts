@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
 import { ChatType } from "../model/chat.entity";
+import {UserBriefOutDto} from "./user-brief-out-dto";
 
 export class ChatOutDto {
   @Expose()
@@ -39,4 +40,7 @@ export class ChatOutDto {
 
   @ApiProperty({ name: "Количество пользователей в чате", example: 1 })
   userCount: number;
+
+  @ApiProperty({ name: "Пользователь в случае приватного чата" })
+  user: UserBriefOutDto;
 }

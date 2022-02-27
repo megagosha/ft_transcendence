@@ -78,4 +78,8 @@ export class UserProfileComponent implements OnInit {
       this.snackbar.open(error.error.message, "OK", {duration: 5000});
     }));
   }
+
+  watchGame() {
+    this.gameService.watchGame(this.userId);
+  }
 }
