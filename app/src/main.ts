@@ -25,7 +25,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new NotFoundExceptionFilter());
   app.enableCors({
-    origin: ["http://localhost:4200"],
+    origin: ["http://localhost:8080"],
     credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: false,
@@ -42,6 +42,7 @@ async function bootstrap() {
 
   app.useGlobalFilters(new GlobalExceptionFilter(app.get(HttpAdapterHost)));
 
-  await app.listen(3000, "localhost");
+  await app.listen(3000, "backend");
 }
+console.log(__dirname + process.env["DB_ENTITIES"]);
 bootstrap();

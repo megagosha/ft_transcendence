@@ -1,19 +1,47 @@
-FROM node:17.1-alpine3.12
-RUN apk update && apk upgrade && apk add bash
+#FROM node:17-alpine
+#WORKDIR /usr/src/app
+#COPY ./ ./
+#RUN npm install -g npm@7.20.1 && \
+#   npm install -g @nestjs/cli && \
+#   npm install -g typeorm && \
+#    npm install -g rimraf
+#RUN apk add --no-cache tzdata python3 && \
+#   ln -snf /usr/share/zoneinfo/Europe/Moscow /etc/localtime && \
+#   echo Europe/Moscow > /etc/timezone \
+#RUN npm install
+#COPY . .
+#RUN npm run build
+#CMD ["npm", "run", "start:prod"]
+FROM node:17-alpine as builder
 
-# install node dependencies
-RUN npm install -g npm@7.20.1 && \
-   npm install -g @nestjs/cli && \
-   npm install -g typeorm
+ENV NODE_ENV build
 
-# set right timezone
-RUN apk add --no-cache tzdata && \
-   ln -snf /usr/share/zoneinfo/Europe/Moscow /etc/localtime && \
-   echo Europe/Moscow > /etc/timezone
+#USER node
+WORKDIR /home/node
 
-WORKDIR /usr/src/app
-COPY . .
+COPY package*.json ./
+RUN apk update
+RUN apk add --no-cache python3 py3-pip make g++
+RUN npm install -g @nestjs/cli
+RUN npm ci
 
-EXPOSE ${NESTJS_CONTAINER_PORT}
+COPY --chown=node:node . .
+#COPY . .
+RUN npm run build
 
-ENTRYPOINT ["/bin/bash", "./start.sh"]
+FROM node:17-alpine
+ENV NODE_ENV production
+
+USER node
+WORKDIR /home/node
+
+COPY --from=builder  --chown=node:node  /home/node/package*.json ./
+COPY --from=builder  --chown=node:node  /home/node/node_modules/ ./node_modules/
+COPY --from=builder  --chown=node:node /home/node/tsconfig.build.json ./
+COPY --from=builder  --chown=node:node /home/node/ormconfig.json ./
+COPY --from=builder  --chown=node:node /home/node/dist/ ./dist/
+#COPY --from=builder --chown=node:node /home/node/package*.json ./
+#COPY --from=builder --chown=node:node /home/node/node_modules/ ./node_modules/
+#COPY --from=builder --chown=node:node /home/node/dist/ ./dist/
+
+CMD ["npm", "run", "start:prod"]
