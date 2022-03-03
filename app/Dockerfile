@@ -40,7 +40,10 @@ COPY --from=builder  --chown=node:node  /home/node/node_modules/ ./node_modules/
 COPY --from=builder  --chown=node:node /home/node/tsconfig.build.json ./
 COPY --from=builder  --chown=node:node /home/node/ormconfig.json ./
 COPY --from=builder  --chown=node:node /home/node/dist/ ./dist/
-RUN mkdir -p /home/node/static/files/user/ && \
-    mkdir -p /home/node/static/files/chat
-
-CMD ["npm", "run", "start:prod"]
+RUN mkdir -p /home/node/static/files/
+COPY --chown=node:node ./static/files/chat/default.png /home/node/static/files/
+#RUN mkdir -p /home/node/static/files/user/ && \
+#    mkdir -p /home/node/static/files/chat \
+#CMD ["npm", "run", "start:prod"]
+COPY --chown=node:node ./start.sh /home/start.sh
+ENTRYPOINT ["/bin/sh", "/home/start.sh"]

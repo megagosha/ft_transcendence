@@ -21,8 +21,8 @@ services:
       context: ./app
       dockerfile: Dockerfile
     volumes:
-      - user:/home/node/static/files/user
-      - chat:/home/node/static/files/chat
+      - ./static/files/user:/home/node/static/files/user
+      - ./static/files/user/:/home/node/static/files/chat
     env_file:
       - .env
     depends_on:
@@ -78,8 +78,6 @@ services:
 
 volumes:
   pgdata:
-  user:
-  chat:
 
 networks:
   backend:
