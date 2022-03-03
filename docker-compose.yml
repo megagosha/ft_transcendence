@@ -19,10 +19,11 @@ services:
     container_name: nestjs-container
     build:
       context: ./app
-      dockerfile: Dockerfile 
+      dockerfile: Dockerfile
     volumes:
-      - ./app/:/usr/src/app
-    env_file: 
+      - user:/home/node/static/files/user
+      - chat:/home/node/static/files/chat
+    env_file:
       - .env
     depends_on:
       - postgres
@@ -77,6 +78,8 @@ services:
 
 volumes:
   pgdata:
+  user:
+  chat:
 
 networks:
   backend:

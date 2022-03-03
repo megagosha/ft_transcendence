@@ -11,7 +11,7 @@ export interface PeriodicElement {
 }
 
 const template: LadderDto[] = [
-    {position: 1, username: '', avatarImgName: "http://localhost:3000/default.png", games_won: 0},
+    {position: 1, username: '', avatarImgName: "http://localhost:8080/default.png", games_won: 0},
 
 ];
 
