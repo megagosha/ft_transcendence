@@ -9,9 +9,9 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
       PG_DATA: /var/lib/postgresql/data
-    ports: 
+    ports:
       - "${DB_PORT}"
-    volumes: 
+    volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
       - backend
@@ -29,7 +29,7 @@ services:
       - postgres
     restart: always
     ports:
-      - "3000:${NESTJS_CONTAINER_PORT}"
+      - "${NESTJS_CONTAINER_PORT}"
     hostname: backend
     networks:
       - backend
@@ -42,14 +42,12 @@ services:
     env_file:
       - .env
     ports:
-      - "8080:8080"
-    environment:
-      - NGINX_HOST=localhost
-      - NGINX_PORT=8080
+      - "${NGINX_HOST_PORT}:${NGINX_CONTAINER_PORT}"
     depends_on:
       - nestjs
     networks:
       - backend
+
 #  angular:
 #    container_name: angular-container
 #    build:

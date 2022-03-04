@@ -21,6 +21,8 @@ RUN npm run build
 
 FROM nginx:latest as nginx
 COPY --from=builder /usr/src/app/dist/front /usr/share/nginx/html
-RUN rm -rf /etc/nginx/conf.d
+RUN rm /etc/nginx/conf.d/default.conf && \
+    rm /etc/nginx/nginx.conf
+COPY ./nginx/default.conf /etc/nginx/templates/default.conf.template
 COPY ./nginx/nginx.conf  /etc/nginx/nginx.conf
-EXPOSE 8080
+RUN envsubst '${NGINX_HOST_PORT} ${NGINX_HOSTNAME}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf
