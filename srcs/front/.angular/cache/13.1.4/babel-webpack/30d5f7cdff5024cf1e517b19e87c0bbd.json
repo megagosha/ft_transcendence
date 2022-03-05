@@ -1,1 +1,0 @@
-{"ast":null,"code":"export class ErrorUtil {\n  constructor() {}\n\n  static toMessages(message) {\n    if (Object.prototype.toString.call(message) == \"[object Array]\") {\n      return message;\n    }\n\n    return [message];\n  }\n\n}","map":null,"metadata":{},"sourceType":"module"}

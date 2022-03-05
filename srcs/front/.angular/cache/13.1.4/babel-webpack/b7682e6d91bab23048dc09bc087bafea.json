@@ -1,1 +1,0 @@
-{"ast":null,"code":"export class Profile {\n  constructor() {\n    this.id = 0;\n    this.username = \"\";\n    this.avatarImgName = \"\";\n    this.email = \"\";\n    this.registerDate = \"\";\n    this.lastLoginDate = \"\";\n    this.status = \"\";\n    this.isTwoAuth = false;\n    this.blocked = false;\n  }\n\n}","map":null,"metadata":{},"sourceType":"module"}
