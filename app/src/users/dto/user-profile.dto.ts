@@ -1,11 +1,11 @@
 // import { GameStatistic } from '../../game/gamestats.entity';
-import { Friendship } from '../friendlist.entity';
-import { User, UserStatus } from '../user.entity';
-import { renderPath, rootPath } from '../../constants';
-import * as fs from 'fs';
-import { Logger } from '@nestjs/common';
-import { UserService } from '../user.service';
-import {UsersServiceSupport} from "../users.service-support";
+import { Friendship } from "../friendlist.entity";
+import { User, UserStatus } from "../user.entity";
+import { renderPath, rootPath } from "../../constants";
+import * as fs from "fs";
+import { Logger } from "@nestjs/common";
+import { UserService } from "../user.service";
+import { UsersServiceSupport } from "../users.service-support";
 
 export class UserProfileDto {
   constructor(user: User, blocked = false) {
@@ -21,7 +21,6 @@ export class UserProfileDto {
     this.avatarImgName = UsersServiceSupport.getUserAvatarPath(user);
     this.isTwoAuth = user.twoAuth != null;
     this.blocked = blocked;
-    Logger.log('Avatar is set to ' + this.avatarImgName);
   }
   id: number;
   username: string;

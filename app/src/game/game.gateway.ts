@@ -39,13 +39,9 @@ export class GameGateway
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private readonly gameService: GameService
-  ) {
-    Logger.log("socket constructor init");
-  }
+  ) {}
 
-  afterInit(server: Server) {
-    Logger.log("chat gateway init");
-  }
+  afterInit(server: Server) {}
 
   handleConnection(client: Socket): any {
     try {
@@ -121,7 +117,6 @@ export class GameGateway
   @SubscribeMessage("invite_declined")
   declineInvite(@MessageBody() data: { userId: number }) {
     this.gameService.inviteDeclined(data.userId);
-    Logger.log("invite from user " + data.userId + " declined");
   }
 
   @SubscribeMessage("random_opponent")
@@ -178,11 +173,8 @@ export class GameGateway
 
     const room = this.gameService.game.findRoomId(client.data.userId);
     const game = this.gameService.game.findGame(room);
-    // console.log(game.ball.x);
-    // console.log(game.players[client.data.userId]);
     if (!game || !game.game.players[client.data.userId]) return;
     game.game.players[client.data.userId].y = cords.y > 100 ? 100 : cords.y;
-    // console.log('result: ' + game.players[client.data.userId].y);
   }
 
   @SubscribeMessage("game_end")
@@ -195,9 +187,7 @@ export class GameGateway
     const room = this.gameService.game.findRoomId(client.data.userId);
     try {
       await this.gameService.endGame(data.userId, this.server);
-    } catch (e) {
-      Logger.log(e);
-    }
+    } catch (e) {}
   }
 
   @SubscribeMessage("pause_game")

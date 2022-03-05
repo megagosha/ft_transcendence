@@ -31,7 +31,6 @@ export class GameEndComponent implements OnInit {
     }
     this.game = this.gameService.getGameResult(Number(gameId));
     this.game.subscribe((res: GameStatsDto) => {
-      console.log(res);
       this.info = res;
     })
 

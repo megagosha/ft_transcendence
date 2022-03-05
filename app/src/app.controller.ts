@@ -19,7 +19,6 @@ export class AppController {
   @Get("yo")
   @UseGuards(JwtAuthGuard)
   async profile(@Req() req): Promise<any> {
-    Logger.log("yo");
     return req.user;
   }
 }

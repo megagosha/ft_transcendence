@@ -40,16 +40,6 @@ export class OneOnOneComponent implements OnInit {
     });
   }
 
-  // @Input()
-  // get value(): { userA: number; userB: number; } {
-  //   return this._value;
-  // }
-  // set value(data) {
-  //   this._value = data;
-  //   this.g
-  // }
-
   onScroll() {
-    console.log('scroool');
   }
 }

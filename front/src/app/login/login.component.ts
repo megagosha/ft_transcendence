@@ -31,11 +31,8 @@ export class LoginComponent implements OnInit {
           token = params["token"];
         }
       );
-    if (!token)
-      console.log("Auth failed");
-    else {
+    if (token) {
       this._authService.setSession(token);
-      console.log("Auth success");
       this.router.navigate(['/chat']);
     }
   }
@@ -45,10 +42,7 @@ export class LoginComponent implements OnInit {
   title = "Transcendence 21 project";
 
   onLogin() {
-    
     window.open("/auth/ft", "_self");
-    // console.log('onLogin executed');
-    // console.log(this._authService.login());
     return;
   }
 

@@ -66,8 +66,6 @@ export class GameComponent implements OnInit, OnDestroy {
                 return;
             this.updateObjects(game, this.gameState.left.id, this.gameState.right.id);
         });
-        console.log("pause");
-        console.log(this.pause);
         if (!this.gameService.watch && !this.pause) {
             this.jsTimer = setInterval(() => this.sendPos(), 16);
         }
@@ -221,17 +219,12 @@ export class GameComponent implements OnInit, OnDestroy {
 
     subscribeForPauseEvents = () => {
         this.gameService.pause.subscribe(( state: number ) => {
-            console.log("Pause event callback");
-            console.log(state);
             this.pause = state;
             if (this.pause) {
                 this.cdConfig.leftTime = this.pause;
-                console.log("interval cleared");
-                console.log(this.jsTimer);
                 clearInterval(this.jsTimer);
                 this.jsTimer = 0;
             } else if (!this.gameService.watch && this.jsTimer == 0) {
-                console.log("interval created");
                 this.jsTimer = setInterval(() => this.sendPos(), 16);
             }
         });

@@ -29,12 +29,10 @@ export class OtpComponent implements OnInit {
   }
 
   submit() {
-    console.log(this.otpFormControl);
     if (!this.otpFormControl.valid)
       return;
     this.authService.continueTwoAuth(this.token, this.otpFormControl.value).subscribe(
       result => {
-        console.log(result);
         if (!result.token)
           this.router.navigate(['/login/otp']);
         else {

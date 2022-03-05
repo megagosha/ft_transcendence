@@ -59,8 +59,6 @@ export class UserService {
   }
 
   changeAvatar(avatar: File): Observable<any> {
-    console.log('Avatar:');
-    console.log({ avatar: avatar });
     const formData = new FormData();
     formData.append('avatar', avatar);
     return this.http.post('/api/user/set_avatar', formData, {

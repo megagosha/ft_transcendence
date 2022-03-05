@@ -24,10 +24,7 @@ export class SnackbarActionsComponent implements OnInit {
   cancel() {
     this._gameService.snackBar.dismiss();
     this._gameService.declineInvite(this.data.userId);
-    console.log('close');
-    console.log(this.data);
   }
-
 
   ngOnInit(): void {
   }

@@ -80,8 +80,6 @@ export class GameService {
     game.ball = new Ball(50, 50, 2, 2);
 
     game.ball.color = this.selectRandomColor(pOne.ballColor, pTwo.ballColor);
-    // console.log(pOne.paddleColor);
-    // console.log(pTwo.paddleColor);
     game.players[pOne.userId] = new Player(10, 50, 1, 15, pOne.paddleColor);
     game.players[pTwo.userId] = new Player(90, 50, 1, 15, pTwo.paddleColor);
     this.game.setGameRoom(pOne.userId, roomId);
@@ -102,7 +100,6 @@ export class GameService {
       game.game.players[userAId].score >= 10 ||
       game.game.players[userBId].score >= 10
     ) {
-      // console.log("gamae should end");
       this.endGame(userAId, server);
     }
     game.game.ball.move();
@@ -274,11 +271,8 @@ export class GameService {
         .addGroupBy("user.username")
         .addGroupBy("user.avatarImgName")
         .orderBy("count", "DESC")
-        // .skip(skip)
-        // .take(take)
         .getRawMany()
     ).map((obj, ix) => new LadderDto(obj, ix));
-    // console.log(res);
     return res;
   }
 
@@ -305,8 +299,6 @@ export class GameService {
   }
 
   pauseGame(room: string, timeOut: number, server: Server) {
-    // console.log("clearing interval");
-    // console.log(this.game.intervals.get(room));
     clearInterval(this.game.intervals.get(room));
     this.game.removeInterval(room);
     server.in(room).emit("game_paused", {
@@ -315,8 +307,6 @@ export class GameService {
     const timeout = setTimeout(async () => {
       await this.endGameByRoomId(room, server);
     }, timeOut * 1000); //16
-    console.log("timeout set");
-    console.log(timeout[Symbol.toPrimitive]);
     this.game.setGamePaused(room, timeout);
     return true;
   }
@@ -328,8 +318,6 @@ export class GameService {
       if (!game) return;
       game.paused = 0;
       clearTimeout(res.timeOut);
-      console.log("timeout unset");
-      console.log(res.timeOut[Symbol.toPrimitive]);
       this.game.pause.delete(room);
       server.to(room).emit("game_unpaused", true);
       const interval = setInterval(() => {
