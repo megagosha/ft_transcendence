@@ -61,10 +61,14 @@ export class AuthController {
       user = await this.userService.createNewUser(newUser);
     } else if (user.twoAuth != null) {
       const jwt = await this.authService.tmpLogin(user.id, user.username);
-      return res.redirect("http://localhost:4200/login/otp/?token=" + jwt);
+      return res.redirect(
+        `${process.env["APP_HOSTNAME"]}/login/otp/?token=${jwt}`
+      );
     }
     const jwt = await this.authService.jwtLogin(user.id, user.username);
-    return res.redirect("http://localhost:4200/login/success/?token=" + jwt);
+    return res.redirect(
+      `${process.env["APP_HOSTNAME"]}/login/success/?token=${jwt}`
+    );
   }
 
   @ApiOperation({
@@ -85,10 +89,14 @@ export class AuthController {
       user = await this.userService.createNewUser(newUser);
     } else if (user.twoAuth != null) {
       const jwt = await this.authService.tmpLogin(user.id, user.username);
-      return res.redirect("http://localhost:4200/login/otp/?token=" + jwt);
+      return res.redirect(
+        `${process.env["APP_HOSTNAME"]}/login/otp/?token=${jwt}`
+      );
     }
     const jwt = await this.authService.jwtLogin(user.id, user.username);
-    return res.redirect("http://localhost:4200/login/success/?token=" + jwt);
+    return res.redirect(
+      `${process.env["APP_HOSTNAME"]}/login/success/?token=${jwt}`
+    );
   }
 
   @ApiOperation({ description: "Triggered if 2auth enabled" })
