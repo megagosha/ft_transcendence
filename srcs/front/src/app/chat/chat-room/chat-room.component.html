@@ -1,0 +1,71 @@
+<div class="chat-room">
+	<button (click)="chat.type != null ? openChatInfo() : goToProfile(chat.secondUserId)" class="message-block-header">
+		<p class="header-chat-name">{{chat.name}}</p>
+		<p class="header-chat-type">{{chat.type}}</p>
+	</button>
+	<div class="message-block-content">
+		<div infiniteScroll
+			 [scrollWindow]="false"
+			 [infiniteScrollDistance]="20"
+			 [infiniteScrollThrottle]="50"
+			 (scrolledUp)="nextPage()"
+			 (scroll)="onScroll()"
+			 [ngStyle]="{'height': getMessageBlockHeight()}"
+			 class="messages">
+			<div *ngFor="let message of messages">
+				<div class="message-row" *ngIf="message.authorUser != null; else infoMessage">
+					<div style="display: flex; flex-direction: column; width: 35px">
+						<img (click)="goToProfile(message.authorUser.id)" class="profile-avatar" src="{{message.authorUser.avatar}}" alt="AV">
+<!--						<mat-icon class="invite-game"-->
+<!--								  *ngIf="availableToMatch(message.authorUser)"-->
+<!--								  (click)="inviteToGame(message.authorUser)">-->
+<!--							sports_esports-->
+<!--						</mat-icon>-->
+					</div>
+					<div class="message"
+						 [ngStyle]="{'background-color': message.authorUser.id == user.id ? '#e4e1fd' : '#ffffff'}">
+						<p style="text-align: left; font-size: 10pt; color: #673ab5; margin: 0; font-weight: 500; cursor: pointer"
+						   (click)="goToProfile(message.authorUser.id)">
+							{{message.authorUser.username}}
+						</p>
+						<p style="font-size: 10pt; text-align: left; margin: 0 0 2px;">
+							{{message.text}}
+						</p>
+						<p style="font-size: 8pt; text-align: right; font-style: italic; margin: 0; color: gray">
+							{{message.dateTimeSend.toLocaleString()}}
+						</p>
+					</div>
+				</div>
+				<ng-template #infoMessage>
+					<div class="info-message-row">
+						<mat-chip [matTooltip]="message.dateTimeSend.toLocaleString()">
+							<p style="color: #333333; margin: 5px; font-weight: 450; font-size: 10pt">{{message.text}}</p>
+						</mat-chip>
+					</div>
+				</ng-template>
+			</div>
+		</div>
+		<mat-form-field *ngIf="chat.verified && chat.userChatStatus != 'MUTED'"
+						class="message-form" appearance="fill">
+			<input matInput
+				   type="text"
+				   minlength="1"
+				   maxlength="1000"
+				   placeholder="Write message..."
+				   value="{{messageText}}"
+				   name="messageText"
+				   autocomplete="off"
+				   [(ngModel)]="messageText">
+			<mat-hint align="end">{{messageText.length}} / 1000</mat-hint>
+			<button (click)="sendMessage()" matSuffix mat-icon-button aria-label="Send">
+				<mat-icon>send</mat-icon>
+			</button>
+		</mat-form-field>
+		<button color="primary"
+				mat-stroked-button *ngIf="!chat.verified"
+				(click)="joinInChat()"
+				style="width: 100%; border: none; background-color: #e5e5e5; border-radius: 0 0 10px 10px; height: 40px; font-size: 10pt">
+			JOIN IN CHAT
+		</button>
+	</div>
+</div>

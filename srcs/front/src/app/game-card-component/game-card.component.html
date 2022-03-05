@@ -1,0 +1,20 @@
+<div mat-subheader style="padding: 10px 0 0;">
+  <p style="margin: 5px auto;">
+    Game played on: {{this.formatDate(this.info.timeEnd)}}
+  </p>
+</div>
+<mat-list-item>
+<!--  <mat-card-subtitle>{{this.info.date}}</mat-card-subtitle>-->
+  <div class="card-container">
+  <div class="player-info">
+    <img class="profile-pic" height="40px" width="40px" style="border-radius: 50%" src="{{this.info.userLost.avatarImgName}}">
+    <div class="username"> {{this.info.userLost.username}} </div>
+  </div>
+  <div class="score">{{this.info.score[0]}} - {{this.info.score[1]}} </div>
+  <div class="player-info">
+    <img class="profile-pic" height="40px" width="40px" style="border-radius: 50%" src="{{this.info.userWon.avatarImgName}}">
+    <div class="username">{{this.info.userWon.username}}</div> &nbsp;
+  </div>
+  </div>
+</mat-list-item>
+<mat-divider></mat-divider>

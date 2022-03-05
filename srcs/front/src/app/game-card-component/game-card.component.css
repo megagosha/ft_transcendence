@@ -1,0 +1,30 @@
+.card-container {
+  margin-top: 5px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.player-info {
+  height: auto;
+  padding-left: 20px;
+  padding-right: 20px;
+  text-align: center;
+}
+
+img {
+  display: block;
+  margin: 0 auto;
+}
+
+.username {
+  color: black;
+  font-size: 15px;
+  margin: 5px auto;
+}
+
+.score {
+  margin-top: 20px;
+  color: #673ab7;
+  font-size: 30px;
+  font-weight: bolder;
+}

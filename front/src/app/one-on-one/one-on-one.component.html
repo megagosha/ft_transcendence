@@ -1,9 +1,0 @@
-<mat-card class="one-on-one-card">
-  <mat-card-title>Match history</mat-card-title>
-  <cdk-virtual-scroll-viewport [itemSize]="10" class="viewport">
-    <div *cdkVirtualFor="let game of gameList ">
-      <app-game-card-component [info]="game">
-      </app-game-card-component>
-    </div>
-  </cdk-virtual-scroll-viewport>
-</mat-card>

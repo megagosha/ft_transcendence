@@ -1,0 +1,66 @@
+.participant-list-content {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    height: calc(100% - 20px - 70px - 70px);
+}
+
+.participant-row {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.participant-row:hover {
+    background: #e8e8e8;
+    cursor: pointer;
+}
+
+.participant-row[disabled] {
+    color: #c0c0c0;
+}
+
+.participant-row[disabled]:hover {
+    background: white;
+}
+
+.select-participant {
+    height: auto;
+    flex-basis: calc(100% - 24px);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    border: none;
+    background: inherit;
+    cursor: inherit;
+}
+
+.select-participant[disabled] {
+    cursor: auto;
+}
+
+.participant-avatar {
+    border-radius: 50%;
+    width: 33px;
+    height: 33px;
+}
+
+.participant-name {
+    font-size: 10pt;
+    flex-basis: calc(100% - 80px);
+    word-break: break-all;
+    padding-right: 5px;
+}
+
+.participant-chip {
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+    font-size: 8pt;
+}

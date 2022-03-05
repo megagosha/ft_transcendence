@@ -1,0 +1,57 @@
+.profile {
+  width: 35%;
+  min-width: 350px;
+  margin: auto;
+  margin-top: 30px;
+  padding: 50px;
+}
+.card-friend-list {
+  width: 35%;
+  min-width: 350px;
+  margin: auto;
+  margin-top: 30px;
+  padding: 50px;
+  height: 350px;
+}
+
+.profile-item {
+  margin: 15px;
+  text-align: right;
+}
+.profile-item.mat-button {
+  margin-left: 20px;
+}
+
+.profile-spacer {
+  flex: 1 1 auto;
+}
+
+.profile h1 {
+  font-size: 30px;
+  color: black;
+  font-weight: bold;
+}
+
+.profile h2 {
+  text-align: left;
+}
+
+.profile button {
+  margin: auto;
+}
+
+
+.chat-user-name-dialog{
+  width: 100%;
+}
+.full-width {
+  width: 100%;
+}
+
+.username-input {
+  margin: 10px;
+}
+
+.mat-dialog-title {
+  color: black;
+}

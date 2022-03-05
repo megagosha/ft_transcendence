@@ -1,0 +1,15 @@
+<app-top-bar></app-top-bar>
+<div class="chat">
+    <div class="chat-selector">
+        <app-chat-list (selectedChatEvent)="enterChatRoom($event)" class="chat-list"></app-chat-list>
+    </div>
+    <mat-divider [vertical]="true"></mat-divider>
+    <div class="messages-block">
+        <div *ngIf="chatService.getChat() == null" class="chat-not-entered">
+            <p class="not-entered-message">
+                Select a chat to start messaging
+            </p>
+        </div>
+        <ng-template style="height: 100%; width: 100%" chatRoom></ng-template>
+    </div>
+</div>

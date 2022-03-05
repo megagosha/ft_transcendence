@@ -1,0 +1,62 @@
+.game-played {
+  height: 100%;
+  /*justify-content: center;*/
+  display: flex;
+  margin: auto;
+  justify-content: space-between;
+}
+.game-end-container {
+  width: 100%;
+  /*margin: auto;*/
+  margin-top: 50px;
+  align-items: center;
+}
+
+.title-row {
+  margin-top: 30px;
+  justify-self: center;
+  text-align: center;
+  vertical-align: middle;
+}
+.result-row {
+  width: 100%;
+  height: auto;
+  background-color: #673ab7;
+  display: flex;
+  justify-self: center;
+  margin: auto;
+}
+
+
+.player-info {
+  margin: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-self: center;
+  padding-top: 2vw;
+}
+
+.profile-pic {
+  align-self: center;
+}
+
+.username {
+  margin-top: 30px;
+  color: white;
+  font-size: 30px;
+}
+
+.score {
+  display: flex;
+  align-self: center;
+  color: #ffd740;
+  font-size: 60px;
+  font-weight: bolder;
+}
+.actions {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+

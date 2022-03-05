@@ -1,0 +1,28 @@
+<!--<app-top-bar></app-top-bar>-->
+<div class="friend-list">
+  <div mat-subheader class="friend-list-subheader">FRIENDS
+    <span class="spacer"></span>
+    <button class="friend-list-options" *ngIf="selectedUser" mat-icon-button aria-label="Friendlist options" [matMenuTriggerFor]="menu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="showProfile(selectedUser)">Profile</button>
+      <button mat-menu-item (click)="removeFriend()">Remove friend</button>
+      <button mat-menu-item *ngIf="selectedUser != null && selectedUser.status == 'ONLINE'" (click)="inviteToPlay(selectedUser)">Invite to play</button>
+      <button mat-menu-item *ngIf="selectedUser != null &&  selectedUser.status == 'ACTIVE' " (click)="watchGame(selectedUser)">Watch game</button>
+    </mat-menu>
+  </div>
+  <mat-selection-list class="list" #friends [multiple]="false" [color]="'primary'" (selectionChange)="onListClick($event.options[0].value)">
+    <mat-list-option class="list-element" *ngFor="let friend of friendList " [value]="friend">
+      <img matListAvatar style="width: 45px; height: 45px; border-radius: 23px" src="{{friend.avatarImgName }}">
+       <p matLine> {{friend.username}} &nbsp;
+         <span class="dot" [ngStyle]="{'background-color': friend.status == 'ONLINE' ? 'green': 'transparent'}"></span>
+         <span class="dot" [ngStyle]="{'background-color': friend.status == 'ACTIVE' ? 'orange': 'transparent'}"></span>
+
+       </p>
+    </mat-list-option>
+  </mat-selection-list>
+  <button class="fub-button" mat-fab color="primary" aria-label="Add new friend" (click)="addFriendDialogOpener()">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>

@@ -1,0 +1,54 @@
+<app-top-bar></app-top-bar>
+<mat-card class="profile">
+  <!--<div class="profile">-->
+  <h1>Profile info</h1>
+  <mat-list role="list" class="profile-list">
+    <mat-list-item class="profile-item" role="listitem"><h2>NAME</h2> <span
+      class="profile-spacer"></span>{{profile.username}}
+    </mat-list-item>
+    <mat-list-item class="profile-item" role="listitem"><h2>PROFILE PICTURE</h2><span class="profile-spacer"></span>
+      <img style="width: 45px; height: 45px; border-radius: 23px" src="{{profile.avatarImgName }}">
+    </mat-list-item>
+    <mat-list-item class="profile-item" role="listitem">
+      <h2>DATE REGISTERED</h2>
+      <span class="profile-spacer"></span>{{profile.registerDate}}
+    </mat-list-item>
+    <mat-list-item class="profile-item" role="listitem">
+      <h2>LAST SEEN</h2>
+      <span class="profile-spacer"></span>{{profile.lastLoginDate}}
+    </mat-list-item>
+    <mat-list-item class="profile-item" role="listitem">
+      <h2>STATUS</h2>
+      <span class="profile-spacer"></span>{{profile.status}}
+    </mat-list-item>
+  </mat-list>
+  <div style="margin-top: 20px; width: 100%; display: flex; justify-content: space-around">
+    <button *ngIf="profile.status == 'ONLINE'"
+            (click)="inviteToGame()"
+            mat-flat-button
+            color="primary">
+      Invite to play
+    </button>
+    <button *ngIf="profile.status == 'ACTIVE'"
+            (click)="watchGame()"
+            mat-flat-button
+            color="primary">
+      Watch game
+    </button>
+    <button *ngIf="!profile.blocked"
+            (click)="sendMessage()"
+            mat-flat-button
+            color="primary">
+      Send message
+    </button>
+    <button (click)="blockUser()"
+            mat-stroked-button
+            color="warn">
+      {{profile.blocked ? 'Unblock' : 'Block'}}
+    </button>
+  </div>
+</mat-card>
+
+<app-one-on-one [value]="this.userId"></app-one-on-one>
+<app-ladder></app-ladder>
+

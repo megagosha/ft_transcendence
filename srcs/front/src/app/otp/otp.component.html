@@ -1,0 +1,20 @@
+<mat-card class="otp-card">
+  <mat-card-title>Enter two auth code:</mat-card-title>
+  <mat-form-field class="otp-form-field" appearance="outline">
+    <mat-label>Enter code</mat-label>
+    <input matInput type="text" [formControl]="otpFormControl" maxlength="6">
+    <mat-error *ngIf="otpFormControl.hasError('otpCode')">
+      Please enter a valid code
+    </mat-error>
+    <mat-error *ngIf="otpFormControl.hasError('otpError')">
+      Code declined
+    </mat-error>
+    <button *ngIf="otpFormControl.value" matSuffix mat-icon-button aria-label="Clear" (click)="otpFormControl.reset()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-form-field>
+
+  <mat-card-actions align="end">
+    <button mat-button type="submit" [disabled]="!otpFormControl.valid" (click)="submit()">SUBMIT</button>
+  </mat-card-actions>
+</mat-card>
