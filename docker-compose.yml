@@ -13,18 +13,20 @@ services:
       - "${DB_PORT}"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    env_file:
+      - ./.env
     networks:
       - backend
   nestjs:
     container_name: nestjs-container
     build:
-      context: ./app
+      context: ./srcs/app
       dockerfile: Dockerfile
     volumes:
-      - ./static/files/user:/home/node/static/files/user
-      - ./static/files/user/:/home/node/static/files/chat
+      - ./srcs/static/files/user:/home/node/static/files/user
+      - ./srcs/static/files/user/:/home/node/static/files/chat
     env_file:
-      - .env
+      - ./.env
     depends_on:
       - postgres
     restart: always
@@ -36,11 +38,11 @@ services:
   nginx:
     container_name: nginx-container
     build:
-      context: ./front
+      context: ./srcs/front
       dockerfile: Dockerfile
     restart: always
     env_file:
-      - .env
+      - ./.env
     ports:
       - "${NGINX_HOST_PORT}:${NGINX_CONTAINER_PORT}"
     depends_on:
